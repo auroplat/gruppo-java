@@ -1,1 +1,65 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
 
+actor "Membro del Team" as Team
+actor "Responsabile Magazzino" as Mag
+actor "Organizzatore Eventi" as Org
+actor "Cliente" as Cli
+
+' Specializzazioni (ruoli del team)
+Mag --|> Team
+Org --|> Team
+
+rectangle "Progetto Bytefactory" {
+
+  package "Magazzino" {
+    usecase "Visualizzare inventario" as UC1
+    usecase "Registrare carico pezzi" as UC2
+    usecase "Registrare scarico pezzi" as UC3
+    usecase "Impostare soglia minima" as UC4
+    usecase "Generare ordine\nriapprovvigionamento" as UC5
+    usecase "Verificare pezzi\nsotto soglia" as UCsoglia
+  }
+
+  package "Sessioni di pista" {
+    usecase "Creare sessione\ndi pista" as UC6
+    usecase "Registrare dati\nsessione" as UC7
+    usecase "Associare pezzi\nalla sessione" as UCassoc
+    usecase "Aggiornare usura\npezzi" as UC8
+  }
+
+  package "Prenotazioni" {
+    usecase "Creare evento" as UC9
+    usecase "Modificare/\nannullare evento" as UC9b
+    usecase "Visualizzare iscritti" as UC11b
+    usecase "Visualizzare eventi" as UC12
+    usecase "Iscriversi\na un evento" as UC10
+    usecase "Annullare iscrizione" as UC11
+  }
+}
+
+' Associazioni attori -> casi d'uso
+Team --> UC1
+Team --> UC2
+Team --> UC3
+Mag --> UC4
+Mag --> UC5
+
+Team --> UC6
+Team --> UC7
+
+Org --> UC9
+Org --> UC9b
+Org --> UC11b
+
+Cli --> UC12
+Cli --> UC10
+Cli --> UC11
+
+' Include (dipendenze funzionali)
+UC5 ..> UCsoglia : <<include>>
+UC7 ..> UCassoc : <<include>>
+UC7 ..> UC8 : <<include>>
+
+@enduml

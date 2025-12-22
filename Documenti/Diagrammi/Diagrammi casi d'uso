@@ -5,7 +5,7 @@ skinparam packageStyle rectangle
 actor "Membro del Team" as Team
 actor "Responsabile Magazzino" as Mag
 actor "Organizzatore Eventi" as Org
-actor "Cliente1" as Cli
+actor "Cliente" as Cli
 
 ' Specializzazioni (ruoli del team)
 Mag --|> Team

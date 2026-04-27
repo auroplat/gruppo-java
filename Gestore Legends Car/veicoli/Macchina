@@ -1,0 +1,7 @@
+package it.unipv.bitFactory.veicoli;
+
+public class Macchina extends Veicolo {
+	
+
+
+}

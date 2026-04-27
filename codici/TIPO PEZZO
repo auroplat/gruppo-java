@@ -1,7 +1,0 @@
-package it.unipv.bitFactory.pezzi;
-
-public enum TipoPezzo {
-
-		MOTORE, RUOTA, FRENO, GOMMA, VOLANTE
-
-}

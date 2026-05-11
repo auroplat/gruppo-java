@@ -17,18 +17,32 @@ public class Pezzo {
     }
     
     public void aggiornaKm(int km) {
+		if (km < 0) {
+            throw new IllegalArgumentException("I km non possono essere negativi");
+        }
         kmAttuali += km;
     }
     
     public void aggiornaTempo(int tempo) {
+		if (tempo < 0) {
+            throw new IllegalArgumentException("Il tempo non può essere negativo");
+        }
         tempoAttuale += tempo;
     }
     
     public boolean daSostituire() {
         return kmAttuali >= kmMax || tempoAttuale >= tempoMax;
     }
-    
+
+	    
+    public void aggiornaUtilizzo(double km, double tempo) {
+        aggiornaKm(km);
+        aggiornaTempo(tempo);
+    }
+	
     public TipoPezzo getTipo() {return tipo;}
     public double getKmAttuali() {return kmAttuali;}
     public double getTempoAttuale() {return tempoAttuale;}
+	public double getKmMax() {return kmMax;}
+    public double getTempoMax() {return tempoMax;}
 }

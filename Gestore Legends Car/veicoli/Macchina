@@ -2,6 +2,9 @@ package it.unipv.bitFactory.veicoli;
 
 public class Macchina extends Veicolo {
 	
+	public abstract void applicaSessione(Sessione sessione);
+
+    public abstract void applicaSessioneSelettiva(Sessione sessione, List<TipoPezzo> tipiDaAggiornare);
 
 
 }

@@ -8,8 +8,10 @@ import java.util.Map;
 
 public class Legends extends Veicolo {
     private final Map<TipoPezzo, Pezzo> pezzi;
+    private final String id;
 
     public Legends() {
+        this.id = id;
         this.pezzi = new EnumMap<>(TipoPezzo.class);
     }
 
@@ -22,11 +24,32 @@ public class Legends extends Veicolo {
     }
 
     @Override
-    public void percorriKm(int km) {
+    public void applicaSessione(Sessione sessione) {
+  
+    	double km = sessione.getKmPercorsi();
+        int tempo = sessione.getTempo();
         super.percorriKm(km);
 
         for (Pezzo pezzo : pezzi.values()) {
-            pezzo.aggiornaKm(km);
+            pezzo.aggiornaUtilizzo(km, tempo);
         }
     }
+
+    @Override
+    public void applicaSessioneSelettiva(Sessione sessione,List<TipoPezzo> tipiDaAggiornare) {
+        
+    	double km = sessione.getKmPercorsi();
+        int tempo = sessione.getTempo();
+        super.percorriKm(km);
+    	
+        for (TipoPezzo tipo : tipiDaAggiornare) {
+            Pezzo pezzo = pezzi.get(tipo);
+
+            if (pezzo != null) {
+                pezzo.aggiornaUtilizzo(km, tempo);
+            }
+        }
+    }
+
+public String getId() {return id;}
 }

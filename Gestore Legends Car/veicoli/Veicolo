@@ -3,13 +3,20 @@ package it.unipv.bitFactory.veicoli;
 public abstract class Veicolo {
 	private int kmTotali;
 	
-	  public Veicolo() {
-	        this.kmTotali = 0;
-	    }
+	public Veicolo() {
+	    this.kmTotali = 0;
+	}
 	  
 	//mettere caratteristiche generali, come i km, numero passeggeri, numero ruote
 	  
 	public void percorriKm(int km) {
+		if (km < 0) {
+	            throw new IllegalArgumentException("I km non possono essere negativi");
+	    }
         kmTotali += km;
     }
+	public double getKmTotali() {
+	        return kmTot;
+	    }
+
 }

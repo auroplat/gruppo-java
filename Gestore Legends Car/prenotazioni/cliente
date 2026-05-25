@@ -1,0 +1,52 @@
+package it.unipv.bitFactory.prenotazioni;
+
+public class Cliente {
+
+    private String nome;
+    private String cognome;
+    private boolean patenteValida;
+    private int eta;
+    private String telefono;     aggiungi email 
+
+    public Cliente(String nome,
+                    String cognome,
+                    boolean patenteValida,
+                    int eta,
+                    String telefono) {
+
+        this.nome = nome;
+        this.cognome = cognome;
+        this.patenteValida = patenteValida;
+        this.eta = eta;
+        this.telefono = telefono;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public String getCognome() {
+        return cognome;
+    }
+
+    public boolean isPatenteValida() {
+        return patenteValida;
+    }
+
+    public int getEta() {
+        return eta;
+    }
+
+    public String getTelefono() {
+        return telefono;
+    }
+
+    @Override
+    public String toString() {
+
+        return nome + " " + cognome +
+                " | Patente valida: " + patenteValida +
+                " | Eta: " + eta +
+                " | Telefono: " + telefono;
+    }
+}

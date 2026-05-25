@@ -1,0 +1,43 @@
+Gestione delle prenotazioni (singleton)
+
+
+package it.unipv.bitFactory.prenotazioni;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class GestorePrenotazioni {
+
+    private static GestorePrenotazioni instance;
+
+    private List<Prenotazione> prenotazioni;
+
+    private GestorePrenotazioni() {
+
+        prenotazioni = new ArrayList<>();
+    }
+
+    public static GestorePrenotazioni getInstance() {
+
+        if (instance == null) {
+            instance = new GestorePrenotazioni();
+        }
+
+        return instance;
+    }
+
+    public void aggiungiPrenotazione(Prenotazione prenotazione) {
+
+        prenotazioni.add(prenotazione);
+
+        System.out.println("Prenotazione aggiunta correttamente");
+    }
+
+    public void mostraPrenotazioni() {
+
+        for (Prenotazione prenotazione : prenotazioni) {
+
+            System.out.println(prenotazione);
+        }
+    }
+}

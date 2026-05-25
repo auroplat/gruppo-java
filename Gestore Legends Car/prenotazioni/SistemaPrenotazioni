@@ -1,0 +1,36 @@
+Controllo se la prenotazione puo essere effettuata 
+
+
+package it.unipv.bitFactory.prenotazioni;
+
+import it.unipv.bitFactory.veicoli.Legends;
+
+public class SistemaPrenotazioni {
+
+    public void effettuaPrenotazione(Cliente cliente,
+                                     Evento evento,
+                                     Legends auto) {
+
+        if (!cliente.isPatenteValida()) {
+
+            System.out.println("Il cliente non possiede una patente valida");
+            return;
+        }
+
+        if (!evento.postiDisponibili()) {
+
+            System.out.println("Evento pieno");    inutile 
+            return;
+        }
+
+        Prenotazione prenotazione =
+                new Prenotazione(cliente, evento, auto);
+
+        GestorePrenotazioni.getInstance()
+                .aggiungiPrenotazione(prenotazione);
+
+        evento.prenotaPosto();
+
+        System.out.println("Prenotazione completata");     creo conferma email 
+    } 
+}

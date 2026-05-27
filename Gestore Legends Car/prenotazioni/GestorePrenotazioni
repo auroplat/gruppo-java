@@ -1,5 +1,5 @@
-Gestione delle prenotazioni (singleton)
-
+//modificato perche prima nel caso ci fossero due prenotazini in contempoarnea allora il gestore creava due istanze
+//ora crea direttamente l'istanza appena carica la classee e poi aggiunge le varie prenotazioni 
 
 package it.unipv.bitFactory.prenotazioni;
 
@@ -8,7 +8,8 @@ import java.util.List;
 
 public class GestorePrenotazioni {
 
-    private static GestorePrenotazioni instance;
+    private static final GestorePrenotazioni instance =
+            new GestorePrenotazioni();
 
     private List<Prenotazione> prenotazioni;
 
@@ -18,10 +19,6 @@ public class GestorePrenotazioni {
     }
 
     public static GestorePrenotazioni getInstance() {
-
-        if (instance == null) {
-            instance = new GestorePrenotazioni();
-        }
 
         return instance;
     }

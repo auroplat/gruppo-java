@@ -6,19 +6,22 @@ public class Cliente {
     private String cognome;
     private boolean patenteValida;
     private int eta;
-    private String telefono;     aggiungi email 
+    private String telefono;
+    private String email;
 
     public Cliente(String nome,
-                    String cognome,
-                    boolean patenteValida,
-                    int eta,
-                    String telefono) {
+                   String cognome,
+                   boolean patenteValida,
+                   int eta,
+                   String telefono,
+                   String email) {
 
         this.nome = nome;
         this.cognome = cognome;
         this.patenteValida = patenteValida;
         this.eta = eta;
         this.telefono = telefono;
+        this.email = email;
     }
 
     public String getNome() {
@@ -41,12 +44,17 @@ public class Cliente {
         return telefono;
     }
 
+    public String getEmail() {
+        return email;
+    }
+
     @Override
     public String toString() {
 
         return nome + " " + cognome +
                 " | Patente valida: " + patenteValida +
                 " | Eta: " + eta +
-                " | Telefono: " + telefono;
+                " | Telefono: " + telefono +
+                " | Email: " + email;
     }
 }

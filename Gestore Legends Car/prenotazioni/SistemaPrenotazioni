@@ -11,16 +11,16 @@ public class SistemaPrenotazioni {
                                      Evento evento,
                                      Legends auto) {
 
-        if (!cliente.isPatenteValida()) {
-
-            System.out.println("Il cliente non possiede una patente valida");
-            return;
-        }
-
         if (cliente.getEta() < 18) {
 
         System.out.println("Il cliente deve essere maggiorenne");
         return;
+        }       
+
+        if (!cliente.isPatenteValida()) {
+
+            System.out.println("Il cliente non possiede una patente valida");
+            return;
         }
 
         if (!evento.postiDisponibili()) {

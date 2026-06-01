@@ -1,0 +1,49 @@
+//Non anocra testato, solo concettuale 
+
+package it.unipv.bitFactory.prenotazioni;
+
+import it.unipv.bitFactory.veicoli.Legends;
+
+import java.util.ArrayList;
+import java.util.Scanner;
+
+public class MainTest {
+
+    public static void main(String[] args) {
+
+        Scanner sc = new Scanner(System.in);
+
+        SistemaPrenotazioni sistema = new SistemaPrenotazioni();
+
+        GestoreEventiCSV gestore = new GestoreEventiCSV();
+        ArrayList<Evento> eventi = gestore.caricaEventi();
+
+        System.out.println("=== EVENTI DISPONIBILI ===");
+
+        for (int i = 0; i < eventi.size(); i++) {
+            Evento e = eventi.get(i);
+            System.out.println((i + 1) + " - " +
+                    e.getNomeEvento() +
+                    " | Data: " + e.getData() +
+                    " | Posti: " + e.getPostiDisponibili());
+        }
+
+        System.out.print("\nScegli evento (numero): ");
+        int scelta = Integer.parseInt(sc.nextLine());
+
+        Evento eventoScelto = eventi.get(scelta - 1);
+
+        System.out.println("\nHai scelto: " + eventoScelto.getNomeEvento());
+
+        Legends auto = new Legends();
+
+        System.out.println("\n=== INSERIMENTO CLIENTE ===");
+        Cliente cliente = Cliente.daTastiera();
+
+        System.out.println("\n=== PRENOTAZIONE IN CORSO ===");
+        sistema.effettuaPrenotazione(cliente, eventoScelto, auto);
+
+        System.out.println("\n=== PRENOTAZIONI TOTALI ===");
+        GestorePrenotazioni.getInstance().stampaPrenotazioni();
+    }
+}

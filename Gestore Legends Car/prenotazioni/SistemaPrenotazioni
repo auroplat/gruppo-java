@@ -1,4 +1,4 @@
-Controllo se la prenotazione puo essere effettuata 
+//Controllo se la prenotazione puo essere effettuata 
 
 
 package it.unipv.bitFactory.prenotazioni;
@@ -31,6 +31,13 @@ public class SistemaPrenotazioni {
 
         evento.prenotaPosto();
 
-        System.out.println("Prenotazione completata");     creo conferma email 
+        System.out.println("Prenotazione completata");    
+
+        SistemaNotifiche sistemaNotifiche =
+        new SistemaNotifiche();
+
+        sistemaNotifiche.inviaConferma(
+        cliente,
+        evento
     } 
 }

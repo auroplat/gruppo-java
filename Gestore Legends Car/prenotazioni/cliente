@@ -26,7 +26,7 @@ public class Cliente {
         this.email = email;
     }
 
-    //Inserimento dati del cliente
+    //Inserimento dei dati del cliente 
 
     public static Cliente daTastiera() {
 
@@ -38,12 +38,27 @@ public class Cliente {
         System.out.print("Inserisci cognome: ");
         String cognome = sc.nextLine();
 
-        System.out.print("Hai la patente valida? (true/false): ");
-        boolean patenteValida = sc.nextBoolean();
+        //Validità patente
+
+        boolean patenteValida;
+
+        while (true) {
+            System.out.print("Hai la patente valida? (si/no): ");
+            String risposta = sc.nextLine().trim().toLowerCase();
+
+            if (risposta.equals("si")) {
+                patenteValida = true;
+                break;
+            } else if (risposta.equals("no")) {
+                patenteValida = false;
+                break;
+            } else {
+                System.out.println("Risposta non valida, scrivi 'si' o 'no'.");
+            }
+        }
 
         System.out.print("Inserisci età: ");
-        int eta = sc.nextInt();
-        sc.nextLine(); // pulizia buffer
+        int eta = Integer.parseInt(sc.nextLine());
 
         System.out.print("Inserisci telefono: ");
         String telefono = sc.nextLine();

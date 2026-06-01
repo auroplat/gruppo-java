@@ -1,0 +1,14 @@
+package it.unipv.bitFactory.prenotazioni;
+
+public class SistemaNotifiche {
+
+    public void inviaConferma(Cliente cliente, Evento evento) {
+
+        System.out.println(
+                "Notifica inviata a " +
+                cliente.getEmail() +
+                " per l'evento " +
+                evento.getNomeEvento()
+        );
+    }
+}

@@ -25,7 +25,7 @@ public class SistemaPrenotazioni {
 
         if (!evento.postiDisponibili()) {
 
-            System.out.println("Evento pieno"); 
+            System.out.println("Prenotazione non possibile: nessun posto disponibile."); 
             return;
         }
 

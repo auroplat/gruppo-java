@@ -29,8 +29,12 @@ public class SistemaPrenotazioni {
             return;
         }
 
-        Prenotazione prenotazione =
-                new Prenotazione(cliente, evento, auto);
+       Prenotazione prenotazione =
+        new Prenotazione(
+                cliente.getNome(),
+                evento.getNomeEvento(),
+                auto
+       );
 
         GestorePrenotazioni.getInstance()
                 .aggiungiPrenotazione(prenotazione);

@@ -17,6 +17,12 @@ public class SistemaPrenotazioni {
             return;
         }
 
+        if (cliente.getEta() < 18) {
+
+        System.out.println("Il cliente deve essere maggiorenne");
+        return;
+        }
+
         if (!evento.postiDisponibili()) {
 
             System.out.println("Evento pieno");    inutile 

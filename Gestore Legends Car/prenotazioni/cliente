@@ -1,5 +1,7 @@
 package it.unipv.bitFactory.prenotazioni;
 
+import java.util.Scanner;
+
 public class Cliente {
 
     private String nome;
@@ -22,6 +24,34 @@ public class Cliente {
         this.eta = eta;
         this.telefono = telefono;
         this.email = email;
+    }
+
+    //Inserimento dati del cliente
+
+    public static Cliente daTastiera() {
+
+        Scanner sc = new Scanner(System.in);
+
+        System.out.print("Inserisci nome: ");
+        String nome = sc.nextLine();
+
+        System.out.print("Inserisci cognome: ");
+        String cognome = sc.nextLine();
+
+        System.out.print("Hai la patente valida? (true/false): ");
+        boolean patenteValida = sc.nextBoolean();
+
+        System.out.print("Inserisci età: ");
+        int eta = sc.nextInt();
+        sc.nextLine(); // pulizia buffer
+
+        System.out.print("Inserisci telefono: ");
+        String telefono = sc.nextLine();
+
+        System.out.print("Inserisci email: ");
+        String email = sc.nextLine();
+
+        return new Cliente(nome, cognome, patenteValida, eta, telefono, email);
     }
 
     public String getNome() {
@@ -50,7 +80,6 @@ public class Cliente {
 
     @Override
     public String toString() {
-
         return nome + " " + cognome +
                 " | Patente valida: " + patenteValida +
                 " | Eta: " + eta +

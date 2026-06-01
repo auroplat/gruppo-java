@@ -46,8 +46,6 @@ public class SistemaPrenotazioni {
         SistemaNotifiche sistemaNotifiche =
         new SistemaNotifiche();
 
-        sistemaNotifiche.inviaConferma(
-        cliente,
-        evento
+        sistemaNotifiche.inviaConferma(cliente,evento);
     } 
 }

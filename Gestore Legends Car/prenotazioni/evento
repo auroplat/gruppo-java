@@ -1,4 +1,4 @@
-pattern adapter per piu file exel (...
+
 
 package it.unipv.bitFactory.prenotazioni;
 
@@ -32,7 +32,7 @@ public class Evento {
     public void diminuisciPosti() {
 
         if (postiDisponibili > 0) {
-            postiDisponibili--;            posti minori di 0 allora evento pieno
+            postiDisponibili--;          
         }
     }
 

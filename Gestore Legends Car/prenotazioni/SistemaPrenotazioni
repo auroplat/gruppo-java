@@ -39,7 +39,7 @@ public class SistemaPrenotazioni {
         GestorePrenotazioni.getInstance()
                 .aggiungiPrenotazione(prenotazione);
 
-        evento.prenotaPosto();
+        evento.diminuisciPosti();
 
         System.out.println("Prenotazione completata");    
 

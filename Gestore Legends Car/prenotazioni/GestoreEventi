@@ -1,4 +1,4 @@
-//lettore eventi
+//lettore eventi file eventi.csv
 
 package it.unipv.bitFactory.prenotazioni;
 

@@ -23,7 +23,7 @@ public class SistemaPrenotazioni {
             return;
         }
 
-        if (!evento.postiDisponibili()) {
+        if (evento.getPostiDisponibili() <= 0) {
 
             System.out.println("Prenotazione non possibile: nessun posto disponibile."); 
             return;

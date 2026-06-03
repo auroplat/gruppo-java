@@ -4,7 +4,7 @@ package it.unipv.bitFactory.prenotazioni;
 
 import it.unipv.bitFactory.veicoli.Legends;
 
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class MainTest {
@@ -15,35 +15,63 @@ public class MainTest {
 
         SistemaPrenotazioni sistema = new SistemaPrenotazioni();
 
-        GestoreEventiCSV gestore = new GestoreEventiCSV();
-        ArrayList<Evento> eventi = gestore.caricaEventi();
+        GestoreEventi gestore = new GestoreEventi();
+
+        gestore.caricaEventiDaCSV("eventi.csv");
+
+        List<Evento> eventi = gestore.getEventi();
 
         System.out.println("=== EVENTI DISPONIBILI ===");
 
         for (int i = 0; i < eventi.size(); i++) {
+
             Evento e = eventi.get(i);
-            System.out.println((i + 1) + " - " +
+
+            System.out.println(
+                    (i + 1) + " - " +
                     e.getNomeEvento() +
-                    " | Data: " + e.getData() +
-                    " | Posti: " + e.getPostiDisponibili());
+                    " | Data: " + e.getDataEvento() +
+                    " | Posti disponibili: " +
+                    e.getPostiDisponibili()
+            );
         }
 
         System.out.print("\nScegli evento (numero): ");
+
         int scelta = Integer.parseInt(sc.nextLine());
 
         Evento eventoScelto = eventi.get(scelta - 1);
 
-        System.out.println("\nHai scelto: " + eventoScelto.getNomeEvento());
+        System.out.println(
+                "\nHai scelto: " +
+                eventoScelto.getNomeEvento()
+        );
 
         Legends auto = new Legends();
 
-        System.out.println("\n=== INSERIMENTO CLIENTE ===");
+        System.out.println(
+                "\n=== INSERIMENTO DATI CLIENTE ==="
+        );
+
         Cliente cliente = Cliente.daTastiera();
 
-        System.out.println("\n=== PRENOTAZIONE IN CORSO ===");
-        sistema.effettuaPrenotazione(cliente, eventoScelto, auto);
+        System.out.println(
+                "\n=== PRENOTAZIONE IN CORSO ==="
+        );
 
-        System.out.println("\n=== PRENOTAZIONI TOTALI ===");
-        GestorePrenotazioni.getInstance().stampaPrenotazioni();
+        sistema.effettuaPrenotazione(
+                cliente,
+                eventoScelto,
+                auto
+        );
+
+        System.out.println(
+                "\n=== PRENOTAZIONI REGISTRATE ==="
+        );
+
+        GestorePrenotazioni.getInstance()
+                .mostraPrenotazioni();
+
+        sc.close();
     }
 }

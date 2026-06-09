@@ -1,3 +1,5 @@
+//Superclasse persona
+
 package it.unipv.bitFactory.prenotazioni;
 
 import java.util.Scanner;

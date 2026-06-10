@@ -4,6 +4,7 @@ package it.unipv.bitFactory.prenotazioni;
 
 import it.unipv.bitFactory.veicoli.Legends;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
@@ -13,64 +14,66 @@ public class MainTest {
 
         Scanner sc = new Scanner(System.in);
 
-        SistemaPrenotazioni sistema = new SistemaPrenotazioni();
+        GestoreEventi gestoreInterno = new GestoreEventi();
+        gestoreInterno.caricaEventiDaCSV("eventi.csv");
 
-        GestoreEventi gestore = new GestoreEventi();
+        List<Evento> eventiInterni = gestoreInterno.getEventi();
 
-        gestore.caricaEventiDaCSV("eventi.csv");
+        GestoreEventiEsterni gestoreEsterni = new GestoreEventiEsterni();
+        gestoreEsterni.caricaEventiDaCSVEsterno("eventi_esterni.csv");
 
-        List<Evento> eventi = gestore.getEventi();
+        List<Evento> eventiEsterni = gestoreEsterni.getEventi();
+
+        List<Evento> tuttiEventi = new ArrayList<>();
+
+        tuttiEventi.addAll(eventiInterni);
+        tuttiEventi.addAll(eventiEsterni);
+
+        List<Evento> eventiDisponibili = new ArrayList<>();
+
+        for (Evento e : tuttiEventi) {
+            if (e.getPostiDisponibili() > 0) {
+                eventiDisponibili.add(e);
+            }
+        }
 
         System.out.println("=== EVENTI DISPONIBILI ===");
 
-        for (int i = 0; i < eventi.size(); i++) {
+        for (int i = 0; i < eventiDisponibili.size(); i++) {
 
-            Evento e = eventi.get(i);
+            Evento e = eventiDisponibili.get(i);
 
             System.out.println(
                     (i + 1) + " - " +
                     e.getNomeEvento() +
                     " | Data: " + e.getDataEvento() +
-                    " | Posti disponibili: " +
-                    e.getPostiDisponibili()
+                    " | Posti: " + e.getPostiDisponibili()
             );
         }
 
-        System.out.print("\nScegli evento (numero): ");
+        System.out.print("\nScegli evento: ");
 
         int scelta = Integer.parseInt(sc.nextLine());
 
-        Evento eventoScelto = eventi.get(scelta - 1);
+        Evento eventoScelto = eventiDisponibili.get(scelta - 1);
 
-        System.out.println(
-                "\nHai scelto: " +
-                eventoScelto.getNomeEvento()
-        );
+        System.out.println("\nHai scelto: " + eventoScelto.getNomeEvento());
 
         Legends auto = new Legends();
 
-        System.out.println(
-                "\n=== INSERIMENTO DATI CLIENTE ==="
-        );
+        System.out.println("\n=== INSERIMENTO DATI CLIENTE ===");
 
         Cliente cliente = Cliente.daTastiera();
 
-        System.out.println(
-                "\n=== PRENOTAZIONE IN CORSO ==="
-        );
+        SistemaPrenotazioni sistema = new SistemaPrenotazioni();
 
-        sistema.effettuaPrenotazione(
-                cliente,
-                eventoScelto,
-                auto
-        );
+        System.out.println("\n=== PRENOTAZIONE IN CORSO ===");
 
-        System.out.println(
-                "\n=== PRENOTAZIONI REGISTRATE ==="
-        );
+        sistema.effettuaPrenotazione(cliente, eventoScelto, auto);
 
-        GestorePrenotazioni.getInstance()
-                .mostraPrenotazioni();
+        System.out.println("\n=== PRENOTAZIONI REGISTRATE ===");
+
+        GestorePrenotazioni.getInstance().mostraPrenotazioni();
 
         sc.close();
     }

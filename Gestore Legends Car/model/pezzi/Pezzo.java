@@ -45,4 +45,15 @@ public class Pezzo {
     public double getTempoAttuale() {return tempoAttuale;}
 	public double getKmMax() {return kmMax;}
     public double getTempoMax() {return tempoMax;}
+
+    @Override
+    public String toString() {
+        return "Pezzo{" +
+                "tipo=" + tipo +
+                ", kmAttuali=" + kmAttuali +
+                ", kmMax=" + kmMax +
+                ", tempoAttuale=" + tempoAttuale +
+                ", tempoMax=" + tempoMax +
+                '}';
+    }
 }

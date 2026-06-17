@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Completa la prenotazione per un evento racing BitFactory">
+    <title>BitFactory | Prenotazione</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <header class="page-shell topbar">
+        <a class="brand" href="/" aria-label="Torna agli eventi">
+            <span class="brand-mark">B</span>
+            <span>BitFactory</span>
+        </a>
+        <a class="topbar-link" href="/">← Torna agli eventi</a>
+    </header>
+
+    <main class="page-shell booking-layout">
+        <section class="booking-intro" aria-labelledby="booking-title">
+            <span class="eyebrow">Prenotazione evento</span>
+            <h1 id="booking-title">Sei quasi in pista.</h1>
+            <p>
+                Inserisci i tuoi dati e scegli la sessione. L'evento selezionato viene
+                caricato automaticamente dalla schermata precedente.
+            </p>
+
+            <div class="selected-event" aria-live="polite">
+                <span>Evento selezionato</span>
+                <strong id="selected-event-name">Evento racing</strong>
+                <p id="selected-event-details">Data e circuito</p>
+            </div>
+        </section>
+
+        <section class="booking-card" aria-labelledby="form-title">
+            <h2 id="form-title">Dati della prenotazione</h2>
+
+            <form id="booking-form" action="/prenotazioni" method="post">
+                <input type="hidden" id="evento" name="evento">
+
+                <div class="form-grid">
+                    <div class="field">
+                        <label for="nome">Nome</label>
+                        <input id="nome" name="nome" type="text" autocomplete="given-name" required>
+                    </div>
+
+                    <div class="field">
+                        <label for="cognome">Cognome</label>
+                        <input id="cognome" name="cognome" type="text" autocomplete="family-name" required>
+                    </div>
+
+                    <div class="field full">
+                        <label for="email">Email</label>
+                        <input id="email" name="email" type="email" autocomplete="email" required>
+                    </div>
+
+                    <div class="field">
+                        <label for="telefono">Telefono</label>
+                        <input id="telefono" name="telefono" type="tel" autocomplete="tel" required>
+                    </div>
+
+                    <div class="field">
+                        <label for="partecipanti">Partecipanti</label>
+                        <select id="partecipanti" name="partecipanti" required>
+                            <option value="1">1 partecipante</option>
+                            <option value="2">2 partecipanti</option>
+                            <option value="3">3 partecipanti</option>
+                            <option value="4">4 partecipanti</option>
+                        </select>
+                    </div>
+
+                    <div class="field full">
+                        <label for="sessione">Sessione</label>
+                        <select id="sessione" name="sessione" required>
+                            <option value="mattina">Sessione mattutina</option>
+                            <option value="pomeriggio">Sessione pomeridiana</option>
+                            <option value="completa">Giornata completa</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button class="primary-button" type="submit">Conferma prenotazione</button>
+                <p class="form-note">
+                    Demo grafica: collega il form al controller Java impostando l'attributo
+                    <code>action</code> con l'endpoint del server.
+                </p>
+                <div class="confirmation" id="confirmation" role="status">
+                    Prenotazione registrata correttamente.
+                </div>
+            </form>
+        </section>
+    </main>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const eventName = params.get("evento") || "Evento racing";
+        const eventDate = params.get("data") || "Data da definire";
+        const eventLocation = params.get("luogo") || "Circuito da definire";
+
+        document.getElementById("selected-event-name").textContent = eventName;
+        document.getElementById("selected-event-details").textContent = `${eventDate} · ${eventLocation}`;
+        document.getElementById("evento").value = eventName;
+
+    </script>
+</body>
+</html>

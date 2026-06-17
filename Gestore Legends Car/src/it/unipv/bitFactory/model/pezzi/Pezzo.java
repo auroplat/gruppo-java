@@ -1,0 +1,68 @@
+package it.unipv.bitFactory.model.pezzi;
+
+public class Pezzo {
+	//vedere se pubblico o primavato 
+	private final TipoPezzo tipo;
+	private final double kmMax;
+    private double kmAttuali;
+    private final int tempoMax;
+    private int tempoAttuale;
+    
+    public Pezzo(TipoPezzo tipo, double kmMax, int tempoMax) {
+        if (tipo == null) {
+            throw new IllegalArgumentException("Il tipo del pezzo non può essere null");
+        }
+
+        if (kmMax < 0 || tempoMax < 0) {
+            throw new IllegalArgumentException("Km max e tempo max non possono essere negativi");
+        }
+
+        this.tipo = tipo;
+        this.kmMax = kmMax;
+        this.tempoMax = tempoMax;
+        this.kmAttuali = 0;
+        this.tempoAttuale = 0;
+    }
+    
+    public void aggiornaKm(double km) {
+        if (km < 0) {
+            throw new IllegalArgumentException("I km non possono essere negativi");
+        }
+        kmAttuali += km;
+    }
+    
+    public void aggiornaTempo(int tempo) {
+        if (tempo < 0) {
+            throw new IllegalArgumentException("Il tempo non può essere negativo");
+        }
+        tempoAttuale += tempo;
+    }
+    
+    public void aggiornaUtilizzo(double km, int tempo) {
+        aggiornaKm(km);
+        aggiornaTempo(tempo);
+    }
+    
+    
+    
+    public boolean daSostituire() {
+        return kmAttuali >= kmMax || tempoAttuale >= tempoMax;
+    }
+    
+    public TipoPezzo getTipo() {return tipo;}
+    public double getKmAttuali() {return kmAttuali;}
+    public int getTempoAttuale() {return tempoAttuale;}
+    public double getKmMax() {return kmMax;}
+    public int getTempoMax() {return tempoMax;}
+
+     @Override
+    public String toString() {
+        return "Pezzo{" +
+                "tipo=" + tipo +
+                ", kmAttuali=" + kmAttuali +
+                ", kmMax=" + kmMax +
+                ", tempoAttuale=" + tempoAttuale +
+                ", tempoMax=" + tempoMax +
+                '}';
+    }
+}

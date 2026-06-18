@@ -1,4 +1,4 @@
-package magazzino.pezzo;
+package it.unipv.bitFactory.pezzo;
 
 public class Pezzo {
 

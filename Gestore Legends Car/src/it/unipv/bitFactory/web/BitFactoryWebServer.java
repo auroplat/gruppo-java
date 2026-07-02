@@ -16,6 +16,7 @@ import it.unipv.bitFactory.controller.GestioneMagazzinoController;
 import it.unipv.bitFactory.controller.GestionePrenotazioniController;
 import it.unipv.bitFactory.controller.GestioneSessioniController;
 import it.unipv.bitFactory.web.handler.MagazzinoHttpHandler;
+import it.unipv.bitFactory.web.handler.MacchineApiHttpHandler;
 import it.unipv.bitFactory.web.handler.PrenotazioniHttpHandler;
 import it.unipv.bitFactory.web.handler.SessioniHttpHandler;
 import it.unipv.bitFactory.web.view.HtmlRenderer;
@@ -133,6 +134,11 @@ public final class BitFactoryWebServer {
         /*
          * Rotte collegate ai controller applicativi.
          */
+        server.createContext(
+                "/api/macchine",
+                new MacchineApiHttpHandler(sessioniController)
+        );
+
         server.createContext(
                 "/sessioni",
                 new SessioniHttpHandler(

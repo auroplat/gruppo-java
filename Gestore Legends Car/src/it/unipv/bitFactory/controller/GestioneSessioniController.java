@@ -19,19 +19,50 @@ public class GestioneSessioniController {
         this.legendsDAO = legendsDAO;
     }
 
-    public void registraSessione(String idMacchina, Sessione sessione) {
+    public void registraSessione(
+            String idMacchina,
+            Sessione sessione) {
+
+        if (sessione == null) {
+            throw new IllegalArgumentException(
+                    "La sessione non può essere null"
+            );
+        }
+
         Legends legends = legendsDAO.trovaPerId(idMacchina)
-                .orElseThrow(() -> new IllegalArgumentException("Macchina non trovata"));
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Macchina non trovata: " + idMacchina
+                ));
 
         legends.applicaSessione(sessione);
         legendsDAO.salva(legends);
     }
 
-    public void registraSessioneSelettiva(String idMacchina, Sessione sessione, List<TipoPezzo> pezziDaAggiornare) {
-        Legends legends = legendsDAO.trovaPerId(idMacchina)
-                .orElseThrow(() -> new IllegalArgumentException("Macchina non trovata"));
+    public void registraSessioneSelettiva(
+            String idMacchina,
+            Sessione sessione,
+            List<TipoPezzo> pezziDaAggiornare) {
 
-        legends.applicaSessioneSelettiva(sessione, pezziDaAggiornare);
+        Legends legends = legendsDAO.trovaPerId(idMacchina)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Macchina non trovata: " + idMacchina
+                ));
+
+        legends.applicaSessioneSelettiva(
+                sessione,
+                pezziDaAggiornare
+        );
+
         legendsDAO.salva(legends);
+    }
+
+    /**
+     * Dati minimi richiesti dall'endpoint /api/macchine.
+     */
+    public List<String> elencaIdMacchine() {
+        return legendsDAO.trovaTutte()
+                .stream()
+                .map(Legends::getId)
+                .toList();
     }
 }

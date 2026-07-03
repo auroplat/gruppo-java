@@ -1,13 +1,18 @@
 package it.unipv.bitFactory.dao.sqlite;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
+import java.util.UUID;
 
 import it.unipv.bitFactory.dao.DAOException;
 import it.unipv.bitFactory.dao.LegendsDAO;
@@ -16,8 +21,11 @@ import it.unipv.bitFactory.model.pezzi.TipoPezzo;
 import it.unipv.bitFactory.model.veicoli.Legends;
 
 /**
- * Implementazione SQLite dell'interfaccia stabile LegendsDAO.
- * Controller e modello non conoscono JDBC né la struttura del database.
+ * Implementazione SQLite di LegendsDAO per lo schema:
+ *
+ * macchine(id_macchina, km_macchina)
+ * pezzo(id_pezzo, tipo, id_macchina, km, km_max,
+ *       tempo_utilizzo, tempo_max)
  */
 public final class SqliteLegendsDAO implements LegendsDAO {
 
@@ -30,13 +38,29 @@ public final class SqliteLegendsDAO implements LegendsDAO {
             );
         }
 
-        this.jdbcUrl = "jdbc:sqlite:" + databasePath;
+        Path path = Path.of(databasePath)
+                .toAbsolutePath()
+                .normalize();
+
+        if (!Files.isRegularFile(path)) {
+            throw new IllegalArgumentException(
+                    "Database SQLite non trovato: " + path
+            );
+        }
+
+        if (!Files.isReadable(path) || !Files.isWritable(path)) {
+            throw new IllegalArgumentException(
+                    "Il database deve essere leggibile e modificabile: " + path
+            );
+        }
+
+        this.jdbcUrl = "jdbc:sqlite:" + path;
 
         try {
             Class.forName("org.sqlite.JDBC");
         } catch (ClassNotFoundException e) {
             throw new DAOException(
-                    "Driver SQLite JDBC non trovato nel classpath/module-path",
+                    "Driver SQLite JDBC non trovato",
                     e
             );
         }
@@ -55,7 +79,7 @@ public final class SqliteLegendsDAO implements LegendsDAO {
 
             try {
                 salvaMacchina(connection, legends);
-                sostituisciPezzi(connection, legends);
+                salvaPezzi(connection, legends);
                 connection.commit();
             } catch (SQLException | RuntimeException e) {
                 rollbackSilenzioso(connection);
@@ -73,15 +97,15 @@ public final class SqliteLegendsDAO implements LegendsDAO {
 
     @Override
     public Optional<Legends> trovaPerId(String id) {
-        int numeroMacchina = convertiId(id);
+        String idMacchina = validaId(id);
 
         try (Connection connection = apriConnessione()) {
             return Optional.ofNullable(
-                    caricaMacchina(connection, numeroMacchina)
+                    caricaMacchina(connection, idMacchina)
             );
         } catch (SQLException e) {
             throw new DAOException(
-                    "Errore durante la lettura della macchina " + id,
+                    "Errore durante la lettura della macchina " + idMacchina,
                     e
             );
         }
@@ -89,7 +113,12 @@ public final class SqliteLegendsDAO implements LegendsDAO {
 
     @Override
     public List<Legends> trovaTutte() {
-        String sql = "SELECT Id FROM Macchine ORDER BY Id";
+        String sql = """
+                SELECT id_macchina, COALESCE(km_macchina, 0) AS km_macchina
+                FROM macchine
+                ORDER BY id_macchina
+                """;
+
         List<Legends> macchine = new ArrayList<>();
 
         try (Connection connection = apriConnessione();
@@ -97,14 +126,9 @@ public final class SqliteLegendsDAO implements LegendsDAO {
              ResultSet result = statement.executeQuery()) {
 
             while (result.next()) {
-                Legends macchina = caricaMacchina(
-                        connection,
-                        result.getInt("Id")
-                );
-
-                if (macchina != null) {
-                    macchine.add(macchina);
-                }
+                Legends legends = creaMacchinaDaResultSet(result);
+                caricaPezzi(connection, legends, legends.getId());
+                macchine.add(legends);
             }
 
             return macchine;
@@ -117,23 +141,34 @@ public final class SqliteLegendsDAO implements LegendsDAO {
         }
     }
 
+   
+
     @Override
     public void elimina(String id) {
-        int numeroMacchina = convertiId(id);
+        String idMacchina = validaId(id);
+
+        String eliminaPezziSql = """
+                DELETE FROM pezzo
+                WHERE id_macchina = ?
+                """;
+
+        String eliminaMacchinaSql = """
+                DELETE FROM macchine
+                WHERE id_macchina = ?
+                """;
 
         try (Connection connection = apriConnessione()) {
             connection.setAutoCommit(false);
 
-            try (PreparedStatement eliminaPezzi = connection.prepareStatement(
-                    "DELETE FROM Pezzi WHERE Id_pezzo = ?"
-            ); PreparedStatement eliminaMacchina = connection.prepareStatement(
-                    "DELETE FROM Macchine WHERE Id = ?"
-            )) {
+            try (PreparedStatement eliminaPezzi =
+                         connection.prepareStatement(eliminaPezziSql);
+                 PreparedStatement eliminaMacchina =
+                         connection.prepareStatement(eliminaMacchinaSql)) {
 
-                eliminaPezzi.setInt(1, numeroMacchina);
+                eliminaPezzi.setString(1, idMacchina);
                 eliminaPezzi.executeUpdate();
 
-                eliminaMacchina.setInt(1, numeroMacchina);
+                eliminaMacchina.setString(1, idMacchina);
                 eliminaMacchina.executeUpdate();
 
                 connection.commit();
@@ -145,7 +180,7 @@ public final class SqliteLegendsDAO implements LegendsDAO {
 
         } catch (SQLException e) {
             throw new DAOException(
-                    "Errore durante l'eliminazione della macchina " + id,
+                    "Errore durante l'eliminazione della macchina " + idMacchina,
                     e
             );
         }
@@ -154,10 +189,8 @@ public final class SqliteLegendsDAO implements LegendsDAO {
     private Connection apriConnessione() throws SQLException {
         Connection connection = DriverManager.getConnection(jdbcUrl);
 
-        try (PreparedStatement statement = connection.prepareStatement(
-                "PRAGMA foreign_keys = ON"
-        )) {
-            statement.execute();
+        try (Statement statement = connection.createStatement()) {
+            statement.execute("PRAGMA foreign_keys = ON");
         }
 
         return connection;
@@ -165,61 +198,84 @@ public final class SqliteLegendsDAO implements LegendsDAO {
 
     private Legends caricaMacchina(
             Connection connection,
-            int numeroMacchina) throws SQLException {
+            String idMacchina) throws SQLException {
 
-        String sqlMacchina = "SELECT Id, Km FROM Macchine WHERE Id = ?";
+        String sql = """
+                SELECT id_macchina, COALESCE(km_macchina, 0) AS km_macchina
+                FROM macchine
+                WHERE id_macchina = ?
+                """;
 
-        try (PreparedStatement statement =
-                     connection.prepareStatement(sqlMacchina)) {
-
-            statement.setInt(1, numeroMacchina);
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, idMacchina);
 
             try (ResultSet result = statement.executeQuery()) {
                 if (!result.next()) {
                     return null;
                 }
 
-                Legends legends = new Legends(
-                        String.valueOf(result.getInt("Id"))
-                );
-
-                legends.percorriKm(result.getDouble("Km"));
-                caricaPezzi(connection, legends, numeroMacchina);
+                Legends legends = creaMacchinaDaResultSet(result);
+                caricaPezzi(connection, legends, idMacchina);
                 return legends;
             }
         }
     }
 
+    private Legends creaMacchinaDaResultSet(ResultSet result)
+            throws SQLException {
+
+        Legends legends = new Legends(
+                result.getString("id_macchina")
+        );
+
+        legends.percorriKm(
+                result.getDouble("km_macchina")
+        );
+
+        return legends;
+    }
+
     private void caricaPezzi(
             Connection connection,
             Legends legends,
-            int numeroMacchina) throws SQLException {
+            String idMacchina) throws SQLException {
 
         String sql = """
-                SELECT tipo, Km, Tempo, KmMax, TempoMax
-                FROM Pezzi
-                WHERE Id_pezzo = ?
-                ORDER BY tipo
+                SELECT id_pezzo,
+                       tipo,
+                       COALESCE(km, 0) AS km,
+                       COALESCE(km_max, 0) AS km_max,
+                       COALESCE(tempo_utilizzo, 0) AS tempo_utilizzo,
+                       COALESCE(tempo_max, 0) AS tempo_max
+                FROM pezzo
+                WHERE id_macchina = ?
+                ORDER BY tipo, id_pezzo
                 """;
 
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setInt(1, numeroMacchina);
+            statement.setString(1, idMacchina);
 
             try (ResultSet result = statement.executeQuery()) {
                 while (result.next()) {
-                    TipoPezzo tipo = TipoPezzo.valueOf(
+                    Optional<TipoPezzo> tipo = convertiTipoDalDatabase(
                             result.getString("tipo")
                     );
 
+                    // Tipi non presenti nel modello Java (es. batteria,
+                    // sensore) restano nel DB e non vengono caricati.
+                    if (tipo.isEmpty()) {
+                        continue;
+                    }
+
                     Pezzo pezzo = new Pezzo(
-                            tipo,
-                            result.getDouble("KmMax"),
-                            result.getInt("TempoMax")
+                            tipo.get(),
+                            result.getDouble("km_max"),
+                            result.getInt("tempo_max")
                     );
 
                     pezzo.aggiornaUtilizzo(
-                            result.getDouble("Km"),
-                            result.getInt("Tempo")
+                            result.getDouble("km"),
+                            result.getInt("tempo_utilizzo")
                     );
 
                     legends.modificaPezzo(pezzo);
@@ -233,76 +289,148 @@ public final class SqliteLegendsDAO implements LegendsDAO {
             Legends legends) throws SQLException {
 
         String sql = """
-                INSERT INTO Macchine (Id, Km)
+                INSERT INTO macchine (id_macchina, km_macchina)
                 VALUES (?, ?)
-                ON CONFLICT(Id) DO UPDATE SET Km = excluded.Km
+                ON CONFLICT(id_macchina) DO UPDATE SET
+                    km_macchina = excluded.km_macchina
                 """;
 
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setInt(1, convertiId(legends.getId()));
+            statement.setString(1, validaId(legends.getId()));
             statement.setDouble(2, legends.getKmTotali());
             statement.executeUpdate();
         }
     }
 
-    private void sostituisciPezzi(
+    private void salvaPezzi(
             Connection connection,
             Legends legends) throws SQLException {
 
-        int numeroMacchina = convertiId(legends.getId());
-
-        try (PreparedStatement elimina = connection.prepareStatement(
-                "DELETE FROM Pezzi WHERE Id_pezzo = ?"
-        )) {
-            elimina.setInt(1, numeroMacchina);
-            elimina.executeUpdate();
-        }
-
-        String sqlInserimento = """
-                INSERT INTO Pezzi
-                    (Id_pezzo, Km, Tempo, KmMax, TempoMax, tipo)
-                VALUES (?, ?, ?, ?, ?, ?)
+        String aggiornaSql = """
+                UPDATE pezzo
+                SET km = ?,
+                    km_max = ?,
+                    tempo_utilizzo = ?,
+                    tempo_max = ?
+                WHERE id_macchina = ?
+                  AND LOWER(TRIM(tipo)) = ?
                 """;
 
-        try (PreparedStatement inserisci =
-                     connection.prepareStatement(sqlInserimento)) {
+        String inserisciSql = """
+                INSERT INTO pezzo (
+                    id_pezzo,
+                    tipo,
+                    id_macchina,
+                    km,
+                    km_max,
+                    tempo_utilizzo,
+                    tempo_max
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                """;
+
+        try (PreparedStatement aggiorna =
+                     connection.prepareStatement(aggiornaSql);
+             PreparedStatement inserisci =
+                     connection.prepareStatement(inserisciSql)) {
 
             for (Pezzo pezzo : legends.getTuttiPezzi()) {
-                inserisci.setInt(1, numeroMacchina);
-                inserisci.setDouble(2, pezzo.getKmAttuali());
-                inserisci.setInt(3, pezzo.getTempoAttuale());
-                inserisci.setDouble(4, pezzo.getKmMax());
-                inserisci.setInt(5, pezzo.getTempoMax());
-                inserisci.setString(6, pezzo.getTipo().name());
-                inserisci.addBatch();
-            }
+                String tipoDatabase = convertiTipoPerDatabase(
+                        pezzo.getTipo()
+                );
 
-            inserisci.executeBatch();
+                aggiorna.setDouble(1, pezzo.getKmAttuali());
+                aggiorna.setDouble(2, pezzo.getKmMax());
+                aggiorna.setInt(3, pezzo.getTempoAttuale());
+                aggiorna.setInt(4, pezzo.getTempoMax());
+                aggiorna.setString(5, legends.getId());
+                aggiorna.setString(6, tipoDatabase);
+
+                int righeAggiornate = aggiorna.executeUpdate();
+
+                if (righeAggiornate == 0) {
+                    inserisci.setString(1, generaIdPezzo());
+                    inserisci.setString(2, tipoDatabase);
+                    inserisci.setString(3, legends.getId());
+                    inserisci.setDouble(4, pezzo.getKmAttuali());
+                    inserisci.setDouble(5, pezzo.getKmMax());
+                    inserisci.setInt(6, pezzo.getTempoAttuale());
+                    inserisci.setInt(7, pezzo.getTempoMax());
+                    inserisci.executeUpdate();
+                }
+            }
         }
     }
 
-    private int convertiId(String id) {
-        if (id == null || id.isBlank()) {
+    private Optional<TipoPezzo> convertiTipoDalDatabase(
+            String valoreDatabase) {
+
+        if (valoreDatabase == null || valoreDatabase.isBlank()) {
+            return Optional.empty();
+        }
+
+        String tipoDb = valoreDatabase
+                .trim()
+                .toLowerCase(Locale.ROOT);
+
+        List<String> nomiEnum = switch (tipoDb) {
+            case "motore" -> List.of("MOTORE");
+            case "freno", "freni" -> List.of("FRENO", "FRENI");
+            case "pneumatico", "pneumatici", "ruota", "gomme" ->
+                    List.of("RUOTA", "PNEUMATICO", "PNEUMATICI", "GOMME");
+            case "volante" -> List.of("VOLANTE");
+            default -> List.of(tipoDb.toUpperCase(Locale.ROOT));
+        };
+
+        for (String nomeEnum : nomiEnum) {
+            try {
+                return Optional.of(TipoPezzo.valueOf(nomeEnum));
+            } catch (IllegalArgumentException ignored) {
+                // Prova l'eventuale nome alternativo.
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    private String convertiTipoPerDatabase(TipoPezzo tipo) {
+        if (tipo == null) {
             throw new IllegalArgumentException(
-                    "Il numero della macchina non può essere vuoto"
+                    "Il tipo del pezzo non può essere null"
             );
         }
 
-        try {
-            return Integer.parseInt(id.trim());
-        } catch (NumberFormatException e) {
+        return switch (tipo.name()) {
+            case "MOTORE" -> "motore";
+            case "FRENO", "FRENI" -> "freno";
+            case "RUOTA", "PNEUMATICO", "PNEUMATICI", "GOMME" ->
+                    "pneumatico";
+            case "VOLANTE" -> "volante";
+            default -> tipo.name().toLowerCase(Locale.ROOT);
+        };
+    }
+
+    private String generaIdPezzo() {
+        return "PZ-" + UUID.randomUUID()
+                .toString()
+                .replace("-", "");
+    }
+
+    private String validaId(String id) {
+        if (id == null || id.isBlank()) {
             throw new IllegalArgumentException(
-                    "Il numero della macchina deve essere numerico: " + id,
-                    e
+                    "L'id della macchina non può essere vuoto"
             );
         }
+
+        return id.trim();
     }
 
     private void rollbackSilenzioso(Connection connection) {
         try {
             connection.rollback();
         } catch (SQLException ignored) {
-            // Mantiene l'eccezione originale.
+            // Conserva l'eccezione originale.
         }
     }
 }

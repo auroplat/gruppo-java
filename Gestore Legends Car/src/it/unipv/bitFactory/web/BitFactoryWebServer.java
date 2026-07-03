@@ -5,8 +5,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -15,6 +18,8 @@ import com.sun.net.httpserver.HttpServer;
 import it.unipv.bitFactory.controller.GestioneMagazzinoController;
 import it.unipv.bitFactory.controller.GestionePrenotazioniController;
 import it.unipv.bitFactory.controller.GestioneSessioniController;
+import it.unipv.bitFactory.thread.MagazzinoThread;
+import it.unipv.bitFactory.thread.UsuraPezziThread;
 import it.unipv.bitFactory.web.handler.MagazzinoHttpHandler;
 import it.unipv.bitFactory.web.handler.MacchineApiHttpHandler;
 import it.unipv.bitFactory.web.handler.PrenotazioniHttpHandler;
@@ -33,6 +38,8 @@ public final class BitFactoryWebServer {
             GestioneSessioniController sessioniController,
             GestioneMagazzinoController magazzinoController,
             GestionePrenotazioniController prenotazioniController,
+            UsuraPezziThread usuraPezziThread,
+            MagazzinoThread magazzinoThread,
             HtmlRenderer renderer) throws IOException {
 
         if (porta < 1 || porta > 65535) {
@@ -47,43 +54,20 @@ public final class BitFactoryWebServer {
             );
         }
 
-        if (sessioniController == null
-                || magazzinoController == null
-                || prenotazioniController == null
-                || renderer == null) {
-
-            throw new IllegalArgumentException(
-                    "Controller e renderer non possono essere null"
-            );
-        }
+        Objects.requireNonNull(sessioniController);
+        Objects.requireNonNull(magazzinoController);
+        Objects.requireNonNull(prenotazioniController);
+        Objects.requireNonNull(usuraPezziThread);
+        Objects.requireNonNull(magazzinoThread);
+        Objects.requireNonNull(renderer);
 
         this.porta = porta;
 
-        server = HttpServer.create(
-                new InetSocketAddress(porta),
-                0
-        );
-
+        server = HttpServer.create(new InetSocketAddress(porta), 0);
         threadPool = Executors.newFixedThreadPool(numeroThread);
 
-        /*
-         * HOME
-         *
-         * GET /
-         * restituisce il file:
-         *
-         * src/web/eventi.html
-         */
-        server.createContext(
-                "/",
-                this::gestisciHome
-        );
+        server.createContext("/", this::gestisciHome);
 
-        /*
-         * Consente anche di aprire direttamente:
-         *
-         * http://localhost:8080/eventi.html
-         */
         server.createContext(
                 "/eventi.html",
                 creaHandlerRisorsaStatica(
@@ -93,11 +77,6 @@ public final class BitFactoryWebServer {
                 )
         );
 
-        /*
-         * Pagina contenente il form di prenotazione.
-         *
-         * GET /prenotazione?evento=...&data=...&luogo=...
-         */
         server.createContext(
                 "/prenotazione",
                 creaHandlerRisorsaStatica(
@@ -107,9 +86,6 @@ public final class BitFactoryWebServer {
                 )
         );
 
-        /*
-         * File CSS usato da entrambe le pagine HTML.
-         */
         server.createContext(
                 "/styles.css",
                 creaHandlerRisorsaStatica(
@@ -119,9 +95,6 @@ public final class BitFactoryWebServer {
                 )
         );
 
-        /*
-         * Immagine di sfondo.
-         */
         server.createContext(
                 "/racing-bg.svg",
                 creaHandlerRisorsaStatica(
@@ -131,9 +104,6 @@ public final class BitFactoryWebServer {
                 )
         );
 
-        /*
-         * Rotte collegate ai controller applicativi.
-         */
         server.createContext(
                 "/api/macchine",
                 new MacchineApiHttpHandler(sessioniController)
@@ -142,27 +112,25 @@ public final class BitFactoryWebServer {
         server.createContext(
                 "/sessioni",
                 new SessioniHttpHandler(
-                        sessioniController,
+                        usuraPezziThread,
                         renderer
                 )
         );
 
-        server.createContext(
-                "/magazzino",
+        MagazzinoHttpHandler magazzinoHandler =
                 new MagazzinoHttpHandler(
                         magazzinoController,
                         renderer
+                );
+
+        server.createContext(
+                "/magazzino",
+                creaHandlerMagazzinoConThread(
+                        magazzinoHandler,
+                        magazzinoThread
                 )
         );
 
-        /*
-         * Il form presente in prenotazione.html esegue:
-         *
-         * POST /prenotazioni
-         *
-         * Questa richiesta viene ricevuta da
-         * PrenotazioniHttpHandler.
-         */
         server.createContext(
                 "/prenotazioni",
                 new PrenotazioniHttpHandler(
@@ -175,37 +143,57 @@ public final class BitFactoryWebServer {
     }
 
     /**
-     * Gestisce esclusivamente la Home del server.
+     * Le GET del magazzino restano sul pool HTTP.
+     * Le POST vengono eseguite realmente dal MagazzinoThread.
      */
+    private HttpHandler creaHandlerMagazzinoConThread(
+            MagazzinoHttpHandler delegate,
+            MagazzinoThread magazzinoThread) {
+
+        return exchange -> {
+            if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+                delegate.handle(exchange);
+                return;
+            }
+
+            try {
+                magazzinoThread.inviaModifica(
+                        "modifica magazzino " + exchange.getRequestURI(),
+                        () -> delegate.handle(exchange)
+                ).join();
+
+            } catch (CompletionException e) {
+                Throwable causa = e.getCause();
+
+                if (causa instanceof IOException erroreIo) {
+                    throw erroreIo;
+                }
+
+                if (causa instanceof RuntimeException erroreRuntime) {
+                    throw erroreRuntime;
+                }
+
+                throw new IOException(
+                        "Errore nel thread del magazzino",
+                        causa
+                );
+            }
+        };
+    }
+
     private void gestisciHome(HttpExchange exchange)
             throws IOException {
 
         String percorso = exchange.getRequestURI().getPath();
 
-        /*
-         * Il context "/" intercetta anche gli indirizzi non
-         * associati ad altri context.
-         *
-         * Per questo controlliamo che il percorso sia
-         * esattamente "/".
-         */
         if (!"/".equals(percorso)) {
-            inviaErrore(
-                    exchange,
-                    404,
-                    "Pagina non trovata"
-            );
+            inviaErrore(exchange, 404, "Pagina non trovata");
             return;
         }
 
         if (!"GET".equalsIgnoreCase(exchange.getRequestMethod())) {
             exchange.getResponseHeaders().set("Allow", "GET");
-
-            inviaErrore(
-                    exchange,
-                    405,
-                    "Metodo HTTP non consentito"
-            );
+            inviaErrore(exchange, 405, "Metodo HTTP non consentito");
             return;
         }
 
@@ -216,65 +204,36 @@ public final class BitFactoryWebServer {
         );
     }
 
-    /**
-     * Crea un handler per una risorsa statica.
-     */
     private HttpHandler creaHandlerRisorsaStatica(
             String percorsoHttp,
             String percorsoRisorsa,
             String contentType) {
 
         return exchange -> {
-
-            String percorsoRichiesto =
-                    exchange.getRequestURI().getPath();
+            String percorsoRichiesto = exchange.getRequestURI().getPath();
 
             if (!percorsoHttp.equals(percorsoRichiesto)) {
-                inviaErrore(
-                        exchange,
-                        404,
-                        "Risorsa non trovata"
-                );
+                inviaErrore(exchange, 404, "Risorsa non trovata");
                 return;
             }
 
-            if (!"GET".equalsIgnoreCase(
-                    exchange.getRequestMethod())) {
-
-                exchange.getResponseHeaders().set(
-                        "Allow",
-                        "GET"
-                );
-
-                inviaErrore(
-                        exchange,
-                        405,
-                        "Metodo HTTP non consentito"
-                );
+            if (!"GET".equalsIgnoreCase(exchange.getRequestMethod())) {
+                exchange.getResponseHeaders().set("Allow", "GET");
+                inviaErrore(exchange, 405, "Metodo HTTP non consentito");
                 return;
             }
 
-            inviaRisorsa(
-                    exchange,
-                    percorsoRisorsa,
-                    contentType
-            );
+            inviaRisorsa(exchange, percorsoRisorsa, contentType);
         };
     }
 
-    /**
-     * Legge un file presente nelle risorse del progetto
-     * e lo invia al browser.
-     */
     private void inviaRisorsa(
             HttpExchange exchange,
             String percorsoRisorsa,
             String contentType) throws IOException {
 
-        try (InputStream input =
-                     BitFactoryWebServer.class.getResourceAsStream(
-                             percorsoRisorsa
-                     )) {
+        try (InputStream input = BitFactoryWebServer.class
+                .getResourceAsStream(percorsoRisorsa)) {
 
             if (input == null) {
                 inviaErrore(
@@ -287,73 +246,54 @@ public final class BitFactoryWebServer {
 
             byte[] contenuto = input.readAllBytes();
 
-            exchange.getResponseHeaders().set(
-                    "Content-Type",
-                    contentType
-            );
+            exchange.getResponseHeaders().set("Content-Type", contentType);
+            exchange.getResponseHeaders().set("Cache-Control", "no-cache");
+            exchange.sendResponseHeaders(200, contenuto.length);
 
-            /*
-             * Durante lo sviluppo evita che il browser mostri
-             * una vecchia versione dei file HTML o CSS.
-             */
-            exchange.getResponseHeaders().set(
-                    "Cache-Control",
-                    "no-cache"
-            );
-
-            exchange.sendResponseHeaders(
-                    200,
-                    contenuto.length
-            );
-
-            try (OutputStream output =
-                         exchange.getResponseBody()) {
-
+            try (OutputStream output = exchange.getResponseBody()) {
                 output.write(contenuto);
             }
         }
     }
 
-    /**
-     * Invia una risposta testuale di errore.
-     */
     private void inviaErrore(
             HttpExchange exchange,
             int codice,
             String messaggio) throws IOException {
 
-        byte[] contenuto =
-                messaggio.getBytes(StandardCharsets.UTF_8);
+        byte[] contenuto = messaggio.getBytes(StandardCharsets.UTF_8);
 
         exchange.getResponseHeaders().set(
                 "Content-Type",
                 "text/plain; charset=UTF-8"
         );
 
-        exchange.sendResponseHeaders(
-                codice,
-                contenuto.length
-        );
+        exchange.sendResponseHeaders(codice, contenuto.length);
 
-        try (OutputStream output =
-                     exchange.getResponseBody()) {
-
+        try (OutputStream output = exchange.getResponseBody()) {
             output.write(contenuto);
         }
     }
 
     public void avvia() {
         server.start();
-
         System.out.println(
-                "Server BitFactory avviato su http://localhost:"
-                        + porta
+                "Server BitFactory avviato su http://localhost:" + porta
         );
     }
 
     public void arresta() {
         server.stop(0);
         threadPool.shutdown();
+
+        try {
+            if (!threadPool.awaitTermination(5, TimeUnit.SECONDS)) {
+                threadPool.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            threadPool.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
 
         System.out.println("Server BitFactory arrestato");
     }

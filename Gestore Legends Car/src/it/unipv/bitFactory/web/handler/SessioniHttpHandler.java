@@ -3,30 +3,38 @@ package it.unipv.bitFactory.web.handler;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.CompletionException;
 
 import com.sun.net.httpserver.HttpExchange;
 
-import it.unipv.bitFactory.controller.GestioneSessioniController;
 import it.unipv.bitFactory.model.sessioni.Gara;
 import it.unipv.bitFactory.model.sessioni.Sessione;
 import it.unipv.bitFactory.model.sessioni.Test;
+import it.unipv.bitFactory.thread.UsuraPezziThread;
 import it.unipv.bitFactory.web.view.HtmlRenderer;
 
 public final class SessioniHttpHandler extends BaseHttpHandler {
 
-    private final GestioneSessioniController controller;
+    private final UsuraPezziThread usuraPezziThread;
     private final HtmlRenderer renderer;
 
     public SessioniHttpHandler(
-            GestioneSessioniController controller,
+            UsuraPezziThread usuraPezziThread,
             HtmlRenderer renderer) {
 
-        this.controller = Objects.requireNonNull(controller);
+        this.usuraPezziThread = Objects.requireNonNull(usuraPezziThread);
         this.renderer = Objects.requireNonNull(renderer);
     }
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
+        System.out.printf(
+                "[%s] %s %s%n",
+                Thread.currentThread().getName(),
+                exchange.getRequestMethod(),
+                exchange.getRequestURI()
+        );
+
         if (isGet(exchange)) {
             mostraSessioni(exchange);
             return;
@@ -78,7 +86,13 @@ public final class SessioniHttpHandler extends BaseHttpHandler {
                     tempoPassato
             );
 
-            controller.registraSessione(idMacchina, sessione);
+            attendiCompletamento(
+                    usuraPezziThread.inviaAggiornamento(
+                            idMacchina,
+                            sessione
+                    )
+            );
+
             redirect(exchange, "/sessioni?success=1");
 
         } catch (IllegalArgumentException e) {
@@ -92,6 +106,30 @@ public final class SessioniHttpHandler extends BaseHttpHandler {
                     renderer.renderErrore(
                             "Errore durante la registrazione della sessione"
                     )
+            );
+        }
+    }
+
+    private void attendiCompletamento(
+            java.util.concurrent.CompletableFuture<Void> risultato) {
+
+        try {
+            risultato.join();
+
+        } catch (CompletionException e) {
+            Throwable causa = e.getCause();
+
+            if (causa instanceof IllegalArgumentException erroreInput) {
+                throw erroreInput;
+            }
+
+            if (causa instanceof RuntimeException erroreRuntime) {
+                throw erroreRuntime;
+            }
+
+            throw new RuntimeException(
+                    "Scrittura della sessione non riuscita",
+                    causa
             );
         }
     }

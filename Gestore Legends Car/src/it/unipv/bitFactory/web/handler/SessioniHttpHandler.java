@@ -63,6 +63,7 @@ public final class SessioniHttpHandler extends BaseHttpHandler {
 
     private void creaSessione(HttpExchange exchange) throws IOException {
         try {
+            // 1. Estrae i dati dal form web
             Map<String, String> form = leggiParametriForm(exchange);
 
             String idMacchina = parametroObbligatorio(form, "macchina");
@@ -70,14 +71,14 @@ public final class SessioniHttpHandler extends BaseHttpHandler {
             String luogo = parametroObbligatorio(form, "luogo");
 
             double kmPercorsi = Double.parseDouble(
-                    parametroObbligatorio(form, "kmPercorsi")
-                            .replace(',', '.')
+                    parametroObbligatorio(form, "kmPercorsi").replace(',', '.')
             );
 
             int tempoPassato = Integer.parseInt(
                     parametroObbligatorio(form, "tempoPassato")
             );
 
+            // 2. Crea l'oggetto Sessione (Gara o Test)
             Sessione sessione = creaOggettoSessione(
                     form,
                     tipo,
@@ -86,50 +87,25 @@ public final class SessioniHttpHandler extends BaseHttpHandler {
                     tempoPassato
             );
 
-            attendiCompletamento(
-                    usuraPezziThread.inviaAggiornamento(
-                            idMacchina,
-                            sessione
-                    )
-            );
+            // 3. LA GRANDE DIFFERENZA: Fire and Forget!
+            // Inseriamo la richiesta nella coda del thread. Il thread farà notifyAll() 
+            // e inizierà a lavorare, ma noi NON lo aspettiamo.
+            usuraPezziThread.inviaAggiornamento(idMacchina, sessione);
 
+            // 4. Rispondiamo immediatamente all'utente che l'operazione è presa in carico
             redirect(exchange, "/sessioni?success=1");
 
         } catch (IllegalArgumentException e) {
+            // Gestione degli errori di input dell'utente (es. formattazione sbagliata)
             sendHtml(exchange, 400, renderer.renderErrore(e.getMessage()));
 
         } catch (RuntimeException e) {
+            // Gestione di altri errori imprevisti
             e.printStackTrace();
             sendHtml(
                     exchange,
                     500,
-                    renderer.renderErrore(
-                            "Errore durante la registrazione della sessione"
-                    )
-            );
-        }
-    }
-
-    private void attendiCompletamento(
-            java.util.concurrent.CompletableFuture<Void> risultato) {
-
-        try {
-            risultato.join();
-
-        } catch (CompletionException e) {
-            Throwable causa = e.getCause();
-
-            if (causa instanceof IllegalArgumentException erroreInput) {
-                throw erroreInput;
-            }
-
-            if (causa instanceof RuntimeException erroreRuntime) {
-                throw erroreRuntime;
-            }
-
-            throw new RuntimeException(
-                    "Scrittura della sessione non riuscita",
-                    causa
+                    renderer.renderErrore("Errore imprevisto durante la registrazione")
             );
         }
     }

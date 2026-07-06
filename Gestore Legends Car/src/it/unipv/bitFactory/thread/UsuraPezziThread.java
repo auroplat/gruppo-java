@@ -2,166 +2,73 @@ package it.unipv.bitFactory.thread;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
 
 import it.unipv.bitFactory.controller.GestioneSessioniController;
 import it.unipv.bitFactory.model.sessioni.Sessione;
 
-/**
- * Thread esplicito che registra le sessioni e aggiorna l'usura
- * della macchina e dei suoi pezzi.
- *
- * I thread HTTP producono richieste; questo thread le consuma.
- */
-public final class UsuraPezziThread extends Thread {
+public class UsuraPezziThread extends Thread {
 
     private final GestioneSessioniController controller;
-    private final DatabaseWriteLock databaseWriteLock;
+    private final DatabaseWriteLock lock;
+    
+    // Usiamo una normale coda e la proteggiamo noi con 'synchronized'
     private final Deque<RichiestaUsura> coda = new ArrayDeque<>();
 
-    private boolean accettaRichieste = true;
-
-    public UsuraPezziThread(
-            GestioneSessioniController controller,
-            DatabaseWriteLock databaseWriteLock) {
-
+    public UsuraPezziThread(GestioneSessioniController controller, DatabaseWriteLock lock) {
         super("thread-usura-pezzi");
-
-        this.controller = Objects.requireNonNull(
-                controller,
-                "Il controller delle sessioni non può essere null"
-        );
-
-        this.databaseWriteLock = Objects.requireNonNull(
-                databaseWriteLock,
-                "Il lock del database non può essere null"
-        );
+        this.controller = controller;
+        this.lock = lock;
     }
 
-    /**
-     * Metodo synchronized chiamato dai thread HTTP.
-     * Protegge la coda condivisa e risveglia il worker.
-     */
-    public synchronized CompletableFuture<Void> inviaAggiornamento(
-            String idMacchina,
-            Sessione sessione) {
-
-        if (!accettaRichieste) {
-            throw new IllegalStateException(
-                    "Il thread di aggiornamento usura è in arresto"
-            );
-        }
-
-        if (idMacchina == null || idMacchina.isBlank()) {
-            throw new IllegalArgumentException(
-                    "L'id della macchina non può essere vuoto"
-            );
-        }
-
-        Objects.requireNonNull(sessione, "La sessione non può essere null");
-
-        CompletableFuture<Void> risultato = new CompletableFuture<>();
-
-        coda.addLast(new RichiestaUsura(
-                idMacchina.trim(),
-                sessione,
-                risultato
-        ));
-
-        System.out.printf(
-                "[%s] richiesta usura accodata per %s; coda=%d%n",
-                Thread.currentThread().getName(),
-                idMacchina,
-                coda.size()
-        );
-
-        notifyAll();
-        return risultato;
+    // 1. IL PRODUTTORE (Chiamato dai thread HTTP)
+    // 'synchronized' impedisce che due thread HTTP scrivano nella coda nello stesso istante
+    public synchronized void inviaAggiornamento(String idMacchina, Sessione sessione) {
+        // Aggiungiamo la richiesta in fondo alla coda
+        coda.addLast(new RichiestaUsura(idMacchina, sessione));
+        System.out.println("Richiesta accodata per la macchina: " + idMacchina);
+        
+        // IL GRILLETTO: Svegliamo il thread in background che stava dormendo
+        notifyAll(); 
     }
 
-    private synchronized RichiestaUsura attendiRichiesta()
-            throws InterruptedException {
-
-        while (coda.isEmpty() && accettaRichieste) {
-            System.out.println("[thread-usura-pezzi] WAITING");
-            wait();
+    // 2. IL MECCANISMO DI ATTESA (Chiamato solo dal ciclo run)
+    // Anche questo deve essere 'synchronized' per poter usare wait() in modo sicuro
+    private synchronized RichiestaUsura attendiRichiesta() throws InterruptedException {
+        // Finché la coda è vuota, il thread si mette a dormire
+        while (coda.isEmpty()) {
+            wait(); // Rilascia il blocco e aspetta che qualcuno chiami notifyAll()
         }
-
-        if (coda.isEmpty()) {
-            return null;
-        }
-
+        // Quando si sveglia (e la coda non è vuota), preleva il primo elemento
         return coda.removeFirst();
     }
 
+    // 3. IL CONSUMATORE (Il ciclo vitale del Thread in background)
     @Override
     public void run() {
-        System.out.println("[thread-usura-pezzi] avviato");
+        System.out.println("Thread usura avviato!");
 
         try {
             while (true) {
+                // Prende la richiesta (o si addormenta automaticamente se non ce ne sono)
                 RichiestaUsura richiesta = attendiRichiesta();
 
-                if (richiesta == null) {
-                    break;
-                }
-
-                eseguiRichiesta(richiesta);
+                // Esegue la scrittura usando il Lock del database per SQLite
+                lock.esegui("Aggiornamento usura", () -> {
+                    controller.registraSessione(richiesta.idMacchina(), richiesta.sessione());
+                });
             }
-
         } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            completaRichiesteRimanentiConErrore(
-                    new IllegalStateException(
-                            "Thread usura interrotto prima del completamento",
-                            e
-                    )
-            );
-
-        } finally {
-            System.out.println("[thread-usura-pezzi] terminato");
-        }
-    }
-
-    private void eseguiRichiesta(RichiestaUsura richiesta) {
-        try {
-            databaseWriteLock.esegui(
-                    "aggiornamento usura macchina " + richiesta.idMacchina(),
-                    () -> controller.registraSessione(
-                            richiesta.idMacchina(),
-                            richiesta.sessione()
-                    )
-            );
-
-            richiesta.risultato().complete(null);
-
+            // Se spegniamo il server, il thread si interrompe pacificamente
+            System.out.println("Thread usura interrotto e terminato.");
         } catch (Exception e) {
-            richiesta.risultato().completeExceptionally(e);
+            System.err.println("Errore durante la scrittura: " + e.getMessage());
         }
     }
 
-    /**
-     * Non accetta nuove richieste, ma termina quelle già in coda.
-     */
+    // Un record privato per impacchettare semplicemente i dati in coda
+    private record RichiestaUsura(String idMacchina, Sessione sessione) {}
+    
     public synchronized void arrestaThread() {
-        accettaRichieste = false;
         notifyAll();
-    }
-
-    private synchronized void completaRichiesteRimanentiConErrore(
-            RuntimeException errore) {
-
-        while (!coda.isEmpty()) {
-            coda.removeFirst()
-                    .risultato()
-                    .completeExceptionally(errore);
-        }
-    }
-
-    private record RichiestaUsura(
-            String idMacchina,
-            Sessione sessione,
-            CompletableFuture<Void> risultato) {
     }
 }

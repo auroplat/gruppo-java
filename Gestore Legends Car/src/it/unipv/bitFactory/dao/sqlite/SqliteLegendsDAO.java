@@ -20,13 +20,6 @@ import it.unipv.bitFactory.model.pezzi.Pezzo;
 import it.unipv.bitFactory.model.pezzi.TipoPezzo;
 import it.unipv.bitFactory.model.veicoli.Legends;
 
-/**
- * Implementazione SQLite di LegendsDAO per lo schema:
- *
- * macchine(id_macchina, km_macchina)
- * pezzo(id_pezzo, tipo, id_macchina, km, km_max,
- *       tempo_utilizzo, tempo_max)
- */
 public final class SqliteLegendsDAO implements LegendsDAO {
 
     private final String jdbcUrl;

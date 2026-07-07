@@ -22,40 +22,15 @@
         <section class="session-intro" aria-labelledby="page-title">
             <span class="eyebrow">Gestione sessioni</span>
             <h1 id="page-title">Registra ogni giro.</h1>
-            <p>
-                Seleziona una Legends Car, scegli il tipo di sessione
-                e inserisci i dati rilevati in pista.
-            </p>
 
-            <ol class="steps" aria-label="Fasi di inserimento">
-                <li class="step active" data-step="1">
-                    <span>01</span>
-                    <div><strong>Veicoli</strong><small>Scegli una macchine</small></div>
-                </li>
-                <li class="step" data-step="2">
-                    <span>02</span>
-                    <div><strong>Sessione</strong><small>Test oppure gara</small></div>
-                </li>
-                <li class="step" data-step="3">
-                    <span>03</span>
-                    <div><strong>Dati</strong><small>Compila e registra</small></div>
-                </li>
-            </ol>
-
-            <div class="selection-summary" aria-live="polite">
-                <span>Selezione corrente</span>
-                <strong id="selection-label">Nessuna macchina selezionata</strong>
-                <p id="selection-detail">SSeleziona una macchina per continuare.</p>
-            </div>
         </section>
 
         <section class="session-panel" aria-labelledby="form-title">
             <div class="panel-heading">
                 <div>
-                    <span class="panel-kicker">Nuova registrazione</span>
+                    <span class="panel-kicker"></span>
                     <h2 id="form-title">Dati della sessione</h2>
                 </div>
-                <span class="session-badge" id="session-badge">TEST</span>
             </div>
 
             <form id="session-form" action="/sessioni" method="post" novalidate>
@@ -178,13 +153,10 @@
         const raceFields = document.getElementById("race-fields");
         const descriptionInput = document.getElementById("descrizione");
         const positionInput = document.getElementById("posizione");
-        const selectionLabel = document.getElementById("selection-label");
-        const selectionDetail = document.getElementById("selection-detail");
         const carsError = document.getElementById("cars-error");
-        const badge = document.getElementById("session-badge");
         const confirmation = document.getElementById("confirmation");
         const confirmationText = document.getElementById("confirmation-text");
-        const steps = [...document.querySelectorAll(".step")];
+
 
         let cars = [];
 
@@ -282,27 +254,9 @@
             carsError.classList.remove("visible");
 
             if (!selectedId) {
-                selectionLabel.textContent =
-                    "Nessuna macchina selezionata";
-
-                selectionDetail.textContent =
-                cars.length === 0
-                ? "Non ci sono veicoli selezionabili."
-                : "Seleziona una macchina per continuare.";
-
-                steps[0].classList.add("active");
-                steps[1].classList.remove("active");
                 return;
             }
 
-            selectionLabel.textContent =
-                `Macchina n. ${selectedId}`;
-
-            selectionDetail.textContent =
-                `Numero selezionato: ${selectedId}`;
-
-            steps[0].classList.remove("active");
-            steps[1].classList.add("active");
         }       
 
         function updateType() {
@@ -313,15 +267,8 @@
             raceFields.classList.toggle("hidden", isTest);
             descriptionInput.required = isTest;
             positionInput.required = !isTest;
-            badge.textContent = type;
-            badge.classList.toggle("race", !isTest);
-            steps.forEach(step => step.classList.remove("active"));
 
-            if (!selectedCarId()) {
-                steps[0].classList.add("active");
-            } else {
-                steps[2].classList.add("active");
-            }
+
 
             confirmation.classList.remove("visible");
         }

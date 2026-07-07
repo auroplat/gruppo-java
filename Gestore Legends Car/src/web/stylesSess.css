@@ -162,7 +162,7 @@ h1 {
 .step strong { font-size: 0.86rem; }
 .step small { margin-top: 3px; color: var(--muted); font-size: 0.72rem; }
 
-.selection-summary {
+.slection-summary {
     margin-top: 30px;
     padding: 18px;
     border: 1px solid var(--border);
@@ -213,6 +213,8 @@ h1 {
     margin: 6px 0 0;
     font-size: 1.32rem;
     letter-spacing: -0.025em;
+    margin-top: 20px;
+    
 }
 
 .session-badge {

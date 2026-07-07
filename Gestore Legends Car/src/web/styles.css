@@ -506,3 +506,7 @@ h1 {
         grid-column: auto;
     }
 }
+
+#form-title {
+    transform: translateY(20px) !important;
+}

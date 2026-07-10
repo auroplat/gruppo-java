@@ -1,15 +1,15 @@
 package it.unipv.bitFactory.controller;
 
-import it.unipv.bitFactory.prenotazioni.Cliente;
-import it.unipv.bitFactory.prenotazioni.Evento;
-import it.unipv.bitFactory.prenotazioni.SistemaPrenotazioni;
-import it.unipv.bitFactory.veicoli.Legends;
+import it.unipv.bitFactory.model.persona.Cliente;
+import it.unipv.bitFactory.model.prenotazioni.Evento;
+import it.unipv.bitFactory.service.SistemaPrenotazioni;
+import it.unipv.bitFactory.model.veicoli.*;
 
 public class GestionePrenotazioniController {
 
     private SistemaPrenotazioni sistema;
 
-    public PrenotazioneController() {
+    public GestionePrenotazioniController() {
 
         sistema = new SistemaPrenotazioni();
     }

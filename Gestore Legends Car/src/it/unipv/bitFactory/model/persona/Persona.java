@@ -1,4 +1,4 @@
-package it.unipv.bitFactory.utenti;
+package it.unipv.bitFactory.model.persona;
 
 public abstract class Persona {
 

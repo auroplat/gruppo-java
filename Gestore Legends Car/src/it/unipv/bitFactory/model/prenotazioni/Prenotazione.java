@@ -1,9 +1,9 @@
 //Creazione della prenotazione 
 
 
-package it.unipv.bitFactory.prenotazioni;
+package it.unipv.bitFactory.model.prenotazioni;
 
-import it.unipv.bitFactory.veicoli.Legends;
+import it.unipv.bitFactory.model.veicoli.Legends;
 
 public class Prenotazione {
 

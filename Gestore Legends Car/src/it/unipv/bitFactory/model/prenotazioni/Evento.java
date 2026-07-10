@@ -1,4 +1,4 @@
-package it.unipv.bitFactory.prenotazioni;
+package it.unipv.bitFactory.model.prenotazioni;
 
 public class Evento {
 

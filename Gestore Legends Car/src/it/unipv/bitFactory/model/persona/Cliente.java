@@ -1,6 +1,6 @@
-package it.unipv.bitFactory.prenotazioni;
+package it.unipv.bitFactory.model.persona;
 
-import it.unipv.bitFactory.utenti.Persona;
+import it.unipv.bitFactory.model.persona.Persona;
 
 public class Cliente extends Persona {
 

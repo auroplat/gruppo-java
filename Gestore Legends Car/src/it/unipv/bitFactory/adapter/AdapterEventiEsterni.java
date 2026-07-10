@@ -1,4 +1,5 @@
 package it.unipv.bitFactory.adapter;
+import it.unipv.bitFactory.model.prenotazioni.Evento;
 
 public class AdapterEventiEsterni {
 

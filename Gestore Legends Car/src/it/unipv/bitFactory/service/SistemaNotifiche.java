@@ -1,4 +1,7 @@
-package it.unipv.bitFactory.prenotazioni;
+package it.unipv.bitFactory.service;
+
+import it.unipv.bitFactory.model.persona.Cliente;
+import it.unipv.bitFactory.model.prenotazioni.Evento;
 
 public class SistemaNotifiche {
 

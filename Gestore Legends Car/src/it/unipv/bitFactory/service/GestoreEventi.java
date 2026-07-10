@@ -1,9 +1,10 @@
-package it.unipv.bitFactory.prenotazioni;
+package it.unipv.bitFactory.service;
 
-import it.unipv.bitFactory.dao.EventoDAO;
-
+import it.unipv.bitFactory.dao.csv.EventoDAO;
+import it.unipv.bitFactory.model.prenotazioni.Evento;
 import java.util.Collections;
 import java.util.List;
+
 
 public class GestoreEventi {
 

@@ -1,6 +1,6 @@
 package it.unipv.bitFactory.dao.csv;
 
-import it.unipv.bitFactory.prenotazioni.Evento;
+import it.unipv.bitFactory.model.prenotazioni.Evento;
 
 import java.io.BufferedReader;
 import java.io.FileReader;

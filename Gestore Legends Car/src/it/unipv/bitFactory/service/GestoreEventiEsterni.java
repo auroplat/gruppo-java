@@ -1,10 +1,13 @@
-package it.unipv.bitFactory.prenotazioni;
+package it.unipv.bitFactory.service;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import it.unipv.bitFactory.model.prenotazioni.Evento;
+import it.unipv.bitFactory.adapter.AdapterEventiEsterni;
 
 public class GestoreEventiEsterni {
 

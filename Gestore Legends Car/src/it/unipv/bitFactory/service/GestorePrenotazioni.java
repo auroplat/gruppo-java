@@ -1,8 +1,10 @@
-package it.unipv.bitFactory.prenotazioni;
+package it.unipv.bitFactory.service;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import it.unipv.bitFactory.model.prenotazioni.Prenotazione;
 
 public class GestorePrenotazioni {
 

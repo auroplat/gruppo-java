@@ -11,4 +11,14 @@ public class SistemaNotifiche {
                 evento.getNomeEvento()
         );
     }
+
+    public void inviaAnnullamento(Cliente cliente, Evento evento) {
+
+        System.out.println(
+                "Annullamento inviato a " +
+                cliente.getEmail() +
+                " per l'evento " +
+                evento.getNomeEvento()
+        );
+    }
 }

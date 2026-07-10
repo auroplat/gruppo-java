@@ -5,7 +5,7 @@ import it.unipv.bitFactory.prenotazioni.Evento;
 import it.unipv.bitFactory.prenotazioni.SistemaPrenotazioni;
 import it.unipv.bitFactory.veicoli.Legends;
 
-public class PrenotazioneController {
+public class GestionePrenotazioniController {
 
     private SistemaPrenotazioni sistema;
 

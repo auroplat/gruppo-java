@@ -1,4 +1,4 @@
-package it.unipv.bitFactory.dao;
+package it.unipv.bitFactory.dao.csv;
 
 import it.unipv.bitFactory.prenotazioni.Evento;
 

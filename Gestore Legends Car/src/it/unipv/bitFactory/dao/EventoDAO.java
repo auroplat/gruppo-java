@@ -1,19 +1,21 @@
 package it.unipv.bitFactory.dao;
 
 import java.util.List;
-import java.util.Optional;
 
 import it.unipv.bitFactory.model.prenotazioni.Evento;
 
 public interface EventoDAO {
 
-    List<Evento> trovaTutti();
+    List<Evento> caricaEventi();
 
-    Optional<Evento> trovaPerNome(String nomeEvento);
+    Evento cercaEvento(String nome);
 
-    void salva(Evento evento);
+    boolean aggiungiEvento(Evento evento);
 
-    boolean aggiornaPosti(String nomeEvento, int nuoviPosti);
+    boolean eliminaEvento(String nome);
 
-    boolean elimina(String nomeEvento);
+    boolean aggiornaPosti(
+            String nome,
+            int nuoviPosti
+    );
 }

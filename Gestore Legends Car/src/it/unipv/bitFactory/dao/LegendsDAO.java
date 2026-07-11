@@ -14,4 +14,5 @@ public interface LegendsDAO {
     List<Legends> trovaTutte();
 
     void elimina(String id);
+    
 }

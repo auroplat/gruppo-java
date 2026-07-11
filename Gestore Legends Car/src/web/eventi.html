@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Eventi racing e prenotazioni BitFactory">
-    <title>BitFactory | Upcoming Events</title>
-    <link rel="stylesheet" href="/styles.css">
+    <meta name="description" content="Gestione eventi racing BitFactory">
+    <title>BitFactory | Gestione eventi</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <header class="page-shell topbar">
@@ -13,109 +13,259 @@
             <span class="brand-mark">B</span>
             <span>BitFactory</span>
         </a>
-        <a class="topbar-link" href="#upcoming-events">Upcoming events</a>
+        <a class="topbar-link" href="#eventi">Eventi dal database</a>
     </header>
 
     <main class="page-shell hero">
         <section class="hero-copy" aria-labelledby="page-title">
-            <span class="eyebrow">Legends racing experience</span>
-            <h1 id="page-title">Vivi la pista.<br>Prenota il tuo posto.</h1>
+            <span class="eyebrow">Gestione eventi</span>
+            <h1 id="page-title">Eventi sempre aggiornati.</h1>
             <p>
-                Scegli uno dei prossimi eventi, controlla data e circuito e completa
-                la prenotazione in pochi passaggi.
+                L'elenco viene caricato dal database quando apri la pagina.
+                Se aggiungi o elimini un evento dal database, ricarica la pagina
+                per vedere la lista aggiornata.
             </p>
 
-            <div class="hero-stats" aria-label="Dati principali">
+            <div class="hero-stats" aria-label="Dati principali sugli eventi">
                 <div class="stat">
-                    <strong>04</strong>
-                    <span>eventi disponibili</span>
+                    <strong id="event-count">—</strong>
+                    <span>eventi caricati</span>
                 </div>
                 <div class="stat">
-                    <strong>12</strong>
-                    <span>Legends Cars</span>
+                    <strong id="seat-count">—</strong>
+                    <span>posti disponibili</span>
                 </div>
                 <div class="stat">
-                    <strong>100%</strong>
-                    <span>adrenalina</span>
+                    <strong id="next-event">—</strong>
+                    <span>prossima data</span>
                 </div>
             </div>
         </section>
 
-        <section class="events-panel" id="upcoming-events" aria-labelledby="events-title">
+        <section class="events-panel" id="eventi" aria-labelledby="events-title">
             <div class="panel-heading">
                 <div>
-                    <h2 id="events-title">Upcoming events</h2>
-                    <p>Seleziona l'evento a cui vuoi partecipare.</p>
+                    <h2 id="events-title">Eventi disponibili</h2>
+                    <p id="events-status" role="status" aria-live="polite">
+                        Caricamento eventi dal database…
+                    </p>
                 </div>
-                <span class="live-dot">Disponibili</span>
+                <span class="source-badge">Database</span>
             </div>
 
-            <div class="events-list">
-                <article class="event-card">
-                    <time class="event-date" datetime="2026-07-05">
-                        <strong>05</strong>
-                        <span>Lug</span>
-                    </time>
-                    <div class="event-info">
-                        <h3>Track Day — Monza</h3>
-                        <div class="event-meta">
-                            <span>Autodromo di Monza</span>
-                            <span>09:00</span>
-                            <span>8 posti</span>
-                        </div>
-                    </div>
-                    <a class="reserve-button" href="/prenotazione?evento=Track%20Day%20%E2%80%94%20Monza&data=5%20luglio%202026&luogo=Autodromo%20di%20Monza">Prenota</a>
-                </article>
-
-                <article class="event-card">
-                    <time class="event-date" datetime="2026-07-19">
-                        <strong>19</strong>
-                        <span>Lug</span>
-                    </time>
-                    <div class="event-info">
-                        <h3>Legends Sprint — Varano</h3>
-                        <div class="event-meta">
-                            <span>Autodromo di Varano</span>
-                            <span>10:30</span>
-                            <span>5 posti</span>
-                        </div>
-                    </div>
-                    <a class="reserve-button" href="/prenotazione?evento=Legends%20Sprint%20%E2%80%94%20Varano&data=19%20luglio%202026&luogo=Autodromo%20di%20Varano">Prenota</a>
-                </article>
-
-                <article class="event-card">
-                    <time class="event-date" datetime="2026-08-02">
-                        <strong>02</strong>
-                        <span>Ago</span>
-                    </time>
-                    <div class="event-info">
-                        <h3>Night Race — Franciacorta</h3>
-                        <div class="event-meta">
-                            <span>Porsche Experience Center</span>
-                            <span>18:00</span>
-                            <span>11 posti</span>
-                        </div>
-                    </div>
-                    <a class="reserve-button" href="/prenotazione?evento=Night%20Race%20%E2%80%94%20Franciacorta&data=2%20agosto%202026&luogo=Porsche%20Experience%20Center">Prenota</a>
-                </article>
-
-                <article class="event-card">
-                    <time class="event-date" datetime="2026-08-23">
-                        <strong>23</strong>
-                        <span>Ago</span>
-                    </time>
-                    <div class="event-info">
-                        <h3>Race Academy — Cremona</h3>
-                        <div class="event-meta">
-                            <span>Cremona Circuit</span>
-                            <span>09:30</span>
-                            <span>6 posti</span>
-                        </div>
-                    </div>
-                    <a class="reserve-button" href="/prenotazione?evento=Race%20Academy%20%E2%80%94%20Cremona&data=23%20agosto%202026&luogo=Cremona%20Circuit">Prenota</a>
-                </article>
+            <div class="events-list" id="events-list" aria-live="polite">
+                <div class="events-message">Caricamento in corso…</div>
             </div>
         </section>
     </main>
+
+    <script>
+        const EVENTI_ENDPOINT = "/api/eventi";
+
+        const eventsList = document.getElementById("events-list");
+        const eventsStatus = document.getElementById("events-status");
+        const eventCount = document.getElementById("event-count");
+        const seatCount = document.getElementById("seat-count");
+        const nextEvent = document.getElementById("next-event");
+
+        const monthLabels = ["Gen", "Feb", "Mar", "Apr", "Mag", "Giu", "Lug", "Ago", "Set", "Ott", "Nov", "Dic"];
+
+        function normalizeEvent(rawEvent) {
+            const nomeEvento = String(
+                rawEvent.nomeEvento ??
+                rawEvent.nome_evento ??
+                rawEvent.nome ??
+                rawEvent.evento ??
+                ""
+            ).trim();
+
+            const dataEvento = String(
+                rawEvent.dataEvento ??
+                rawEvent.data_evento ??
+                rawEvent.data ??
+                ""
+            ).trim();
+
+            const postiDisponibili = Number(
+                rawEvent.postiDisponibili ??
+                rawEvent.posti_disponibili ??
+                rawEvent.posti ??
+                0
+            );
+
+            if (!nomeEvento || !dataEvento) {
+                throw new Error("Un evento ricevuto dal server non contiene nome o data");
+            }
+
+            return {
+                nomeEvento,
+                dataEvento,
+                postiDisponibili: Number.isFinite(postiDisponibili) ? postiDisponibili : 0
+            };
+        }
+
+        function parseDateParts(value) {
+            const isoMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+            if (isoMatch) {
+                return {
+                    year: Number(isoMatch[1]),
+                    month: Number(isoMatch[2]),
+                    day: Number(isoMatch[3]),
+                    sortable: `${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}`
+                };
+            }
+
+            const italianMatch = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(value);
+            if (italianMatch) {
+                const day = Number(italianMatch[1]);
+                const month = Number(italianMatch[2]);
+                const year = Number(italianMatch[3]);
+                return {
+                    year,
+                    month,
+                    day,
+                    sortable: `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`
+                };
+            }
+
+            return null;
+        }
+
+        function formatShortDate(value) {
+            const parts = parseDateParts(value);
+            if (!parts) {
+                return { day: "--", month: "---", datetime: value };
+            }
+
+            return {
+                day: String(parts.day).padStart(2, "0"),
+                month: monthLabels[parts.month - 1] ?? "---",
+                datetime: parts.sortable
+            };
+        }
+
+        function formatLongDate(value) {
+            const parts = parseDateParts(value);
+            if (!parts) {
+                return value;
+            }
+
+            return `${String(parts.day).padStart(2, "0")}/${String(parts.month).padStart(2, "0")}/${parts.year}`;
+        }
+
+        function compareEvents(first, second) {
+            const firstDate = parseDateParts(first.dataEvento)?.sortable ?? first.dataEvento;
+            const secondDate = parseDateParts(second.dataEvento)?.sortable ?? second.dataEvento;
+            return firstDate.localeCompare(secondDate) || first.nomeEvento.localeCompare(second.nomeEvento);
+        }
+
+        function buildBookingUrl(evento) {
+            const url = new URL("prenotazione.html", window.location.href);
+            url.searchParams.set("evento", evento.nomeEvento);
+            url.searchParams.set("data", formatLongDate(evento.dataEvento));
+            url.searchParams.set("luogo", "Da definire");
+            url.searchParams.set("posti", String(evento.postiDisponibili));
+            return url.toString();
+        }
+
+        function renderEvents(events) {
+            eventsList.replaceChildren();
+
+            if (events.length === 0) {
+                eventsList.innerHTML = `
+                    <div class="events-message">
+                        Nessun evento presente nel database.
+                    </div>
+                `;
+                eventsStatus.textContent = "Il database non contiene eventi da mostrare.";
+                eventCount.textContent = "0";
+                seatCount.textContent = "0";
+                nextEvent.textContent = "—";
+                return;
+            }
+
+            const orderedEvents = [...events].sort(compareEvents);
+            const totalSeats = orderedEvents.reduce((total, event) => total + Math.max(0, event.postiDisponibili), 0);
+
+            eventCount.textContent = String(orderedEvents.length).padStart(2, "0");
+            seatCount.textContent = String(totalSeats);
+            nextEvent.textContent = formatLongDate(orderedEvents[0].dataEvento);
+            eventsStatus.textContent = `${orderedEvents.length} ${orderedEvents.length === 1 ? "evento caricato" : "eventi caricati"}. Per aggiornare l'elenco, ricarica la pagina.`;
+
+            for (const evento of orderedEvents) {
+                const date = formatShortDate(evento.dataEvento);
+                const hasSeats = evento.postiDisponibili > 0;
+
+                const card = document.createElement("article");
+                card.className = `event-card${hasSeats ? "" : " is-full"}`;
+
+                const bookingAction = hasSeats
+                    ? `<a class="reserve-button" href="${buildBookingUrl(evento)}">Prenota</a>`
+                    : `<span class="reserve-button disabled" aria-disabled="true">Completo</span>`;
+
+                card.innerHTML = `
+                    <time class="event-date" datetime="${date.datetime}">
+                        <strong>${date.day}</strong>
+                        <span>${date.month}</span>
+                    </time>
+                    <div class="event-info">
+                        <h3>${escapeHtml(evento.nomeEvento)}</h3>
+                        <div class="event-meta">
+                            <span>${escapeHtml(formatLongDate(evento.dataEvento))}</span>
+                            <span>${evento.postiDisponibili} ${evento.postiDisponibili === 1 ? "posto" : "posti"}</span>
+                        </div>
+                    </div>
+                    ${bookingAction}
+                `;
+
+                eventsList.appendChild(card);
+            }
+        }
+
+        function escapeHtml(value) {
+            return String(value)
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll('"', "&quot;")
+                .replaceAll("'", "&#039;");
+        }
+
+        async function loadEvents() {
+            try {
+                const response = await fetch(EVENTI_ENDPOINT, {
+                    method: "GET",
+                    headers: { "Accept": "application/json" },
+                    cache: "no-store"
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Il server ha risposto con stato ${response.status}`);
+                }
+
+                const payload = await response.json();
+                const rawEvents = Array.isArray(payload) ? payload : payload.eventi;
+
+                if (!Array.isArray(rawEvents)) {
+                    throw new Error("Formato della risposta non valido");
+                }
+
+                renderEvents(rawEvents.map(normalizeEvent));
+            } catch (error) {
+                console.error(error);
+                eventsList.innerHTML = `
+                    <div class="events-message error">
+                        Impossibile caricare gli eventi. Verifica che l'endpoint ${EVENTI_ENDPOINT} sia attivo, poi ricarica la pagina.
+                    </div>
+                `;
+                eventsStatus.textContent = "Errore nel caricamento degli eventi dal database.";
+                eventCount.textContent = "—";
+                seatCount.textContent = "—";
+                nextEvent.textContent = "—";
+            }
+        }
+
+        loadEvents();
+    </script>
 </body>
 </html>

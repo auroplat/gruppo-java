@@ -5,15 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Completa la prenotazione per un evento racing BitFactory">
     <title>BitFactory | Prenotazione</title>
-    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <header class="page-shell topbar">
-        <a class="brand" href="/" aria-label="Torna agli eventi">
+        <a class="brand" href="eventi.html" aria-label="Torna agli eventi">
             <span class="brand-mark">B</span>
             <span>BitFactory</span>
         </a>
-        <a class="topbar-link" href="/">← Torna agli eventi</a>
+        <a class="topbar-link" href="eventi.html">← Torna agli eventi</a>
     </header>
 
     <main class="page-shell booking-layout">
@@ -21,22 +21,23 @@
             <span class="eyebrow">Prenotazione evento</span>
             <h1 id="booking-title">Sei quasi in pista.</h1>
             <p>
-                Inserisci i tuoi dati e scegli la sessione. L'evento selezionato viene
-                caricato automaticamente dalla schermata precedente.
+                Inserisci i tuoi dati personali e conferma la dichiarazione sulla patente.
+                L'evento selezionato viene caricato automaticamente dalla schermata precedente.
             </p>
 
             <div class="selected-event" aria-live="polite">
                 <span>Evento selezionato</span>
                 <strong id="selected-event-name">Evento racing</strong>
-                <p id="selected-event-details">Data e circuito</p>
+                <p id="selected-event-details">Data evento</p>
             </div>
         </section>
 
         <section class="booking-card" aria-labelledby="form-title">
             <h2 id="form-title">Dati della prenotazione</h2>
 
-            <form id="booking-form" action="/prenotazioni" method="post">
+            <form id="booking-form">
                 <input type="hidden" id="evento" name="evento">
+                <input type="hidden" id="data-evento" name="dataEvento">
 
                 <div class="form-grid">
                     <div class="field">
@@ -49,33 +50,41 @@
                         <input id="cognome" name="cognome" type="text" autocomplete="family-name" required>
                     </div>
 
+                    <div class="field">
+                        <label for="data-nascita">Data di nascita</label>
+                        <input id="data-nascita" name="dataNascita" type="date" autocomplete="bday" required>
+                    </div>
+
+                    <div class="field">
+                        <label for="telefono">Telefono <span class="label-hint">inserire il prefisso</span></label>
+                        <div class="phone-input">
+                            <span aria-hidden="true">+</span>
+                            <input
+                                id="telefono"
+                                name="telefono"
+                                type="text"
+                                inputmode="numeric"
+                                pattern="[0-9]+"
+                                autocomplete="tel"
+                                placeholder="393331234567"
+                                title="Inserisci solo numeri, includendo il prefisso internazionale"
+                                required>
+                        </div>
+                    </div>
+
                     <div class="field full">
                         <label for="email">Email</label>
                         <input id="email" name="email" type="email" autocomplete="email" required>
                     </div>
 
-                    <div class="field">
-                        <label for="telefono">Telefono</label>
-                        <input id="telefono" name="telefono" type="tel" autocomplete="tel" required>
-                    </div>
-
-                    <div class="field">
-                        <label for="partecipanti">Partecipanti</label>
-                        <select id="partecipanti" name="partecipanti" required>
-                            <option value="1">1 partecipante</option>
-                            <option value="2">2 partecipanti</option>
-                            <option value="3">3 partecipanti</option>
-                            <option value="4">4 partecipanti</option>
-                        </select>
-                    </div>
-
-                    <div class="field full">
-                        <label for="sessione">Sessione</label>
-                        <select id="sessione" name="sessione" required>
-                            <option value="mattina">Sessione mattutina</option>
-                            <option value="pomeriggio">Sessione pomeridiana</option>
-                            <option value="completa">Giornata completa</option>
-                        </select>
+                    <div class="field full license-field">
+                        <label class="checkbox-row" for="patente-valida">
+                            <input id="patente-valida" name="patenteValida" type="checkbox" value="true" required>
+                            <span>
+                                Dichiaro di possedere una patente di guida valida.
+                                <small id="patente-note">Campo obbligatorio per completare la prenotazione.</small>
+                            </span>
+                        </label>
                     </div>
                 </div>
 
@@ -85,7 +94,7 @@
                     <code>action</code> con l'endpoint del server.
                 </p>
                 <div class="confirmation" id="confirmation" role="status">
-                    Prenotazione registrata correttamente.
+                    Prenotazione registrata correttamente. Dichiarazione patente valida acquisita.
                 </div>
             </form>
         </section>
@@ -95,12 +104,24 @@
         const params = new URLSearchParams(window.location.search);
         const eventName = params.get("evento") || "Evento racing";
         const eventDate = params.get("data") || "Data da definire";
-        const eventLocation = params.get("luogo") || "Circuito da definire";
 
         document.getElementById("selected-event-name").textContent = eventName;
-        document.getElementById("selected-event-details").textContent = `${eventDate} · ${eventLocation}`;
+        document.getElementById("selected-event-details").textContent = eventDate;
         document.getElementById("evento").value = eventName;
+        document.getElementById("data-evento").value = eventDate;
 
+        const birthDateInput = document.getElementById("data-nascita");
+        birthDateInput.max = new Date().toISOString().split("T")[0];
+
+        const telefonoInput = document.getElementById("telefono");
+        telefonoInput.addEventListener("input", () => {
+            telefonoInput.value = telefonoInput.value.replace(/\D/g, "");
+        });
+
+        document.getElementById("booking-form").addEventListener("submit", (event) => {
+            event.preventDefault();
+            document.getElementById("confirmation").classList.add("visible");
+        });
     </script>
 </body>
 </html>

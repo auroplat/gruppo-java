@@ -10,17 +10,16 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import it.unipv.bitFactory.dao.DAOException;
 import it.unipv.bitFactory.dao.EventoDAO;
 import it.unipv.bitFactory.model.prenotazioni.Evento;
 
-public final class EventoDAOSQL implements EventoDAO {
+public final class SqliteEventoDAO implements EventoDAO {
 
     private final String jdbcUrl;
 
-    public EventoDAOSQL(String databasePath) {
+    public SqliteEventoDAO(String databasePath) {
         if (databasePath == null || databasePath.isBlank()) {
             throw new IllegalArgumentException(
                     "Il percorso del database non può essere vuoto"
@@ -56,7 +55,7 @@ public final class EventoDAOSQL implements EventoDAO {
     }
 
     @Override
-    public List<Evento> trovaTutti() {
+    public List<Evento> caricaEventi() {
         String sql = """
                 SELECT nome_evento,
                        data_evento,
@@ -87,7 +86,7 @@ public final class EventoDAOSQL implements EventoDAO {
     }
 
     @Override
-    public Optional<Evento> trovaPerNome(String nomeEvento) {
+    public Evento cercaEvento(String nomeEvento) {
         String nome = validaNomeEvento(nomeEvento);
 
         String sql = """
@@ -105,11 +104,11 @@ public final class EventoDAOSQL implements EventoDAO {
             statement.setString(1, nome);
 
             try (ResultSet result = statement.executeQuery()) {
-                if (!result.next()) {
-                    return Optional.empty();
+                if (result.next()) {
+                    return creaEvento(result);
                 }
 
-                return Optional.of(creaEvento(result));
+                return null;
             }
 
         } catch (SQLException e) {
@@ -121,7 +120,7 @@ public final class EventoDAOSQL implements EventoDAO {
     }
 
     @Override
-    public void salva(Evento evento) {
+    public boolean aggiungiEvento(Evento evento) {
         if (evento == null) {
             throw new IllegalArgumentException(
                     "L'evento non può essere null"
@@ -141,9 +140,6 @@ public final class EventoDAOSQL implements EventoDAO {
                     posti_disponibili
                 )
                 VALUES (?, ?, ?)
-                ON CONFLICT(nome_evento) DO UPDATE SET
-                    data_evento = excluded.data_evento,
-                    posti_disponibili = excluded.posti_disponibili
                 """;
 
         try (Connection connection = apriConnessione();
@@ -154,14 +150,22 @@ public final class EventoDAOSQL implements EventoDAO {
                     1,
                     validaNomeEvento(evento.getNomeEvento())
             );
-            statement.setString(2, evento.getDataEvento());
-            statement.setInt(3, evento.getPostiDisponibili());
 
-            statement.executeUpdate();
+            statement.setString(
+                    2,
+                    evento.getDataEvento()
+            );
+
+            statement.setInt(
+                    3,
+                    evento.getPostiDisponibili()
+            );
+
+            return statement.executeUpdate() > 0;
 
         } catch (SQLException e) {
             throw new DAOException(
-                    "Errore durante il salvataggio dell'evento "
+                    "Errore durante l'aggiunta dell'evento "
                             + evento.getNomeEvento(),
                     e
             );
@@ -206,7 +210,7 @@ public final class EventoDAOSQL implements EventoDAO {
     }
 
     @Override
-    public boolean elimina(String nomeEvento) {
+    public boolean eliminaEvento(String nomeEvento) {
         String nome = validaNomeEvento(nomeEvento);
 
         String sql = """
@@ -224,18 +228,25 @@ public final class EventoDAOSQL implements EventoDAO {
 
         } catch (SQLException e) {
             throw new DAOException(
-                    "Errore durante l'eliminazione dell'evento " + nome,
+                    "Errore durante l'eliminazione dell'evento "
+                            + nome,
                     e
             );
         }
     }
 
-    private Connection apriConnessione() throws SQLException {
+    private Connection apriConnessione()
+            throws SQLException {
+
         Connection connection =
                 DriverManager.getConnection(jdbcUrl);
 
-        try (Statement statement = connection.createStatement()) {
-            statement.execute("PRAGMA foreign_keys = ON");
+        try (Statement statement =
+                     connection.createStatement()) {
+
+            statement.execute(
+                    "PRAGMA foreign_keys = ON"
+            );
         }
 
         return connection;

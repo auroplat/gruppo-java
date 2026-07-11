@@ -1,0 +1,19 @@
+package it.unipv.bitFactory.dao.sqlite;
+
+import it.unipv.bitFactory.model.prenotazioni.Evento;
+import it.unipv.bitFactory.dao.EventoDAOException;
+
+import java.util.List;
+
+public interface EventoDAOSQL {
+
+    List<Evento> caricaEventi() throws EventoDAOException;
+
+    Evento cercaEvento(String nome) throws EventoDAOException;
+
+    boolean aggiungiEvento(Evento evento) throws EventoDAOException;
+
+    boolean eliminaEvento(String nome) throws EventoDAOException;
+
+    boolean aggiornaPosti(String nome, int nuoviPosti) throws EventoDAOException;
+}

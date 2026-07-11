@@ -72,10 +72,6 @@ public final class SistemaPrenotazioni {
             return "Il cliente è già prenotato per questo evento.";
         }
 
-        /*
-         * Salva un nuovo cliente oppure aggiorna i suoi dati
-         * se l'email è già presente.
-         */
         clienteDAO.salva(cliente);
 
         Prenotazione prenotazione =

@@ -1,40 +1,84 @@
-//Creazione della prenotazione 
-
-
 package it.unipv.bitFactory.model.prenotazioni;
 
-import it.unipv.bitFactory.model.veicoli.Legends;
+import java.util.Objects;
 
-public class Prenotazione {
+public final class Prenotazione {
 
-    private String nomeCliente;
-    private String nomeEvento;
-    private Legends autoPrenotata;
+    private final String nomeEvento;
+    private final String emailCliente;
+    private final String telefonoCliente;
 
-    public Prenotazione(String nomeCliente, String nomeEvento, Legends autoPrenotata) {
+    public Prenotazione(
+            String nomeEvento,
+            String emailCliente,
+            String telefonoCliente) {
 
-        this.nomeCliente = nomeCliente;
-        this.nomeEvento = nomeEvento;
-        this.autoPrenotata = autoPrenotata;
-    }
+        if (nomeEvento == null || nomeEvento.isBlank()) {
+            throw new IllegalArgumentException(
+                    "Il nome dell'evento non può essere vuoto"
+            );
+        }
 
-    public String getNomeCliente() {
-        return nomeCliente;
+        if (emailCliente == null || emailCliente.isBlank()) {
+            throw new IllegalArgumentException(
+                    "L'email del cliente non può essere vuota"
+            );
+        }
+
+        if (!emailCliente.contains("@")) {
+            throw new IllegalArgumentException(
+                    "L'email del cliente non è valida"
+            );
+        }
+
+        if (telefonoCliente == null || telefonoCliente.isBlank()) {
+            throw new IllegalArgumentException(
+                    "Il telefono del cliente non può essere vuoto"
+            );
+        }
+
+        this.nomeEvento = nomeEvento.trim();
+        this.emailCliente = emailCliente.trim().toLowerCase();
+        this.telefonoCliente = telefonoCliente.trim();
     }
 
     public String getNomeEvento() {
         return nomeEvento;
     }
 
-    public Legends getAutoPrenotata() {
-        return autoPrenotata;
+    public String getEmailCliente() {
+        return emailCliente;
+    }
+
+    public String getTelefonoCliente() {
+        return telefonoCliente;
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) {
+            return true;
+        }
+
+        if (!(object instanceof Prenotazione altra)) {
+            return false;
+        }
+
+        return nomeEvento.equals(altra.nomeEvento)
+                && emailCliente.equals(altra.emailCliente);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(nomeEvento, emailCliente);
     }
 
     @Override
     public String toString() {
-
-        return "Cliente: " + nomeCliente +
-                " | Evento: " + nomeEvento +
-                " | Auto: " + autoPrenotata.getId();
+        return "Prenotazione{" +
+                "nomeEvento='" + nomeEvento + '\'' +
+                ", emailCliente='" + emailCliente + '\'' +
+                ", telefonoCliente='" + telefonoCliente + '\'' +
+                '}';
     }
 }

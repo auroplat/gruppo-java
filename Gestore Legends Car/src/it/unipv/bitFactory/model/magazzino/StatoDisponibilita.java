@@ -1,5 +1,8 @@
 package it.unipv.bitFactory.model.magazzino;
 
-public class StatoDisponibilita {
+public enum StatoDisponibilita {
 
+    DISPONIBILE,
+    POCA_DISPONIBILITA,
+    ESAURITO
 }

@@ -48,8 +48,6 @@
             <p>
                 Inserisci i tuoi dati personali e conferma
                 la dichiarazione sulla patente.
-                L'evento selezionato viene caricato
-                automaticamente dalla schermata precedente.
             </p>
 
             <div class="selected-event"
@@ -243,10 +241,7 @@
     </main>
 
     <script>
-        /*
-         * Recupera l'evento selezionato dai parametri
-         * presenti nell'indirizzo della pagina.
-         */
+
         const params =
                 new URLSearchParams(window.location.search);
 
@@ -273,10 +268,7 @@
         const dataEventoInput =
                 document.getElementById("data-evento");
 
-        /*
-         * Mostra l'evento nella pagina e lo inserisce
-         * nei campi nascosti del form.
-         */
+
         if (eventName) {
 
             selectedEventName.textContent =
@@ -301,13 +293,6 @@
                     + "e selezionane uno.";
         }
 
-        /*
-         * Permette di selezionare soltanto date
-         * corrispondenti ad almeno 18 anni.
-         *
-         * Il controllo definitivo viene comunque
-         * eseguito anche dal codice Java.
-         */
         const birthDateInput =
                 document.getElementById(
                         "data-nascita"
@@ -325,10 +310,6 @@
                         .toISOString()
                         .split("T")[0];
 
-        /*
-         * Rimuove automaticamente lettere, spazi
-         * e simboli dal numero di telefono.
-         */
         const telefonoInput =
                 document.getElementById("telefono");
 

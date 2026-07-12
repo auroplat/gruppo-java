@@ -12,18 +12,15 @@ public final class SistemaPrenotazioni {
     private final ClienteDAO clienteDAO;
     private final EventoDAO eventoDAO;
     private final PrenotazioneDAO prenotazioneDAO;
-    private final SistemaNotifiche sistemaNotifiche;
 
     public SistemaPrenotazioni(
             ClienteDAO clienteDAO,
             EventoDAO eventoDAO,
-            PrenotazioneDAO prenotazioneDAO,
-            SistemaNotifiche sistemaNotifiche) {
+            PrenotazioneDAO prenotazioneDAO) {
 
         if (clienteDAO == null
                 || eventoDAO == null
-                || prenotazioneDAO == null
-                || sistemaNotifiche == null) {
+                || prenotazioneDAO == null) {
 
             throw new IllegalArgumentException(
                     "Le dipendenze non possono essere null"
@@ -33,7 +30,6 @@ public final class SistemaPrenotazioni {
         this.clienteDAO = clienteDAO;
         this.eventoDAO = eventoDAO;
         this.prenotazioneDAO = prenotazioneDAO;
-        this.sistemaNotifiche = sistemaNotifiche;
     }
 
     public synchronized String effettuaPrenotazione(
@@ -107,8 +103,6 @@ public final class SistemaPrenotazioni {
             return "Errore durante l'aggiornamento dei posti disponibili.";
         }
 
-        sistemaNotifiche.inviaConferma(cliente, evento);
-
         return "Prenotazione completata con successo.";
     }
 
@@ -157,18 +151,6 @@ public final class SistemaPrenotazioni {
 
         if (!postiAggiornati) {
             return "Prenotazione eliminata, ma i posti non sono stati aggiornati.";
-        }
-
-        Cliente cliente =
-                clienteDAO
-                        .cercaPerEmail(emailCliente)
-                        .orElse(null);
-
-        if (cliente != null) {
-            sistemaNotifiche.inviaAnnullamento(
-                    cliente,
-                    evento
-            );
         }
 
         return "Prenotazione annullata con successo.";

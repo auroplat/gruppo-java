@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Gestione eventi racing BitFactory">
     <title>BitFactory | Gestione eventi</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles1.css">
 </head>
 <body>
     <header class="page-shell topbar">
@@ -160,11 +160,22 @@
         }
 
         function buildBookingUrl(evento) {
-            const url = new URL("prenotazione.html", window.location.href);
-            url.searchParams.set("evento", evento.nomeEvento);
-            url.searchParams.set("data", formatLongDate(evento.dataEvento));
-            url.searchParams.set("luogo", "Da definire");
-            url.searchParams.set("posti", String(evento.postiDisponibili));
+
+            const url = new URL(
+                "/prenotazione",
+                window.location.origin
+            );
+
+            url.searchParams.set(
+                "evento",
+                evento.nomeEvento
+            );
+
+            url.searchParams.set(
+                "data",
+                formatLongDate(evento.dataEvento)
+            );
+
             return url.toString();
         }
 

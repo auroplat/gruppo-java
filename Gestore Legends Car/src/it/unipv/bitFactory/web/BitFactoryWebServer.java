@@ -15,6 +15,8 @@ import com.sun.net.httpserver.HttpServer;
 import it.unipv.bitFactory.controller.GestioneMagazzinoController;
 import it.unipv.bitFactory.controller.GestionePrenotazioniController;
 import it.unipv.bitFactory.controller.GestioneSessioniController;
+import it.unipv.bitFactory.service.GestoreEventi;
+import it.unipv.bitFactory.web.handler.EventiApiHttpHandler;
 import it.unipv.bitFactory.web.handler.MagazzinoHttpHandler;
 import it.unipv.bitFactory.web.handler.MacchineApiHttpHandler;
 import it.unipv.bitFactory.web.handler.PrenotazioniHttpHandler;
@@ -33,6 +35,7 @@ public final class BitFactoryWebServer {
             GestioneSessioniController sessioniController,
             GestioneMagazzinoController magazzinoController,
             GestionePrenotazioniController prenotazioniController,
+            GestoreEventi gestoreEventi,
             HtmlRenderer renderer) throws IOException {
 
         if (porta < 1 || porta > 65535) {
@@ -50,10 +53,12 @@ public final class BitFactoryWebServer {
         if (sessioniController == null
                 || magazzinoController == null
                 || prenotazioniController == null
+                || gestoreEventi == null
                 || renderer == null) {
 
             throw new IllegalArgumentException(
-                    "Controller e renderer non possono essere null"
+                    "Controller, gestore eventi e renderer "
+                            + "non possono essere null"
             );
         }
 
@@ -64,15 +69,17 @@ public final class BitFactoryWebServer {
                 0
         );
 
-        threadPool = Executors.newFixedThreadPool(numeroThread);
+        threadPool =
+                Executors.newFixedThreadPool(numeroThread);
 
         /*
          * HOME
          *
-         * GET /
-         * restituisce il file:
+         * Aprendo:
          *
-         * src/web/eventi.html
+         * http://localhost:8082/
+         *
+         * viene restituito eventi.html.
          */
         server.createContext(
                 "/",
@@ -80,9 +87,9 @@ public final class BitFactoryWebServer {
         );
 
         /*
-         * Consente anche di aprire direttamente:
+         * Permette di aprire anche:
          *
-         * http://localhost:8080/eventi.html
+         * http://localhost:8082/eventi.html
          */
         server.createContext(
                 "/eventi.html",
@@ -94,9 +101,12 @@ public final class BitFactoryWebServer {
         );
 
         /*
-         * Pagina contenente il form di prenotazione.
+         * Pagina con il form di prenotazione.
          *
-         * GET /prenotazione?evento=...&data=...&luogo=...
+         * Supportiamo entrambi gli indirizzi:
+         *
+         * /prenotazione
+         * /prenotazione.html
          */
         server.createContext(
                 "/prenotazione",
@@ -107,8 +117,17 @@ public final class BitFactoryWebServer {
                 )
         );
 
+        server.createContext(
+                "/prenotazione.html",
+                creaHandlerRisorsaStatica(
+                        "/prenotazione.html",
+                        "/web/prenotazione.html",
+                        "text/html; charset=UTF-8"
+                )
+        );
+
         /*
-         * File CSS usato da entrambe le pagine HTML.
+         * Foglio di stile usato dalle pagine.
          */
         server.createContext(
                 "/styles.css",
@@ -119,6 +138,14 @@ public final class BitFactoryWebServer {
                 )
         );
 
+        server.createContext(
+                "/styles1.css",
+                creaHandlerRisorsaStatica(
+                        "/styles1.css",
+                        "/web/styles1.css",
+                        "text/css; charset=UTF-8"
+                )
+        );
         /*
          * Immagine di sfondo.
          */
@@ -132,13 +159,39 @@ public final class BitFactoryWebServer {
         );
 
         /*
-         * Rotte collegate ai controller applicativi.
+         * API EVENTI
+         *
+         * eventi.html esegue:
+         *
+         * GET /api/eventi
+         *
+         * L'handler recupera gli eventi dal database
+         * attraverso GestoreEventi.
+         */
+        server.createContext(
+                "/api/eventi",
+                new EventiApiHttpHandler(
+                        gestoreEventi
+                )
+        );
+
+        /*
+         * API MACCHINE
+         *
+         * Questa parte resta invariata.
          */
         server.createContext(
                 "/api/macchine",
-                new MacchineApiHttpHandler(sessioniController)
+                new MacchineApiHttpHandler(
+                        sessioniController
+                )
         );
 
+        /*
+         * GESTIONE SESSIONI
+         *
+         * Questa parte resta invariata.
+         */
         server.createContext(
                 "/sessioni",
                 new SessioniHttpHandler(
@@ -147,6 +200,9 @@ public final class BitFactoryWebServer {
                 )
         );
 
+        /*
+         * GESTIONE MAGAZZINO
+         */
         server.createContext(
                 "/magazzino",
                 new MagazzinoHttpHandler(
@@ -156,12 +212,11 @@ public final class BitFactoryWebServer {
         );
 
         /*
-         * Il form presente in prenotazione.html esegue:
+         * SALVATAGGIO PRENOTAZIONI
+         *
+         * Il form di prenotazione eseguirà:
          *
          * POST /prenotazioni
-         *
-         * Questa richiesta viene ricevuta da
-         * PrenotazioniHttpHandler.
          */
         server.createContext(
                 "/prenotazioni",
@@ -175,37 +230,46 @@ public final class BitFactoryWebServer {
     }
 
     /**
-     * Gestisce esclusivamente la Home del server.
+     * Gestisce la richiesta della home.
      */
-    private void gestisciHome(HttpExchange exchange)
-            throws IOException {
+    private void gestisciHome(
+            HttpExchange exchange) throws IOException {
 
-        String percorso = exchange.getRequestURI().getPath();
+        String percorso =
+                exchange.getRequestURI().getPath();
 
         /*
-         * Il context "/" intercetta anche gli indirizzi non
-         * associati ad altri context.
+         * Il context "/" intercetta anche percorsi
+         * che non corrispondono ad altri context.
          *
-         * Per questo controlliamo che il percorso sia
-         * esattamente "/".
+         * Accettiamo quindi soltanto il percorso
+         * esattamente uguale a "/".
          */
         if (!"/".equals(percorso)) {
+
             inviaErrore(
                     exchange,
                     404,
                     "Pagina non trovata"
             );
+
             return;
         }
 
-        if (!"GET".equalsIgnoreCase(exchange.getRequestMethod())) {
-            exchange.getResponseHeaders().set("Allow", "GET");
+        if (!"GET".equalsIgnoreCase(
+                exchange.getRequestMethod())) {
+
+            exchange.getResponseHeaders().set(
+                    "Allow",
+                    "GET"
+            );
 
             inviaErrore(
                     exchange,
                     405,
                     "Metodo HTTP non consentito"
             );
+
             return;
         }
 
@@ -217,7 +281,8 @@ public final class BitFactoryWebServer {
     }
 
     /**
-     * Crea un handler per una risorsa statica.
+     * Crea un handler per una risorsa statica,
+     * come HTML, CSS oppure SVG.
      */
     private HttpHandler creaHandlerRisorsaStatica(
             String percorsoHttp,
@@ -229,12 +294,15 @@ public final class BitFactoryWebServer {
             String percorsoRichiesto =
                     exchange.getRequestURI().getPath();
 
-            if (!percorsoHttp.equals(percorsoRichiesto)) {
+            if (!percorsoHttp.equals(
+                    percorsoRichiesto)) {
+
                 inviaErrore(
                         exchange,
                         404,
                         "Risorsa non trovata"
                 );
+
                 return;
             }
 
@@ -251,6 +319,7 @@ public final class BitFactoryWebServer {
                         405,
                         "Metodo HTTP non consentito"
                 );
+
                 return;
             }
 
@@ -264,7 +333,7 @@ public final class BitFactoryWebServer {
 
     /**
      * Legge un file presente nelle risorse del progetto
-     * e lo invia al browser.
+     * e lo restituisce al browser.
      */
     private void inviaRisorsa(
             HttpExchange exchange,
@@ -272,20 +341,25 @@ public final class BitFactoryWebServer {
             String contentType) throws IOException {
 
         try (InputStream input =
-                     BitFactoryWebServer.class.getResourceAsStream(
-                             percorsoRisorsa
-                     )) {
+                     BitFactoryWebServer.class
+                             .getResourceAsStream(
+                                     percorsoRisorsa
+                             )) {
 
             if (input == null) {
+
                 inviaErrore(
                         exchange,
                         404,
-                        "Risorsa non trovata: " + percorsoRisorsa
+                        "Risorsa non trovata: "
+                                + percorsoRisorsa
                 );
+
                 return;
             }
 
-            byte[] contenuto = input.readAllBytes();
+            byte[] contenuto =
+                    input.readAllBytes();
 
             exchange.getResponseHeaders().set(
                     "Content-Type",
@@ -293,8 +367,9 @@ public final class BitFactoryWebServer {
             );
 
             /*
-             * Durante lo sviluppo evita che il browser mostri
-             * una vecchia versione dei file HTML o CSS.
+             * Impedisce al browser di mostrare
+             * vecchie versioni delle pagine durante
+             * lo sviluppo.
              */
             exchange.getResponseHeaders().set(
                     "Cache-Control",
@@ -323,7 +398,9 @@ public final class BitFactoryWebServer {
             String messaggio) throws IOException {
 
         byte[] contenuto =
-                messaggio.getBytes(StandardCharsets.UTF_8);
+                messaggio.getBytes(
+                        StandardCharsets.UTF_8
+                );
 
         exchange.getResponseHeaders().set(
                 "Content-Type",
@@ -342,20 +419,31 @@ public final class BitFactoryWebServer {
         }
     }
 
+    /**
+     * Avvia il server.
+     */
     public void avvia() {
+
         server.start();
 
         System.out.println(
-                "Server BitFactory avviato su http://localhost:"
+                "Server BitFactory avviato su "
+                        + "http://localhost:"
                         + porta
         );
     }
 
+    /**
+     * Arresta il server e il pool di thread.
+     */
     public void arresta() {
+
         server.stop(0);
         threadPool.shutdown();
 
-        System.out.println("Server BitFactory arrestato");
+        System.out.println(
+                "Server BitFactory arrestato"
+        );
     }
 
     public int getPorta() {

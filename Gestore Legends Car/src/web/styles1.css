@@ -211,6 +211,9 @@ h1 {
 .events-list {
     display: grid;
     gap: 12px;
+    max-height: 450px;
+    overflow-y: auto;
+    padding-right: 6px;
 }
 
 .event-card {
@@ -587,4 +590,6 @@ h1 {
     .field.full {
         grid-column: auto;
     }
+    
+    
 }

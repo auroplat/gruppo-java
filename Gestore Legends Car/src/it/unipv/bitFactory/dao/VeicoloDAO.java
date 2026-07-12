@@ -1,4 +1,4 @@
-package it.unipv.bitFactory.dao;
+package it.unipv.bitFactory.dao.veicoli;
 
 import java.util.List;
 import java.util.Optional;

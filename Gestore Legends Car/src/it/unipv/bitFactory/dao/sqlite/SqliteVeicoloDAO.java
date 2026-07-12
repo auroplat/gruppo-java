@@ -1,4 +1,4 @@
-package it.unipv.bitFactory.dao.sqlite;
+package it.unipv.bitFactory.dao.veicoli;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -7,14 +7,13 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 import it.unipv.bitFactory.dao.DAOException;
-import it.unipv.bitFactory.dao.VeicoloDAO;
 import it.unipv.bitFactory.model.pezzi.Pezzo;
 import it.unipv.bitFactory.model.pezzi.TipoPezzo;
 import it.unipv.bitFactory.model.veicoli.Legends;
-import it.unipv.bitFactory.model.veicoli.TipoVeicolo;
 
 public class SqliteVeicoloDAO implements VeicoloDAO {
 
@@ -24,53 +23,41 @@ public class SqliteVeicoloDAO implements VeicoloDAO {
         if (percorsoDatabase == null || percorsoDatabase.isBlank()) {
             throw new IllegalArgumentException("Il percorso del database non può essere vuoto");
         }
-
         this.urlDatabase = "jdbc:sqlite:" + percorsoDatabase;
     }
 
     private Connection getConnection() throws Exception {
-        return DriverManager.getConnection(urlDatabase);
+        Connection conn = DriverManager.getConnection(urlDatabase);
+        try (Statement st = conn.createStatement()) {
+            st.execute("PRAGMA foreign_keys = ON");
+        }
+        return conn;
     }
 
     @Override
     public void inizializzaDatabase() {
-        String creaTabellaPezzo = """
+        String creaMacchine = """
+            CREATE TABLE IF NOT EXISTS macchine (
+                id_macchina TEXT PRIMARY KEY,
+                km_macchina DOUBLE NOT NULL DEFAULT 0
+            )
+            """;
+        String creaPezzo = """
             CREATE TABLE IF NOT EXISTS pezzo (
                 id_pezzo TEXT PRIMARY KEY,
-                tipo_pezzo TEXT NOT NULL,
-                km_max REAL NOT NULL,
-                tempo_max INTEGER NOT NULL,
-                km_attuali REAL NOT NULL DEFAULT 0,
-                tempo_attuale INTEGER NOT NULL DEFAULT 0
+                tipo TEXT NOT NULL,
+                id_macchina TEXT,
+                km DOUBLE NOT NULL DEFAULT 0,
+                km_max DOUBLE NOT NULL DEFAULT 0,
+                tempo_utilizzo DOUBLE NOT NULL DEFAULT 0,
+                tempo_max DOUBLE NOT NULL DEFAULT 0,
+                FOREIGN KEY (id_macchina) REFERENCES macchine(id_macchina)
             )
             """;
 
-        String creaTabellaVeicolo = """
-            CREATE TABLE IF NOT EXISTS veicolo (
-                id_veicolo TEXT PRIMARY KEY,
-                tipo_veicolo TEXT NOT NULL,
-                km_totali REAL NOT NULL
-            )
-            """;
-
-        String creaTabellaVeicoloPezzo = """
-            CREATE TABLE IF NOT EXISTS veicolo_pezzo (
-                id_veicolo TEXT NOT NULL,
-                id_pezzo TEXT NOT NULL,
-                PRIMARY KEY (id_veicolo, id_pezzo),
-                FOREIGN KEY (id_veicolo) REFERENCES veicolo(id_veicolo),
-                FOREIGN KEY (id_pezzo) REFERENCES pezzo(id_pezzo)
-            )
-            """;
-
-        try (
-                Connection conn = getConnection();
-                Statement st = conn.createStatement()
-        ) {
-            st.execute(creaTabellaPezzo);
-            st.execute(creaTabellaVeicolo);
-            st.execute(creaTabellaVeicoloPezzo);
-
+        try (Connection conn = getConnection(); Statement st = conn.createStatement()) {
+            st.execute(creaMacchine);
+            st.execute(creaPezzo);
         } catch (Exception e) {
             throw new DAOException("Errore durante l'inizializzazione del database veicoli", e);
         }
@@ -78,22 +65,13 @@ public class SqliteVeicoloDAO implements VeicoloDAO {
 
     @Override
     public boolean esisteVeicolo(String idVeicolo) {
-        String sql = """
-            SELECT COUNT(*) AS totale
-            FROM veicolo
-            WHERE id_veicolo = ?
-            """;
-
-        try (
-                Connection conn = getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)
-        ) {
-            ps.setString(1, idVeicolo);
-
+        validaId(idVeicolo);
+        String sql = "SELECT 1 FROM macchine WHERE id_macchina = ?";
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, idVeicolo.trim());
             try (ResultSet rs = ps.executeQuery()) {
-                return rs.next() && rs.getInt("totale") > 0;
+                return rs.next();
             }
-
         } catch (Exception e) {
             throw new DAOException("Errore durante il controllo dell'esistenza del veicolo", e);
         }
@@ -101,30 +79,17 @@ public class SqliteVeicoloDAO implements VeicoloDAO {
 
     @Override
     public int contaPezziLiberi(TipoPezzo tipoPezzo) {
+        validaTipo(tipoPezzo);
         String sql = """
             SELECT COUNT(*) AS totale
-            FROM pezzo p
-            WHERE p.tipo_pezzo = ?
-            AND p.id_pezzo NOT IN (
-                SELECT vp.id_pezzo
-                FROM veicolo_pezzo vp
-            )
+            FROM pezzo
+            WHERE LOWER(TRIM(tipo)) = ? AND id_macchina IS NULL
             """;
-
-        try (
-                Connection conn = getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)
-        ) {
-            ps.setString(1, tipoPezzo.name());
-
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, tipoDatabase(tipoPezzo));
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt("totale");
-                }
-
-                return 0;
+                return rs.next() ? rs.getInt("totale") : 0;
             }
-
         } catch (Exception e) {
             throw new DAOException("Errore durante il conteggio dei pezzi liberi", e);
         }
@@ -132,38 +97,33 @@ public class SqliteVeicoloDAO implements VeicoloDAO {
 
     @Override
     public List<Pezzo> trovaPezziLiberi(TipoPezzo tipoPezzo, int quantitaRichiesta) {
+        validaTipo(tipoPezzo);
         if (quantitaRichiesta <= 0) {
             throw new IllegalArgumentException("La quantità richiesta deve essere maggiore di zero");
         }
 
         String sql = """
-            SELECT p.id_pezzo, p.tipo_pezzo, p.km_max, p.tempo_max, p.km_attuali, p.tempo_attuale
-            FROM pezzo p
-            WHERE p.tipo_pezzo = ?
-            AND p.id_pezzo NOT IN (
-                SELECT vp.id_pezzo
-                FROM veicolo_pezzo vp
-            )
+            SELECT id_pezzo, tipo,
+                   COALESCE(km_max, 0) AS km_max,
+                   COALESCE(tempo_max, 0) AS tempo_max,
+                   COALESCE(km, 0) AS km,
+                   COALESCE(tempo_utilizzo, 0) AS tempo_utilizzo
+            FROM pezzo
+            WHERE LOWER(TRIM(tipo)) = ? AND id_macchina IS NULL
+            ORDER BY id_pezzo
             LIMIT ?
             """;
 
         List<Pezzo> pezzi = new ArrayList<>();
-
-        try (
-                Connection conn = getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)
-        ) {
-            ps.setString(1, tipoPezzo.name());
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, tipoDatabase(tipoPezzo));
             ps.setInt(2, quantitaRichiesta);
-
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     pezzi.add(creaPezzoDaResultSet(rs));
                 }
             }
-
             return pezzi;
-
         } catch (Exception e) {
             throw new DAOException("Errore durante la ricerca dei pezzi liberi", e);
         }
@@ -175,45 +135,39 @@ public class SqliteVeicoloDAO implements VeicoloDAO {
             throw new IllegalArgumentException("La Legends da salvare non può essere null");
         }
 
-        String inserisciVeicolo = """
-            INSERT INTO veicolo (id_veicolo, tipo_veicolo, km_totali)
-            VALUES (?, ?, ?)
-            """;
-
-        String associaPezzo = """
-            INSERT INTO veicolo_pezzo (id_veicolo, id_pezzo)
+        String inserisciMacchina = """
+            INSERT INTO macchine (id_macchina, km_macchina)
             VALUES (?, ?)
+            ON CONFLICT(id_macchina) DO UPDATE SET km_macchina = excluded.km_macchina
+            """;
+        String associaPezzo = """
+            UPDATE pezzo
+            SET id_macchina = ?
+            WHERE id_pezzo = ? AND (id_macchina IS NULL OR id_macchina = ?)
             """;
 
         try (Connection conn = getConnection()) {
             conn.setAutoCommit(false);
+            try (PreparedStatement psMacchina = conn.prepareStatement(inserisciMacchina);
+                 PreparedStatement psPezzo = conn.prepareStatement(associaPezzo)) {
 
-            try (
-                    PreparedStatement psVeicolo = conn.prepareStatement(inserisciVeicolo);
-                    PreparedStatement psAssociazione = conn.prepareStatement(associaPezzo)
-            ) {
-                psVeicolo.setString(1, legends.getId());
-                psVeicolo.setString(2, legends.getTipoVeicolo().name());
-                psVeicolo.setDouble(3, legends.getKmTotali());
-                psVeicolo.executeUpdate();
+                psMacchina.setString(1, legends.getIdVeicolo());
+                psMacchina.setDouble(2, legends.getKmTotali());
+                psMacchina.executeUpdate();
 
                 for (Pezzo pezzo : legends.getTuttiPezzi()) {
-                    if (pezzo.getIdPezzo() == null || pezzo.getIdPezzo().isBlank()) {
-                        throw new DAOException("Impossibile associare un pezzo senza id al veicolo");
+                    psPezzo.setString(1, legends.getIdVeicolo());
+                    psPezzo.setString(2, pezzo.getIdPezzo());
+                    psPezzo.setString(3, legends.getIdVeicolo());
+                    if (psPezzo.executeUpdate() != 1) {
+                        throw new DAOException("Pezzo inesistente o già assegnato: " + pezzo.getIdPezzo());
                     }
-
-                    psAssociazione.setString(1, legends.getIdVeicolo());
-                    psAssociazione.setString(2, pezzo.getIdPezzo());
-                    psAssociazione.executeUpdate();
                 }
-
                 conn.commit();
-
             } catch (Exception e) {
                 conn.rollback();
                 throw e;
             }
-
         } catch (Exception e) {
             throw new DAOException("Errore durante il salvataggio della Legends", e);
         }
@@ -221,35 +175,17 @@ public class SqliteVeicoloDAO implements VeicoloDAO {
 
     @Override
     public Optional<Legends> trovaLegendsPerId(String idVeicolo) {
-        String sqlVeicolo = """
-            SELECT id_veicolo, tipo_veicolo, km_totali
-            FROM veicolo
-            WHERE id_veicolo = ?
-            AND tipo_veicolo = ?
-            """;
-
-        try (
-                Connection conn = getConnection();
-                PreparedStatement ps = conn.prepareStatement(sqlVeicolo)
-        ) {
-            ps.setString(1, idVeicolo);
-            ps.setString(2, TipoVeicolo.LEGENDS.name());
-
+        validaId(idVeicolo);
+        String sql = "SELECT id_macchina, COALESCE(km_macchina, 0) AS km_macchina FROM macchine WHERE id_macchina = ?";
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, idVeicolo.trim());
             try (ResultSet rs = ps.executeQuery()) {
-                if (!rs.next()) {
-                    return Optional.empty();
-                }
-
-                Legends legends = new Legends(rs.getString("id_veicolo"));
-
-                double kmTotali = rs.getDouble("km_totali");
-                legends.percorriKm(kmTotali);
-
+                if (!rs.next()) return Optional.empty();
+                Legends legends = new Legends(rs.getString("id_macchina"));
+                legends.percorriKm(rs.getDouble("km_macchina"));
                 caricaPezziDelVeicolo(conn, legends);
-
                 return Optional.of(legends);
             }
-
         } catch (Exception e) {
             throw new DAOException("Errore durante la ricerca della Legends", e);
         }
@@ -257,30 +193,14 @@ public class SqliteVeicoloDAO implements VeicoloDAO {
 
     @Override
     public List<Legends> trovaTutteLegends() {
-        String sql = """
-            SELECT id_veicolo
-            FROM veicolo
-            WHERE tipo_veicolo = ?
-            ORDER BY id_veicolo
-            """;
-
+        String sql = "SELECT id_macchina FROM macchine ORDER BY id_macchina";
         List<Legends> risultato = new ArrayList<>();
-
-        try (
-                Connection conn = getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)
-        ) {
-            ps.setString(1, TipoVeicolo.LEGENDS.name());
-
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    trovaLegendsPerId(rs.getString("id_veicolo"))
-                            .ifPresent(risultato::add);
-                }
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                String id = rs.getString("id_macchina");
+                trovaLegendsPerId(id).ifPresent(risultato::add);
             }
-
             return risultato;
-
         } catch (Exception e) {
             throw new DAOException("Errore durante il caricamento delle Legends", e);
         }
@@ -288,36 +208,60 @@ public class SqliteVeicoloDAO implements VeicoloDAO {
 
     private void caricaPezziDelVeicolo(Connection conn, Legends legends) throws Exception {
         String sql = """
-            SELECT p.id_pezzo, p.tipo_pezzo, p.km_max, p.tempo_max, p.km_attuali, p.tempo_attuale
-            FROM pezzo p
-            JOIN veicolo_pezzo vp ON p.id_pezzo = vp.id_pezzo
-            WHERE vp.id_veicolo = ?
+            SELECT id_pezzo, tipo,
+                   COALESCE(km_max, 0) AS km_max,
+                   COALESCE(tempo_max, 0) AS tempo_max,
+                   COALESCE(km, 0) AS km,
+                   COALESCE(tempo_utilizzo, 0) AS tempo_utilizzo
+            FROM pezzo
+            WHERE id_macchina = ?
+            ORDER BY tipo, id_pezzo
             """;
-
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, legends.getIdVeicolo());
-
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    legends.aggiungiPezzo(creaPezzoDaResultSet(rs));
+                    TipoPezzo tipo = tipoJava(rs.getString("tipo"));
+                    if (tipo != null) legends.aggiungiPezzo(creaPezzoDaResultSet(rs));
                 }
             }
         }
     }
 
     private Pezzo creaPezzoDaResultSet(ResultSet rs) throws Exception {
-        Pezzo pezzo = new Pezzo(
-                rs.getString("id_pezzo"),
-                TipoPezzo.valueOf(rs.getString("tipo_pezzo")),
-                rs.getDouble("km_max"),
-                rs.getInt("tempo_max")
-        );
-
-        pezzo.aggiornaUtilizzo(
-                rs.getDouble("km_attuali"),
-                rs.getInt("tempo_attuale")
-        );
-
+        TipoPezzo tipo = tipoJava(rs.getString("tipo"));
+        if (tipo == null) throw new DAOException("Tipo pezzo non gestito: " + rs.getString("tipo"));
+        Pezzo pezzo = new Pezzo(rs.getString("id_pezzo"), tipo, rs.getDouble("km_max"), rs.getInt("tempo_max"));
+        pezzo.aggiornaUtilizzo(rs.getDouble("km"), rs.getInt("tempo_utilizzo"));
         return pezzo;
+    }
+
+    private String tipoDatabase(TipoPezzo tipo) {
+        return switch (tipo) {
+            case RUOTA -> "pneumatico";
+            case FRENO -> "freno";
+            default -> tipo.name().toLowerCase(Locale.ROOT);
+        };
+    }
+
+    private TipoPezzo tipoJava(String valore) {
+        if (valore == null) return null;
+        return switch (valore.trim().toLowerCase(Locale.ROOT)) {
+            case "pneumatico", "pneumatici", "ruota", "gomme" -> TipoPezzo.RUOTA;
+            case "freno", "freni" -> TipoPezzo.FRENO;
+            case "scocca" -> TipoPezzo.SCOCCA;
+            case "motore" -> TipoPezzo.MOTORE;
+            case "cambio" -> TipoPezzo.CAMBIO;
+            case "volante" -> TipoPezzo.VOLANTE;
+            default -> null;
+        };
+    }
+
+    private void validaId(String id) {
+        if (id == null || id.isBlank()) throw new IllegalArgumentException("L'id del veicolo non può essere vuoto");
+    }
+
+    private void validaTipo(TipoPezzo tipo) {
+        if (tipo == null) throw new IllegalArgumentException("Il tipo del pezzo non può essere null");
     }
 }

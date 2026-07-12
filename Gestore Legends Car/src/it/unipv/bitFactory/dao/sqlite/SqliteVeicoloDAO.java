@@ -1,4 +1,4 @@
-package it.unipv.bitFactory.dao.veicoli;
+package it.unipv.bitFactory.dao.sqlite;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -14,6 +14,7 @@ import it.unipv.bitFactory.dao.DAOException;
 import it.unipv.bitFactory.model.pezzi.Pezzo;
 import it.unipv.bitFactory.model.pezzi.TipoPezzo;
 import it.unipv.bitFactory.model.veicoli.Legends;
+import it.unipv.bitFactory.dao.VeicoloDAO;
 
 public class SqliteVeicoloDAO implements VeicoloDAO {
 
@@ -251,7 +252,6 @@ public class SqliteVeicoloDAO implements VeicoloDAO {
             case "freno", "freni" -> TipoPezzo.FRENO;
             case "scocca" -> TipoPezzo.SCOCCA;
             case "motore" -> TipoPezzo.MOTORE;
-            case "cambio" -> TipoPezzo.CAMBIO;
             case "volante" -> TipoPezzo.VOLANTE;
             default -> null;
         };

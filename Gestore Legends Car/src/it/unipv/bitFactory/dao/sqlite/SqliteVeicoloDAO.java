@@ -1,4 +1,4 @@
-package it.unipv.bitFactory.dao.veicoli;
+package it.unipv.bitFactory.dao.sqlite;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 import it.unipv.bitFactory.dao.DAOException;
+import it.unipv.bitFactory.dao.VeicoloDAO;
 import it.unipv.bitFactory.model.pezzi.Pezzo;
 import it.unipv.bitFactory.model.pezzi.TipoPezzo;
 import it.unipv.bitFactory.model.veicoli.Legends;
@@ -191,7 +192,7 @@ public class SqliteVeicoloDAO implements VeicoloDAO {
                     PreparedStatement psVeicolo = conn.prepareStatement(inserisciVeicolo);
                     PreparedStatement psAssociazione = conn.prepareStatement(associaPezzo)
             ) {
-                psVeicolo.setString(1, legends.getIdVeicolo());
+                psVeicolo.setString(1, legends.getId());
                 psVeicolo.setString(2, legends.getTipoVeicolo().name());
                 psVeicolo.setDouble(3, legends.getKmTotali());
                 psVeicolo.executeUpdate();

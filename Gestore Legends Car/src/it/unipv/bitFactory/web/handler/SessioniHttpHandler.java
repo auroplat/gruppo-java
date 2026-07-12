@@ -7,12 +7,13 @@ import java.util.Objects;
 import com.sun.net.httpserver.HttpExchange;
 
 import it.unipv.bitFactory.controller.GestioneSessioniController;
-import it.unipv.bitFactory.model.sessioni.Gara;
 import it.unipv.bitFactory.model.sessioni.Sessione;
-import it.unipv.bitFactory.model.sessioni.Test;
+import it.unipv.bitFactory.model.sessioni.SessioneFactory;
+import it.unipv.bitFactory.model.sessioni.TipoSessione;
 import it.unipv.bitFactory.web.view.HtmlRenderer;
 
-public final class SessioniHttpHandler extends BaseHttpHandler {
+public final class SessioniHttpHandler
+        extends BaseHttpHandler {
 
     private final GestioneSessioniController controller;
     private final HtmlRenderer renderer;
@@ -21,12 +22,17 @@ public final class SessioniHttpHandler extends BaseHttpHandler {
             GestioneSessioniController controller,
             HtmlRenderer renderer) {
 
-        this.controller = Objects.requireNonNull(controller);
-        this.renderer = Objects.requireNonNull(renderer);
+        this.controller =
+                Objects.requireNonNull(controller);
+
+        this.renderer =
+                Objects.requireNonNull(renderer);
     }
 
     @Override
-    public void handle(HttpExchange exchange) throws IOException {
+    public void handle(
+            HttpExchange exchange) throws IOException {
+
         if (isGet(exchange)) {
             mostraSessioni(exchange);
             return;
@@ -37,15 +43,21 @@ public final class SessioniHttpHandler extends BaseHttpHandler {
             return;
         }
 
-        exchange.getResponseHeaders().set("Allow", "GET, POST");
+        exchange.getResponseHeaders()
+                .set("Allow", "GET, POST");
+
         sendHtml(
                 exchange,
                 405,
-                renderer.renderErrore("Metodo HTTP non supportato")
+                renderer.renderErrore(
+                        "Metodo HTTP non supportato"
+                )
         );
     }
 
-    private void mostraSessioni(HttpExchange exchange) throws IOException {
+    private void mostraSessioni(
+            HttpExchange exchange) throws IOException {
+
         sendResource(
                 exchange,
                 "/web/sessioni.html",
@@ -53,44 +65,80 @@ public final class SessioniHttpHandler extends BaseHttpHandler {
         );
     }
 
-    private void creaSessione(HttpExchange exchange) throws IOException {
-        try {
-            Map<String, String> form = leggiParametriForm(exchange);
+    private void creaSessione(
+            HttpExchange exchange) throws IOException {
 
-            String idMacchina = parametroObbligatorio(form, "macchina");
-            String tipo = parametroObbligatorio(form, "tipoSessione");
-            String luogo = parametroObbligatorio(form, "luogo");
+        try {
+            Map<String, String> form =
+                    leggiParametriForm(exchange);
+
+            String idMacchina =
+                    parametroObbligatorio(
+                            form,
+                            "macchina"
+                    );
+
+            String tipo =
+                    parametroObbligatorio(
+                            form,
+                            "tipoSessione"
+                    );
+
+            String luogo =
+                    parametroObbligatorio(
+                            form,
+                            "luogo"
+                    );
 
             double kmPercorsi = Double.parseDouble(
-                    parametroObbligatorio(form, "kmPercorsi")
-                            .replace(',', '.')
+                    parametroObbligatorio(
+                            form,
+                            "kmPercorsi"
+                    ).replace(',', '.')
             );
 
             int tempoPassato = Integer.parseInt(
-                    parametroObbligatorio(form, "tempoPassato")
+                    parametroObbligatorio(
+                            form,
+                            "tempoPassato"
+                    )
             );
 
-            Sessione sessione = creaOggettoSessione(
-                    form,
-                    tipo,
-                    luogo,
-                    kmPercorsi,
-                    tempoPassato
+            Sessione sessione =
+                    creaOggettoSessione(
+                            form,
+                            tipo,
+                            luogo,
+                            kmPercorsi,
+                            tempoPassato
+                    );
+
+            controller.registraSessione(
+                    idMacchina,
+                    sessione
             );
 
-            controller.registraSessione(idMacchina, sessione);
-            redirect(exchange, "/sessioni?success=1");
+            redirect(
+                    exchange,
+                    "/sessioni?success=1"
+            );
 
         } catch (IllegalArgumentException e) {
-            sendHtml(exchange, 400, renderer.renderErrore(e.getMessage()));
+            sendHtml(
+                    exchange,
+                    400,
+                    renderer.renderErrore(e.getMessage())
+            );
 
         } catch (RuntimeException e) {
             e.printStackTrace();
+
             sendHtml(
                     exchange,
                     500,
                     renderer.renderErrore(
-                            "Errore durante la registrazione della sessione"
+                            "Errore durante la registrazione "
+                            + "della sessione"
                     )
             );
         }
@@ -103,30 +151,16 @@ public final class SessioniHttpHandler extends BaseHttpHandler {
             double kmPercorsi,
             int tempoPassato) {
 
-        if ("TEST".equalsIgnoreCase(tipo)) {
-            return new Test(
-                    luogo,
-                    kmPercorsi,
-                    tempoPassato,
-                    parametroObbligatorio(form, "descrizione")
-            );
-        }
+        TipoSessione tipoSessione =
+                TipoSessione.daStringa(tipo);
 
-        if ("GARA".equalsIgnoreCase(tipo)) {
-            int posizione = Integer.parseInt(
-                    parametroObbligatorio(form, "posizione")
-            );
-
-            return new Gara(
-                    luogo,
-                    kmPercorsi,
-                    tempoPassato,
-                    posizione
-            );
-        }
-
-        throw new IllegalArgumentException(
-                "Tipo di sessione non valido: " + tipo
+        return SessioneFactory.crea(
+                tipoSessione,
+                luogo,
+                kmPercorsi,
+                tempoPassato,
+                form.get("descrizione"),
+                form.get("posizione")
         );
     }
 }

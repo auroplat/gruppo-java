@@ -1,4 +1,4 @@
-package it.unipv.bitFactory.dao.magazzino;
+package it.unipv.bitFactory.dao.sqlite;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -13,6 +13,8 @@ import it.unipv.bitFactory.model.magazzino.SoglieMagazzino;
 import it.unipv.bitFactory.model.magazzino.StatoDisponibilita;
 import it.unipv.bitFactory.model.magazzino.VoceMagazzino;
 import it.unipv.bitFactory.model.pezzi.TipoPezzo;
+
+import it.unipv.bitFactory.dao.MagazzinoDAO;
 
 public class SqliteMagazzinoDAO implements MagazzinoDAO {
 

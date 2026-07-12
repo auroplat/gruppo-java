@@ -1,14 +1,16 @@
 package it.unipv.bitFactory.model.pezzi;
 
 public class Pezzo {
-	//vedere se pubblico o primavato 
+	
 	private final TipoPezzo tipo;
 	private final double kmMax;
     private double kmAttuali;
     private final int tempoMax;
     private int tempoAttuale;
     
-    public Pezzo(TipoPezzo tipo, double kmMax, int tempoMax) {
+    private final String id;
+    
+    public Pezzo(String id, TipoPezzo tipo, double kmMax, int tempoMax) {
         if (tipo == null) {
             throw new IllegalArgumentException("Il tipo del pezzo non può essere null");
         }
@@ -16,7 +18,8 @@ public class Pezzo {
         if (kmMax < 0 || tempoMax < 0) {
             throw new IllegalArgumentException("Km max e tempo max non possono essere negativi");
         }
-
+        
+        this.id = id;
         this.tipo = tipo;
         this.kmMax = kmMax;
         this.tempoMax = tempoMax;

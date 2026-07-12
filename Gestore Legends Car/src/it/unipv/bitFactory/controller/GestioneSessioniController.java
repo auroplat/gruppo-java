@@ -3,7 +3,6 @@ package it.unipv.bitFactory.controller;
 import java.util.List;
 
 import it.unipv.bitFactory.dao.LegendsDAO;
-import it.unipv.bitFactory.model.pezzi.TipoPezzo;
 import it.unipv.bitFactory.model.sessioni.Sessione;
 import it.unipv.bitFactory.model.veicoli.Legends;
 
@@ -38,23 +37,6 @@ public class GestioneSessioniController {
         legendsDAO.salva(legends);
     }
 
-    public void registraSessioneSelettiva(
-            String idMacchina,
-            Sessione sessione,
-            List<TipoPezzo> pezziDaAggiornare) {
-
-        Legends legends = legendsDAO.trovaPerId(idMacchina)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Macchina non trovata: " + idMacchina
-                ));
-
-        legends.applicaSessioneSelettiva(
-                sessione,
-                pezziDaAggiornare
-        );
-
-        legendsDAO.salva(legends);
-    }
 
     /**
      * Dati minimi richiesti dall'endpoint /api/macchine.

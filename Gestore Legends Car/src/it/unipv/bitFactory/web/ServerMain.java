@@ -24,7 +24,6 @@ import it.unipv.bitFactory.model.magazzino.SoglieMagazzino;
 
 import it.unipv.bitFactory.service.GestoreEventi;
 import it.unipv.bitFactory.service.MagazzinoService;
-import it.unipv.bitFactory.service.SistemaNotifiche;
 import it.unipv.bitFactory.service.SistemaPrenotazioni;
 
 import it.unipv.bitFactory.web.view.HtmlRenderer;
@@ -133,15 +132,12 @@ public final class ServerMain {
                             eventoDAO
                     );
 
-            SistemaNotifiche sistemaNotifiche =
-                    new SistemaNotifiche();
 
             SistemaPrenotazioni sistemaPrenotazioni =
                     new SistemaPrenotazioni(
                             clienteDAO,
                             eventoDAO,
-                            prenotazioneDAO,
-                            sistemaNotifiche
+                            prenotazioneDAO
                     );
 
             GestionePrenotazioniController

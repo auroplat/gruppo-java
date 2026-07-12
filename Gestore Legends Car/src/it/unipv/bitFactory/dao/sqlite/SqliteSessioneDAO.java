@@ -47,8 +47,6 @@ public final class SqliteSessioneDAO implements SessioneDAO {
 
         try {
             Class.forName("org.sqlite.JDBC");
-            creaTabellaSeNecessaria();
-
         } catch (ClassNotFoundException e) {
             throw new DAOException(
                     "Driver SQLite JDBC non trovato",
@@ -94,9 +92,6 @@ public final class SqliteSessioneDAO implements SessioneDAO {
             statement.setDouble(4, sessione.getKmPercorsi());
             statement.setInt(5, sessione.getTempo());
 
-            /*
-             * La descrizione esiste solamente nelle sessioni Test.
-             */
             if (sessione instanceof Test test) {
                 statement.setString(
                         6,
@@ -109,9 +104,6 @@ public final class SqliteSessioneDAO implements SessioneDAO {
                 );
             }
 
-            /*
-             * La posizione finale esiste solamente nelle sessioni Gara.
-             */
             if (sessione instanceof Gara gara) {
                 statement.setInt(
                         7,
@@ -135,73 +127,11 @@ public final class SqliteSessioneDAO implements SessioneDAO {
         }
     }
 
-    private void creaTabellaSeNecessaria() {
-
-        String creaTabellaSql = """
-                CREATE TABLE IF NOT EXISTS sessioni (
-                    id_sessione INTEGER PRIMARY KEY AUTOINCREMENT,
-
-                    id_macchina TEXT NOT NULL,
-
-                    tipo_sessione TEXT NOT NULL
-                        CHECK (
-                            tipo_sessione IN ('TEST', 'GARA')
-                        ),
-
-                    luogo TEXT NOT NULL,
-
-                    km_percorsi REAL NOT NULL
-                        CHECK (km_percorsi >= 0),
-
-                    tempo_passato INTEGER NOT NULL
-                        CHECK (tempo_passato >= 0),
-
-                    descrizione TEXT,
-
-                    posizione INTEGER
-                        CHECK (
-                            posizione IS NULL
-                            OR posizione > 0
-                        ),
-
-                    data_registrazione TEXT NOT NULL
-                        DEFAULT CURRENT_TIMESTAMP,
-
-                    FOREIGN KEY (id_macchina)
-                        REFERENCES macchine(id_macchina)
-                        ON UPDATE CASCADE
-                        ON DELETE CASCADE
-                )
-                """;
-
-        String creaIndiceSql = """
-                CREATE INDEX IF NOT EXISTS idx_sessioni_macchina
-                ON sessioni(id_macchina)
-                """;
-
-        try (Connection connection = apriConnessione();
-             Statement statement = connection.createStatement()) {
-
-            statement.executeUpdate(creaTabellaSql);
-            statement.executeUpdate(creaIndiceSql);
-
-        } catch (SQLException e) {
-            throw new DAOException(
-                    "Errore durante la creazione della tabella sessioni",
-                    e
-            );
-        }
-    }
-
     private Connection apriConnessione() throws SQLException {
 
         Connection connection =
                 DriverManager.getConnection(jdbcUrl);
 
-        /*
-         * In SQLite le foreign key devono essere abilitate
-         * per ogni nuova connessione.
-         */
         try (Statement statement = connection.createStatement()) {
             statement.execute("PRAGMA foreign_keys = ON");
         }

@@ -1,8 +1,9 @@
 package it.unipv.bitFactory.model.veicoli;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EnumMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -13,81 +14,93 @@ import it.unipv.bitFactory.model.sessioni.Sessione;
 public class Legends extends Macchina {
 
     private final String id;
-    private final Map<TipoPezzo, Pezzo> pezzi;
+    private final Map<String, Pezzo> pezzi;
 
     public Legends(String id) {
-    
         if (id == null || id.isBlank()) {
             throw new IllegalArgumentException("L'id della macchina non può essere vuoto");
         }
-
-        this.id = id;
-        this.pezzi = new EnumMap<>(TipoPezzo.class);
+        this.id = id.trim();
+        this.pezzi = new LinkedHashMap<>();
     }
 
     public void montaPezzo(TipoPezzo tipo, double kmMax, int tempoMax) {
-        Pezzo pezzo = new Pezzo(tipo, kmMax, tempoMax);
-        modificaPezzo(pezzo);
+        aggiungiPezzo(new Pezzo(tipo, kmMax, tempoMax));
     }
 
+    public void aggiungiPezzo(Pezzo pezzo) {
+        if (pezzo == null) {
+            throw new IllegalArgumentException("Il pezzo non può essere null");
+        }
+        if (pezzi.containsKey(pezzo.getIdPezzo())) {
+            throw new IllegalArgumentException("Esiste già un pezzo con id: " + pezzo.getIdPezzo());
+        }
+        pezzi.put(pezzo.getIdPezzo(), pezzo);
+    }
+
+    /** Compatibilità con il codice già presente: aggiorna o inserisce in base all'id. */
     public void modificaPezzo(Pezzo pezzo) {
         if (pezzo == null) {
             throw new IllegalArgumentException("Il pezzo non può essere null");
         }
-
-        pezzi.put(pezzo.getTipo(), pezzo);
+        pezzi.put(pezzo.getIdPezzo(), pezzo);
     }
 
     public Pezzo getPezzo(TipoPezzo tipo) {
-        return pezzi.get(tipo);
+        if (tipo == null) {
+            return null;
+        }
+        return pezzi.values().stream()
+                .filter(pezzo -> pezzo.getTipo() == tipo)
+                .findFirst()
+                .orElse(null);
+    }
+
+    public List<Pezzo> getPezzi(TipoPezzo tipo) {
+        if (tipo == null) {
+            return List.of();
+        }
+        List<Pezzo> risultato = new ArrayList<>();
+        for (Pezzo pezzo : pezzi.values()) {
+            if (pezzo.getTipo() == tipo) {
+                risultato.add(pezzo);
+            }
+        }
+        return Collections.unmodifiableList(risultato);
     }
 
     public Collection<Pezzo> getTuttiPezzi() {
         return Collections.unmodifiableCollection(pezzi.values());
-
     }
 
     public String getId() {
         return id;
     }
 
+    public String getIdVeicolo() {
+        return id;
+    }
+
+    public TipoVeicolo getTipoVeicolo() {
+        return TipoVeicolo.LEGENDS;
+    }
+
     @Override
     public void applicaSessione(Sessione sessione) {
-  
-        if (sessione == null) {
-            throw new IllegalArgumentException("La sessione non può essere null");
-        }
-
-    	double km = sessione.getKmPercorsi();
+        validaSessione(sessione);
+        double km = sessione.getKmPercorsi();
         int tempo = sessione.getTempo();
-        super.percorriKm(km);
-
+        percorriKm(km);
         for (Pezzo pezzo : pezzi.values()) {
             pezzo.aggiornaUtilizzo(km, tempo);
         }
     }
 
-    @Override
-    public void applicaSessioneSelettiva(Sessione sessione,List<TipoPezzo> tipiDaAggiornare) {
-        
+
+
+    private void validaSessione(Sessione sessione) {
         if (sessione == null) {
             throw new IllegalArgumentException("La sessione non può essere null");
-        }
-
-        if (tipiDaAggiornare == null) {
-            throw new IllegalArgumentException("La lista dei tipi da aggiornare non può essere null");
-        }
-
-    	double km = sessione.getKmPercorsi();
-        int tempo = sessione.getTempo();
-        super.percorriKm(km);
-    	
-        for (TipoPezzo tipo : tipiDaAggiornare) {
-            Pezzo pezzo = pezzi.get(tipo);
-
-            if (pezzo != null) {
-                pezzo.aggiornaUtilizzo(km, tempo);
-            }
         }
     }
 
@@ -100,4 +113,3 @@ public class Legends extends Macchina {
                 '}';
     }
 }
-

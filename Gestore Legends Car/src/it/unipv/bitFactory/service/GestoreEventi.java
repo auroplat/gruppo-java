@@ -1,35 +1,38 @@
 package it.unipv.bitFactory.service;
 
-import it.unipv.bitFactory.dao.csv.EventoDAO;
-import it.unipv.bitFactory.model.prenotazioni.Evento;
-import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
+import it.unipv.bitFactory.dao.EventoDAO;
+import it.unipv.bitFactory.model.prenotazioni.Evento;
 
-public class GestoreEventi {
+public final class GestoreEventi {
 
-    private List<Evento> eventi;
+    private final EventoDAO eventoDAO;
 
-    public GestoreEventi() {
+    public GestoreEventi(EventoDAO eventoDAO) {
 
-        EventoDAO dao = new EventoDAO();
-        eventi = dao.caricaEventi("eventi.csv");
+        this.eventoDAO = Objects.requireNonNull(
+                eventoDAO,
+                "Il DAO degli eventi non può essere null"
+        );
     }
 
     public List<Evento> getEventi() {
 
-        return Collections.unmodifiableList(eventi);
+        return List.copyOf(
+                eventoDAO.caricaEventi()
+        );
     }
 
-    public Evento cercaEvento(String nome) {
+    public Evento cercaEvento(String nomeEvento) {
 
-        for (Evento e : eventi) {
-
-            if (e.getNomeEvento().equalsIgnoreCase(nome)) {
-                return e;
-            }
+        if (nomeEvento == null || nomeEvento.isBlank()) {
+            return null;
         }
 
-        return null;
+        return eventoDAO.cercaEvento(
+                nomeEvento.trim()
+        );
     }
 }

@@ -2,54 +2,7 @@ package it.unipv.bitFactory.web.view;
 
 public final class HtmlRenderer {
 
-    public String renderHome() {
-
-        return """
-            <!DOCTYPE html>
-            <html lang="it">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport"
-                      content="width=device-width, initial-scale=1.0">
-                <title>BitFactory</title>
-                <link rel="stylesheet" href="/styles.css">
-            </head>
-            <body>
-                <main class="page-shell"
-                      style="padding: 80px 0;">
-
-                    <section class="booking-card">
-                        <h1 style="font-size: 3rem;">
-                            BitFactory
-                        </h1>
-
-                        <nav style="
-                            display: grid;
-                            gap: 12px;
-                            margin-top: 30px;
-                        ">
-                            <a class="primary-button"
-                               href="/">
-                                Eventi
-                            </a>
-
-                            <a class="primary-button"
-                               href="/sessioni">
-                                Sessioni
-                            </a>
-
-                            <a class="primary-button"
-                               href="/magazzino">
-                                Magazzino
-                            </a>
-                        </nav>
-                    </section>
-                </main>
-            </body>
-            </html>
-            """;
-    }
-
+ 
     public String renderErrore(String messaggio) {
 
         String messaggioSicuro =

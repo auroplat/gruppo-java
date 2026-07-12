@@ -14,8 +14,8 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
 
-import it.unipv.bitFactory.dao.DAOException;
-import it.unipv.bitFactory.dao.LegendsDAO;
+import it.unipv.bitFactory.dao.interfacce.DAOException;
+import it.unipv.bitFactory.dao.interfacce.LegendsDAO;
 import it.unipv.bitFactory.model.pezzi.Pezzo;
 import it.unipv.bitFactory.model.pezzi.TipoPezzo;
 import it.unipv.bitFactory.model.veicoli.Legends;

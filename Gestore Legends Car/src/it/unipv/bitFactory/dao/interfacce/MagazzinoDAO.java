@@ -1,4 +1,4 @@
-package it.unipv.bitFactory.dao;
+package it.unipv.bitFactory.dao.interfacce;
 
 import java.util.List;
 import java.util.Optional;

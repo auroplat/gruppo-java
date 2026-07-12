@@ -11,8 +11,8 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-import it.unipv.bitFactory.dao.DAOException;
-import it.unipv.bitFactory.dao.EventoDAO;
+import it.unipv.bitFactory.dao.interfacce.DAOException;
+import it.unipv.bitFactory.dao.interfacce.EventoDAO;
 import it.unipv.bitFactory.model.prenotazioni.Evento;
 
 public final class SqliteEventoDAO implements EventoDAO {

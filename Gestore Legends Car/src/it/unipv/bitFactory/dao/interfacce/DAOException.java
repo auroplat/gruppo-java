@@ -1,4 +1,4 @@
-package it.unipv.bitFactory.dao;
+package it.unipv.bitFactory.dao.interfacce;
 
 public class DAOException extends RuntimeException {
 

@@ -12,8 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import it.unipv.bitFactory.dao.DAOException;
-import it.unipv.bitFactory.dao.PrenotazioneDAO;
+import it.unipv.bitFactory.dao.interfacce.DAOException;
+import it.unipv.bitFactory.dao.interfacce.PrenotazioneDAO;
 import it.unipv.bitFactory.model.prenotazioni.Prenotazione;
 
 public final class SqlitePrenotazioneDAO

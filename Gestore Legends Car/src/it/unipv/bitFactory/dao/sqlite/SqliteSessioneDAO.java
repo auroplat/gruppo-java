@@ -9,8 +9,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 
-import it.unipv.bitFactory.dao.DAOException;
-import it.unipv.bitFactory.dao.SessioneDAO;
+import it.unipv.bitFactory.dao.interfacce.DAOException;
+import it.unipv.bitFactory.dao.interfacce.SessioneDAO;
 import it.unipv.bitFactory.model.sessioni.Gara;
 import it.unipv.bitFactory.model.sessioni.Sessione;
 import it.unipv.bitFactory.model.sessioni.Test;

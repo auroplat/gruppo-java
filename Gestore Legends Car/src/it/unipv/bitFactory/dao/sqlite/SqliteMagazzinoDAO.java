@@ -8,12 +8,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import it.unipv.bitFactory.dao.DAOException;
+import it.unipv.bitFactory.dao.interfacce.DAOException;
+import it.unipv.bitFactory.dao.interfacce.MagazzinoDAO;
 import it.unipv.bitFactory.model.magazzino.SoglieMagazzino;
 import it.unipv.bitFactory.model.magazzino.StatoDisponibilita;
 import it.unipv.bitFactory.model.magazzino.VoceMagazzino;
 import it.unipv.bitFactory.model.pezzi.TipoPezzo;
-import it.unipv.bitFactory.dao.MagazzinoDAO;
 
 public class SqliteMagazzinoDAO implements MagazzinoDAO {
 

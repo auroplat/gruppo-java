@@ -3,7 +3,7 @@ package it.unipv.bitFactory.service;
 import java.util.List;
 import java.util.Objects;
 
-import it.unipv.bitFactory.dao.EventoDAO;
+import it.unipv.bitFactory.dao.interfacce.EventoDAO;
 import it.unipv.bitFactory.model.prenotazioni.Evento;
 
 public final class GestoreEventi {

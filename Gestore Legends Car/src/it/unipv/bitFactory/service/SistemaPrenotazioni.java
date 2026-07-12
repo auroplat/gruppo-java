@@ -1,8 +1,8 @@
 package it.unipv.bitFactory.service;
 
-import it.unipv.bitFactory.dao.ClienteDAO;
-import it.unipv.bitFactory.dao.EventoDAO;
-import it.unipv.bitFactory.dao.PrenotazioneDAO;
+import it.unipv.bitFactory.dao.interfacce.ClienteDAO;
+import it.unipv.bitFactory.dao.interfacce.EventoDAO;
+import it.unipv.bitFactory.dao.interfacce.PrenotazioneDAO;
 import it.unipv.bitFactory.model.persona.Cliente;
 import it.unipv.bitFactory.model.prenotazioni.Evento;
 import it.unipv.bitFactory.model.prenotazioni.Prenotazione;

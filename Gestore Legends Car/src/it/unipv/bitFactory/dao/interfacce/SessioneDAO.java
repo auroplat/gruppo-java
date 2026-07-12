@@ -1,4 +1,4 @@
-package it.unipv.bitFactory.dao;
+package it.unipv.bitFactory.dao.interfacce;
 
 import it.unipv.bitFactory.model.sessioni.Sessione;
 

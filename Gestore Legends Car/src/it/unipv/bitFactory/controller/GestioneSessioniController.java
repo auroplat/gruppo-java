@@ -2,8 +2,8 @@ package it.unipv.bitFactory.controller;
 
 import java.util.List;
 
-import it.unipv.bitFactory.dao.LegendsDAO;
-import it.unipv.bitFactory.dao.SessioneDAO;
+import it.unipv.bitFactory.dao.interfacce.LegendsDAO;
+import it.unipv.bitFactory.dao.interfacce.SessioneDAO;
 import it.unipv.bitFactory.model.sessioni.Sessione;
 import it.unipv.bitFactory.model.veicoli.Legends;
 

@@ -5,14 +5,12 @@ import java.nio.file.Path;
 import it.unipv.bitFactory.controller.GestioneMagazzinoController;
 import it.unipv.bitFactory.controller.GestionePrenotazioniController;
 import it.unipv.bitFactory.controller.GestioneSessioniController;
-
-import it.unipv.bitFactory.dao.ClienteDAO;
-import it.unipv.bitFactory.dao.EventoDAO;
-import it.unipv.bitFactory.dao.LegendsDAO;
-import it.unipv.bitFactory.dao.MagazzinoDAO;
-import it.unipv.bitFactory.dao.PrenotazioneDAO;
-import it.unipv.bitFactory.dao.SessioneDAO;
-
+import it.unipv.bitFactory.dao.interfacce.ClienteDAO;
+import it.unipv.bitFactory.dao.interfacce.EventoDAO;
+import it.unipv.bitFactory.dao.interfacce.LegendsDAO;
+import it.unipv.bitFactory.dao.interfacce.MagazzinoDAO;
+import it.unipv.bitFactory.dao.interfacce.PrenotazioneDAO;
+import it.unipv.bitFactory.dao.interfacce.SessioneDAO;
 import it.unipv.bitFactory.dao.sqlite.SqliteClienteDAO;
 import it.unipv.bitFactory.dao.sqlite.SqliteEventoDAO;
 import it.unipv.bitFactory.dao.sqlite.SqliteLegendsDAO;

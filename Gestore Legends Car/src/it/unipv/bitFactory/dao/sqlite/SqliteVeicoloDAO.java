@@ -10,11 +10,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
-import it.unipv.bitFactory.dao.DAOException;
+import it.unipv.bitFactory.dao.interfacce.DAOException;
+import it.unipv.bitFactory.dao.interfacce.VeicoloDAO;
 import it.unipv.bitFactory.model.pezzi.Pezzo;
 import it.unipv.bitFactory.model.pezzi.TipoPezzo;
 import it.unipv.bitFactory.model.veicoli.Legends;
-import it.unipv.bitFactory.dao.VeicoloDAO;
 
 public class SqliteVeicoloDAO implements VeicoloDAO {
 

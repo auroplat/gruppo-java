@@ -12,8 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import it.unipv.bitFactory.dao.ClienteDAO;
-import it.unipv.bitFactory.dao.DAOException;
+import it.unipv.bitFactory.dao.interfacce.ClienteDAO;
+import it.unipv.bitFactory.dao.interfacce.DAOException;
 import it.unipv.bitFactory.model.persona.Cliente;
 
 public final class SqliteClienteDAO implements ClienteDAO {

@@ -2,7 +2,7 @@ package it.unipv.bitFactory.service;
 
 import java.util.List;
 
-import it.unipv.bitFactory.dao.MagazzinoDAO;
+import it.unipv.bitFactory.dao.interfacce.MagazzinoDAO;
 import it.unipv.bitFactory.model.magazzino.StatoDisponibilita;
 import it.unipv.bitFactory.model.magazzino.VoceMagazzino;
 

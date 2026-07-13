@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Gestione eventi racing BitFactory">
     <title>BitFactory | Gestione eventi</title>
-    <link rel="stylesheet" href="styles1.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <header class="page-shell topbar">
@@ -19,8 +19,12 @@
     <main class="page-shell hero">
         <section class="hero-copy" aria-labelledby="page-title">
             <span class="eyebrow">Gestione eventi</span>
-            <h1 id="page-title">Vivi la pista. Prenota il tuo posto.</h1>
-
+            <h1 id="page-title">Eventi sempre aggiornati.</h1>
+            <p>
+                L'elenco viene caricato dal database quando apri la pagina.
+                Se aggiungi o elimini un evento dal database, ricarica la pagina
+                per vedere la lista aggiornata.
+            </p>
 
             <div class="hero-stats" aria-label="Dati principali sugli eventi">
                 <div class="stat">
@@ -155,23 +159,12 @@
             return firstDate.localeCompare(secondDate) || first.nomeEvento.localeCompare(second.nomeEvento);
         }
 
-        function buildBookingUrl(evento) {
-
-            const url = new URL(
-                "/prenotazione",
-                window.location.origin
-            );
-
-            url.searchParams.set(
-                "evento",
-                evento.nomeEvento
-            );
-
-            url.searchParams.set(
-                "data",
-                formatLongDate(evento.dataEvento)
-            );
-
+        function buildBookingUrl(evento, modalita) {
+            const url = new URL("prenotazione.html", window.location.href);
+            url.searchParams.set("evento", evento.nomeEvento);
+            url.searchParams.set("data", formatLongDate(evento.dataEvento));
+            url.searchParams.set("posti", String(evento.postiDisponibili));
+            url.searchParams.set("modalita", modalita);
             return url.toString();
         }
 
@@ -192,7 +185,10 @@
             }
 
             const orderedEvents = [...events].sort(compareEvents);
-            const totalSeats = orderedEvents.reduce((total, event) => total + Math.max(0, event.postiDisponibili), 0);
+            const totalSeats = orderedEvents.reduce(
+                (total, event) => total + Math.max(0, event.postiDisponibili),
+                0
+            );
 
             eventCount.textContent = String(orderedEvents.length).padStart(2, "0");
             seatCount.textContent = String(totalSeats);
@@ -204,11 +200,11 @@
                 const hasSeats = evento.postiDisponibili > 0;
 
                 const card = document.createElement("article");
-                card.className = `event-card${hasSeats ? "" : " is-full"}`;
+                card.className = "event-card";
 
                 const bookingAction = hasSeats
-                    ? `<a class="reserve-button" href="${buildBookingUrl(evento)}">Prenota</a>`
-                    : `<span class="reserve-button disabled" aria-disabled="true">Completo</span>`;
+                    ? `<a class="reserve-button" href="${buildBookingUrl(evento, "prenota")}">Prenota</a>`
+                    : `<a class="reserve-button" href="${buildBookingUrl(evento, "annulla")}" title="Apri la gestione della prenotazione">Annulla</a>`;
 
                 card.innerHTML = `
                     <time class="event-date" datetime="${date.datetime}">
@@ -219,7 +215,9 @@
                         <h3>${escapeHtml(evento.nomeEvento)}</h3>
                         <div class="event-meta">
                             <span>${escapeHtml(formatLongDate(evento.dataEvento))}</span>
-                            <span>${evento.postiDisponibili} ${evento.postiDisponibili === 1 ? "posto" : "posti"}</span>
+                            <span>${hasSeats
+                                ? `${evento.postiDisponibili} ${evento.postiDisponibili === 1 ? "posto" : "posti"}`
+                                : "Evento completo"}</span>
                         </div>
                     </div>
                     ${bookingAction}

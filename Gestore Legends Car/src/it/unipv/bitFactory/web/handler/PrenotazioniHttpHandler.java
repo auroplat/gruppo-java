@@ -3,6 +3,7 @@ package it.unipv.bitFactory.web.handler;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
@@ -37,9 +38,6 @@ public final class PrenotazioniHttpHandler
     public void handle(HttpExchange exchange)
             throws IOException {
 
-        /*
-         * Il form deve inviare i dati tramite POST.
-         */
         if (!isPost(exchange)) {
 
             exchange.getResponseHeaders().set(
@@ -52,7 +50,7 @@ public final class PrenotazioniHttpHandler
                     405,
                     renderer.renderErrore(
                             "Questa pagina accetta soltanto "
-                                    + "l'invio del form di prenotazione."
+                                    + "richieste POST."
                     )
             );
 
@@ -60,112 +58,42 @@ public final class PrenotazioniHttpHandler
         }
 
         try {
-            /*
-             * Legge tutti i dati inviati dal form HTML.
-             */
+
             Map<String, String> parametri =
                     leggiParametriForm(exchange);
 
-            String nomeEvento =
-                    parametroObbligatorio(
-                            parametri,
-                            "evento"
-                    );
-
-            String nome =
-                    parametroObbligatorio(
-                            parametri,
-                            "nome"
-                    );
-
-            String cognome =
-                    parametroObbligatorio(
-                            parametri,
-                            "cognome"
-                    );
-
-            String dataNascitaTesto =
-                    parametroObbligatorio(
-                            parametri,
-                            "dataNascita"
-                    );
-
-            String email =
-                    parametroObbligatorio(
-                            parametri,
-                            "email"
-                    );
-
-            String telefono =
-                    parametroObbligatorio(
-                            parametri,
-                            "telefono"
-                    );
-
             /*
-             * Una checkbox non selezionata non viene
-             * inviata dal browser.
+             * Entrambi i form inviano questo parametro:
+             *
+             * prenota  -> nuova prenotazione
+             * annulla  -> cancellazione prenotazione
              */
-            String patenteValida =
-                    parametri.get("patenteValida");
+            String operazione =
+                    parametroObbligatorio(
+                            parametri,
+                            "operazione"
+                    ).toLowerCase(Locale.ROOT);
 
-            if (!"true".equalsIgnoreCase(patenteValida)) {
-                throw new IllegalArgumentException(
-                        "Devi dichiarare di possedere "
-                                + "una patente di guida valida."
-                );
+            switch (operazione) {
+
+                case "prenota" ->
+                        gestisciPrenotazione(
+                                exchange,
+                                parametri
+                        );
+
+                case "annulla" ->
+                        gestisciAnnullamento(
+                                exchange,
+                                parametri
+                        );
+
+                default ->
+                        throw new IllegalArgumentException(
+                                "Operazione non riconosciuta: "
+                                        + operazione
+                        );
             }
-
-            /*
-             * Nel campo HTML il simbolo + è mostrato
-             * separatamente. Il valore ricevuto deve
-             * quindi contenere soltanto cifre.
-             */
-            if (!telefono.matches("[0-9]{6,15}")) {
-                throw new IllegalArgumentException(
-                        "Il numero di telefono deve contenere "
-                                + "da 6 a 15 cifre, incluso "
-                                + "il prefisso internazionale."
-                );
-            }
-
-            LocalDate dataNascita =
-                    LocalDate.parse(dataNascitaTesto);
-
-            Cliente cliente = new Cliente(
-                    nome,
-                    cognome,
-                    dataNascita,
-                    email,
-                    "+" + telefono
-            );
-
-            /*
-             * Delega la prenotazione al controller.
-             */
-            String messaggio =
-                    controller.prenota(
-                            cliente,
-                            nomeEvento
-                    );
-
-            boolean successo =
-                    messaggio != null
-                            && messaggio
-                            .toLowerCase()
-                            .startsWith(
-                                    "prenotazione completata"
-                            );
-
-            sendHtml(
-                    exchange,
-                    successo ? 201 : 400,
-                    renderer.renderEsitoPrenotazione(
-                            successo,
-                            messaggio,
-                            nomeEvento
-                    )
-            );
 
         } catch (DateTimeParseException e) {
 
@@ -197,9 +125,180 @@ public final class PrenotazioniHttpHandler
                     500,
                     renderer.renderErrore(
                             "Si è verificato un errore durante "
-                                    + "il salvataggio della prenotazione."
+                                    + "la gestione della prenotazione."
                     )
             );
         }
+    }
+
+    private void gestisciPrenotazione(
+            HttpExchange exchange,
+            Map<String, String> parametri)
+            throws IOException {
+
+        String nomeEvento =
+                parametroObbligatorio(
+                        parametri,
+                        "evento"
+                );
+
+        String nome =
+                parametroObbligatorio(
+                        parametri,
+                        "nome"
+                );
+
+        String cognome =
+                parametroObbligatorio(
+                        parametri,
+                        "cognome"
+                );
+
+        String dataNascitaTesto =
+                parametroObbligatorio(
+                        parametri,
+                        "dataNascita"
+                );
+
+        String email =
+                parametroObbligatorio(
+                        parametri,
+                        "email"
+                );
+
+        String telefono =
+                parametroObbligatorio(
+                        parametri,
+                        "telefono"
+                );
+
+        String patenteValida =
+                parametri.get("patenteValida");
+
+        /*
+         * Una checkbox non selezionata non viene
+         * proprio inviata dal browser.
+         */
+        if (!"true".equalsIgnoreCase(patenteValida)) {
+
+            throw new IllegalArgumentException(
+                    "Devi dichiarare di possedere "
+                            + "una patente di guida valida."
+            );
+        }
+
+        /*
+         * Il simbolo + viene mostrato separatamente
+         * nell'interfaccia.
+         */
+        if (!telefono.matches("[0-9]{6,15}")) {
+
+            throw new IllegalArgumentException(
+                    "Il numero di telefono deve contenere "
+                            + "da 6 a 15 cifre, incluso "
+                            + "il prefisso internazionale."
+            );
+        }
+
+        LocalDate dataNascita =
+                LocalDate.parse(dataNascitaTesto);
+
+        Cliente cliente = new Cliente(
+                nome,
+                cognome,
+                dataNascita,
+                email,
+                "+" + telefono
+        );
+
+        String messaggio =
+                controller.prenota(
+                        cliente,
+                        nomeEvento
+                );
+
+        boolean successo =
+                iniziaCon(
+                        messaggio,
+                        "prenotazione completata"
+                );
+
+        sendHtml(
+                exchange,
+                successo ? 201 : 400,
+                renderer.renderEsitoPrenotazione(
+                        successo,
+                        messaggio,
+                        nomeEvento
+                )
+        );
+    }
+
+    private void gestisciAnnullamento(
+            HttpExchange exchange,
+            Map<String, String> parametri)
+            throws IOException {
+
+        /*
+         * Per eliminare una prenotazione servono
+         * soltanto nome evento ed email.
+         */
+        String nomeEvento =
+                parametroObbligatorio(
+                        parametri,
+                        "evento"
+                );
+
+        String email =
+                parametroObbligatorio(
+                        parametri,
+                        "email"
+                ).toLowerCase(Locale.ROOT);
+
+        if (!email.contains("@")) {
+
+            throw new IllegalArgumentException(
+                    "L'indirizzo email inserito non è valido."
+            );
+        }
+
+        String messaggio =
+                controller.annullaPrenotazione(
+                        email,
+                        nomeEvento
+                );
+
+        boolean successo =
+                iniziaCon(
+                        messaggio,
+                        "prenotazione annullata"
+                );
+
+        /*
+         * Per ora viene riutilizzata la stessa pagina
+         * grafica dell'esito della prenotazione.
+         *
+         * Il messaggio mostrerà comunque chiaramente
+         * che la prenotazione è stata annullata.
+         */
+        sendHtml(
+                exchange,
+                successo ? 200 : 404,
+                renderer.renderEsitoPrenotazione(
+                        successo,
+                        messaggio,
+                        nomeEvento
+                )
+        );
+    }
+
+    private boolean iniziaCon(
+            String messaggio,
+            String prefisso) {
+
+        return messaggio != null
+                && messaggio
+                .toLowerCase(Locale.ROOT)
+                .startsWith(prefisso);
     }
 }

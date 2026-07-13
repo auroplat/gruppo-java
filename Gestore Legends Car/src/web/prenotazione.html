@@ -2,354 +2,475 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-
-    <meta name="description"
-          content="Completa la prenotazione per un evento racing BitFactory">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Completa o annulla una prenotazione BitFactory">
     <title>BitFactory | Prenotazione</title>
+    <link rel="stylesheet" href="styles.css">
 
-    <link rel="stylesheet" href="/styles1.css">
+    <style>
+        .booking-page {
+            width: min(100% - 32px, 920px);
+            margin: 0 auto;
+            padding: 38px 0 64px;
+        }
+
+        .booking-card-single {
+            padding: 28px 30px 30px;
+            border: 1px solid rgba(255, 255, 255, 0.13);
+            border-radius: 24px;
+            background: #11141a;
+            box-shadow: 0 22px 60px rgba(0, 0, 0, 0.28);
+        }
+
+        .booking-card-single h1 {
+            margin: 0;
+            font-size: clamp(1.35rem, 3vw, 1.75rem);
+        }
+
+        .event-summary {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin: 18px 0 22px;
+            padding: 15px 17px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.035);
+        }
+
+        .event-summary span,
+        .event-summary small {
+            display: block;
+            color: #aeb3bd;
+        }
+
+        .event-summary strong {
+            display: block;
+            margin-top: 3px;
+            color: #fff;
+        }
+
+        .booking-tabs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 24px;
+            padding: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.025);
+        }
+
+        .booking-tab {
+            min-height: 44px;
+            border: 0;
+            border-radius: 10px;
+            background: transparent;
+            color: #b8bdc7;
+            font: inherit;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        .booking-tab.active {
+            background: #f43f46;
+            color: #fff;
+        }
+
+        .booking-tab:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .booking-panel[hidden] {
+            display: none;
+        }
+
+        .booking-form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 19px 18px;
+        }
+
+        .booking-field {
+            min-width: 0;
+        }
+
+        .booking-field.full {
+            grid-column: 1 / -1;
+        }
+
+        .booking-field label {
+            display: block;
+            margin-bottom: 8px;
+            color: #f1f2f5;
+            font-size: 0.92rem;
+            font-weight: 800;
+        }
+
+        .booking-field .label-hint {
+            margin-left: 8px;
+            color: #9da3ad;
+            font-size: 0.76rem;
+            font-weight: 600;
+        }
+
+        .booking-field input {
+            width: 100%;
+            min-height: 49px;
+            padding: 0 15px;
+            border: 1px solid #373c45;
+            border-radius: 13px;
+            outline: none;
+            background: #1d2027;
+            color: #fff;
+            font: inherit;
+            box-sizing: border-box;
+        }
+
+        .booking-field input:focus {
+            border-color: #f43f46;
+            box-shadow: 0 0 0 3px rgba(244, 63, 70, 0.14);
+        }
+
+        .phone-control {
+            display: flex;
+            align-items: center;
+            min-height: 49px;
+            padding-left: 15px;
+            border: 1px solid #373c45;
+            border-radius: 13px;
+            background: #1d2027;
+        }
+
+        .phone-control:focus-within {
+            border-color: #f43f46;
+            box-shadow: 0 0 0 3px rgba(244, 63, 70, 0.14);
+        }
+
+        .phone-control > span {
+            color: #fff;
+            font-weight: 900;
+        }
+
+        .phone-control input {
+            min-height: 47px;
+            border: 0;
+            background: transparent;
+            box-shadow: none;
+        }
+
+        .phone-control input:focus {
+            border: 0;
+            box-shadow: none;
+        }
+
+        .license-box {
+            grid-column: 1 / -1;
+            padding: 15px;
+            border: 1px solid #373c45;
+            border-radius: 14px;
+            background: #1d2027;
+        }
+
+        .license-box label {
+            display: flex;
+            align-items: flex-start;
+            gap: 11px;
+            margin: 0;
+            cursor: pointer;
+        }
+
+        .license-box input {
+            width: 18px;
+            min-height: 18px;
+            margin-top: 3px;
+            accent-color: #f43f46;
+        }
+
+        .license-box strong,
+        .license-box small {
+            display: block;
+        }
+
+        .license-box small {
+            margin-top: 3px;
+            color: #aeb3bd;
+            font-weight: 600;
+        }
+
+        .booking-submit,
+        .cancel-submit {
+            width: 100%;
+            min-height: 48px;
+            margin-top: 10px;
+            border: 0;
+            border-radius: 13px;
+            color: #fff;
+            font: inherit;
+            font-weight: 900;
+            cursor: pointer;
+        }
+
+        .booking-submit {
+            background: #f43f46;
+        }
+
+        .cancel-submit {
+            background: #b3262d;
+        }
+
+        .booking-submit:hover,
+        .cancel-submit:hover {
+            filter: brightness(1.07);
+        }
+
+        .booking-note {
+            margin: 16px 0 0;
+            color: #aeb3bd;
+            font-size: 0.86rem;
+        }
+
+        .full-event-warning {
+            display: none;
+            margin-bottom: 18px;
+            padding: 13px 15px;
+            border: 1px solid rgba(244, 63, 70, 0.35);
+            border-radius: 13px;
+            background: rgba(244, 63, 70, 0.09);
+            color: #ffd9db;
+        }
+
+        .full-event-warning.visible {
+            display: block;
+        }
+
+        @media (max-width: 680px) {
+            .booking-page {
+                width: min(100% - 22px, 920px);
+                padding-top: 22px;
+            }
+
+            .booking-card-single {
+                padding: 22px 18px 24px;
+                border-radius: 19px;
+            }
+
+            .booking-form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .booking-field.full,
+            .license-box {
+                grid-column: auto;
+            }
+
+            .event-summary {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+        }
+    </style>
 </head>
-
 <body>
-
     <header class="page-shell topbar">
-
-        <a class="brand"
-           href="/"
-           aria-label="Torna agli eventi">
-
+        <a class="brand" href="eventi.html" aria-label="Torna agli eventi">
             <span class="brand-mark">B</span>
             <span>BitFactory</span>
         </a>
-
-        <a class="topbar-link" href="/">
-            ← Torna agli eventi
-        </a>
-
+        <a class="topbar-link" href="eventi.html">← Torna agli eventi</a>
     </header>
 
-    <main class="page-shell booking-layout">
+    <main class="booking-page">
+        <section class="booking-card-single" aria-labelledby="page-title">
+            <h1 id="page-title">Dati della prenotazione</h1>
 
-        <section class="booking-intro"
-                 aria-labelledby="booking-title">
-
-            <span class="eyebrow">
-                Prenotazione evento
-            </span>
-
-            <h1 id="booking-title">
-                Sei quasi in pista.
-            </h1>
-
-            <p>
-                Inserisci i tuoi dati personali e conferma
-                la dichiarazione sulla patente.
-            </p>
-
-            <div class="selected-event"
-                 aria-live="polite">
-
-                <span>Evento selezionato</span>
-
-                <strong id="selected-event-name">
-                    Evento racing
-                </strong>
-
-                <p id="selected-event-details">
-                    Data evento
-                </p>
-
+            <div class="event-summary" aria-live="polite">
+                <div>
+                    <span>Evento selezionato</span>
+                    <strong id="selected-event-name">Evento racing</strong>
+                </div>
+                <small id="selected-event-details">Data evento</small>
             </div>
 
-        </section>
-
-        <section class="booking-card"
-                 aria-labelledby="form-title">
-
-            <h2 id="form-title">
-                Dati della prenotazione
-            </h2>
-
-            <form
-                id="booking-form"
-                method="post"
-                action="/prenotazioni">
-
-                <!-- Nome dell'evento inviato al server Java -->
-                <input
-                    type="hidden"
-                    id="evento"
-                    name="evento">
-
-                <!-- Mantenuto per visualizzare la data selezionata -->
-                <input
-                    type="hidden"
-                    id="data-evento"
-                    name="dataEvento">
-
-                <div class="form-grid">
-
-                    <div class="field">
-
-                        <label for="nome">
-                            Nome
-                        </label>
-
-                        <input
-                            id="nome"
-                            name="nome"
-                            type="text"
-                            autocomplete="given-name"
-                            maxlength="100"
-                            required>
-
-                    </div>
-
-                    <div class="field">
-
-                        <label for="cognome">
-                            Cognome
-                        </label>
-
-                        <input
-                            id="cognome"
-                            name="cognome"
-                            type="text"
-                            autocomplete="family-name"
-                            maxlength="100"
-                            required>
-
-                    </div>
-
-                    <div class="field">
-
-                        <label for="data-nascita">
-                            Data di nascita
-                        </label>
-
-                        <input
-                            id="data-nascita"
-                            name="dataNascita"
-                            type="date"
-                            autocomplete="bday"
-                            required>
-
-                    </div>
-
-                    <div class="field">
-
-                        <label for="telefono">
-
-                            Telefono
-
-                            <span class="label-hint">
-                                inserire il prefisso
-                            </span>
-
-                        </label>
-
-                        <div class="phone-input">
-
-                            <span aria-hidden="true">
-                                +
-                            </span>
-
-                            <input
-                                id="telefono"
-                                name="telefono"
-                                type="text"
-                                inputmode="numeric"
-                                pattern="[0-9]{6,15}"
-                                minlength="6"
-                                maxlength="15"
-                                autocomplete="tel"
-                                placeholder="393331234567"
-                                title="Inserisci da 6 a 15 cifre, includendo il prefisso internazionale"
-                                required>
-
-                        </div>
-
-                    </div>
-
-                    <div class="field full">
-
-                        <label for="email">
-                            Email
-                        </label>
-
-                        <input
-                            id="email"
-                            name="email"
-                            type="email"
-                            autocomplete="email"
-                            maxlength="254"
-                            required>
-
-                    </div>
-
-                    <div class="field full license-field">
-
-                        <label
-                            class="checkbox-row"
-                            for="patente-valida">
-
-                            <input
-                                id="patente-valida"
-                                name="patenteValida"
-                                type="checkbox"
-                                value="true"
-                                required>
-
-                            <span>
-                                Dichiaro di possedere una
-                                patente di guida valida.
-
-                                <small id="patente-note">
-                                    Campo obbligatorio per
-                                    completare la prenotazione.
-                                </small>
-                            </span>
-
-                        </label>
-
-                    </div>
-
-                </div>
-
+            <div class="booking-tabs" role="tablist" aria-label="Gestione prenotazione">
                 <button
-                    class="primary-button"
-                    type="submit">
-
-                    Conferma prenotazione
-
+                    class="booking-tab active"
+                    id="booking-tab"
+                    type="button"
+                    role="tab"
+                    aria-selected="true"
+                    aria-controls="booking-panel">
+                    Prenota
                 </button>
 
-                <p class="form-note">
-                    La prenotazione è consentita soltanto
-                    ai clienti maggiorenni in possesso
-                    di una patente valida.
-                </p>
+                <button
+                    class="booking-tab"
+                    id="cancel-tab"
+                    type="button"
+                    role="tab"
+                    aria-selected="false"
+                    aria-controls="cancel-panel">
+                    Annulla prenotazione
+                </button>
+            </div>
 
-            </form>
+            <div class="full-event-warning" id="full-event-warning" role="status">
+                L'evento è completo. Puoi comunque annullare una prenotazione già esistente.
+            </div>
 
+            <div class="booking-panel" id="booking-panel" role="tabpanel" aria-labelledby="booking-tab">
+                <form id="booking-form" action="/prenotazioni" method="post">
+                    <input type="hidden" name="operazione" value="prenota">
+                    <input type="hidden" id="evento" name="evento">
+                    <input type="hidden" id="data-evento" name="dataEvento">
+
+                    <div class="booking-form-grid">
+                        <div class="booking-field">
+                            <label for="nome">Nome</label>
+                            <input id="nome" name="nome" type="text" autocomplete="given-name" required>
+                        </div>
+
+                        <div class="booking-field">
+                            <label for="cognome">Cognome</label>
+                            <input id="cognome" name="cognome" type="text" autocomplete="family-name" required>
+                        </div>
+
+                        <div class="booking-field">
+                            <label for="data-nascita">Data di nascita</label>
+                            <input id="data-nascita" name="dataNascita" type="date" autocomplete="bday" required>
+                        </div>
+
+                        <div class="booking-field">
+                            <label for="telefono">
+                                Telefono
+                                <span class="label-hint">inserire il prefisso</span>
+                            </label>
+                            <div class="phone-control">
+                                <span aria-hidden="true">+</span>
+                                <input
+                                    id="telefono"
+                                    name="telefono"
+                                    type="text"
+                                    inputmode="numeric"
+                                    pattern="[0-9]+"
+                                    autocomplete="tel"
+                                    placeholder="393331234567"
+                                    title="Inserisci solo numeri, includendo il prefisso internazionale"
+                                    required>
+                            </div>
+                        </div>
+
+                        <div class="booking-field full">
+                            <label for="email">Email</label>
+                            <input id="email" name="email" type="email" autocomplete="email" required>
+                        </div>
+
+                        <div class="license-box">
+                            <label for="patente-valida">
+                                <input id="patente-valida" name="patenteValida" type="checkbox" value="true" required>
+                                <span>
+                                    <strong>Dichiaro di possedere una patente di guida valida.</strong>
+                                    <small>Campo obbligatorio per completare la prenotazione.</small>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <button class="booking-submit" type="submit">Conferma prenotazione</button>
+                    <p class="booking-note">La prenotazione verrà salvata nel database.</p>
+                </form>
+            </div>
+
+            <div class="booking-panel" id="cancel-panel" role="tabpanel" aria-labelledby="cancel-tab" hidden>
+                <form id="cancel-form" action="/prenotazioni" method="post">
+                    <input type="hidden" name="operazione" value="annulla">
+
+                    <div class="booking-form-grid">
+                        <div class="booking-field full">
+                            <label for="annulla-evento">Nome evento</label>
+                            <input id="annulla-evento" name="evento" type="text" readonly required>
+                        </div>
+
+                        <div class="booking-field full">
+                            <label for="annulla-email">Email cliente</label>
+                            <input
+                                id="annulla-email"
+                                name="email"
+                                type="email"
+                                autocomplete="email"
+                                placeholder="cliente@email.com"
+                                required>
+                        </div>
+                    </div>
+
+                    <button class="cancel-submit" type="submit">Annulla prenotazione</button>
+                    <p class="booking-note">
+                    </p>
+                </form>
+            </div>
         </section>
-
     </main>
 
     <script>
+        const params = new URLSearchParams(window.location.search);
+        const eventName = params.get("evento") || "Evento racing";
+        const eventDate = params.get("data") || "Data da definire";
+        const seats = Number(params.get("posti"));
+        const requestedMode = params.get("modalita");
+        const eventIsFull = Number.isFinite(seats) && seats <= 0;
 
-        const params =
-                new URLSearchParams(window.location.search);
+        const bookingTab = document.getElementById("booking-tab");
+        const cancelTab = document.getElementById("cancel-tab");
+        const bookingPanel = document.getElementById("booking-panel");
+        const cancelPanel = document.getElementById("cancel-panel");
+        const fullEventWarning = document.getElementById("full-event-warning");
 
-        const eventName =
-                params.get("evento")?.trim() || "";
+        document.getElementById("selected-event-name").textContent = eventName;
+        document.getElementById("selected-event-details").textContent = eventDate;
+        document.getElementById("evento").value = eventName;
+        document.getElementById("data-evento").value = eventDate;
+        document.getElementById("annulla-evento").value = eventName === "Evento racing" ? "" : eventName;
 
-        const eventDate =
-                params.get("data")?.trim()
-                || "Data da definire";
+        const birthDateInput = document.getElementById("data-nascita");
+        birthDateInput.max = new Date().toISOString().split("T")[0];
 
-        const selectedEventName =
-                document.getElementById(
-                        "selected-event-name"
-                );
+        const telefonoInput = document.getElementById("telefono");
+        telefonoInput.addEventListener("input", () => {
+            telefonoInput.value = telefonoInput.value.replace(/\D/g, "");
+        });
 
-        const selectedEventDetails =
-                document.getElementById(
-                        "selected-event-details"
-                );
+        function showPanel(mode) {
+            const showCancel = mode === "annulla";
 
-        const eventoInput =
-                document.getElementById("evento");
+            bookingPanel.hidden = showCancel;
+            cancelPanel.hidden = !showCancel;
 
-        const dataEventoInput =
-                document.getElementById("data-evento");
+            bookingTab.classList.toggle("active", !showCancel);
+            cancelTab.classList.toggle("active", showCancel);
 
-
-        if (eventName) {
-
-            selectedEventName.textContent =
-                    eventName;
-
-            selectedEventDetails.textContent =
-                    eventDate;
-
-            eventoInput.value =
-                    eventName;
-
-            dataEventoInput.value =
-                    eventDate;
-
-        } else {
-
-            selectedEventName.textContent =
-                    "Nessun evento selezionato";
-
-            selectedEventDetails.textContent =
-                    "Torna alla pagina degli eventi "
-                    + "e selezionane uno.";
+            bookingTab.setAttribute("aria-selected", String(!showCancel));
+            cancelTab.setAttribute("aria-selected", String(showCancel));
         }
 
-        const birthDateInput =
-                document.getElementById(
-                        "data-nascita"
-                );
+        bookingTab.addEventListener("click", () => {
+            if (!bookingTab.disabled) {
+                showPanel("prenota");
+            }
+        });
 
-        const dataMassima =
-                new Date();
+        cancelTab.addEventListener("click", () => {
+            showPanel("annulla");
+        });
 
-        dataMassima.setFullYear(
-                dataMassima.getFullYear() - 18
-        );
-
-        birthDateInput.max =
-                dataMassima
-                        .toISOString()
-                        .split("T")[0];
-
-        const telefonoInput =
-                document.getElementById("telefono");
-
-        telefonoInput.addEventListener(
-                "input",
-                () => {
-
-                    telefonoInput.value =
-                            telefonoInput.value
-                                    .replace(/\D/g, "")
-                                    .slice(0, 15);
-                }
-        );
-
-        /*
-         * Blocca l'invio soltanto quando la pagina
-         * è stata aperta senza selezionare un evento.
-         *
-         * Negli altri casi il form viene inviato
-         * normalmente a POST /prenotazioni.
-         */
-        const bookingForm =
-                document.getElementById("booking-form");
-
-        bookingForm.addEventListener(
-                "submit",
-                event => {
-
-                    if (!eventoInput.value.trim()) {
-
-                        event.preventDefault();
-
-                        alert(
-                            "Nessun evento selezionato. "
-                            + "Torna alla pagina degli eventi."
-                        );
-                    }
-                }
-        );
+        if (eventIsFull) {
+            bookingTab.disabled = true;
+            fullEventWarning.classList.add("visible");
+            showPanel("annulla");
+        } else {
+            showPanel(requestedMode === "annulla" ? "annulla" : "prenota");
+        }
     </script>
-
 </body>
 </html>

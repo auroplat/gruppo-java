@@ -1,57 +1,48 @@
 package it.unipv.bitFactory.controller;
 
 import java.util.List;
+import java.util.Map;
 
-import it.unipv.bitFactory.dao.SqliteMagazzinoDAO;
-import it.unipv.bitFactory.model.magazzino.StatoDisponibilita;
-import it.unipv.bitFactory.model.magazzino.VoceMagazzino;
-import it.unipv.bitFactory.model.pezzi.Pezzo;
-import it.unipv.bitFactory.service.MagazzinoService;
+import it.unipv.bitFactory.model.pezzi.TipoPezzo;
+import it.unipv.bitFactory.model.veicoli.Legends;
+import it.unipv.bitFactory.service.veicoli.VeicoloService;
 
-public class GestioneMagazzinoController {
+public class GestioneVeicoliController {
 
-    private static final String PERCORSO_DATABASE_PREDEFINITO = "data/database_bitfactory.db";
+    private final VeicoloService veicoloService;
 
-    private final MagazzinoService magazzinoService;
-
-    /**
-     * Costruttore mantenuto per compatibilità con ServerMain.
-     * Crea automaticamente DAO e service usando il database del progetto.
-     */
-    public GestioneMagazzinoController() {
-        this(new MagazzinoService(
-                new SqliteMagazzinoDAO(PERCORSO_DATABASE_PREDEFINITO)
-        ));
-    }
-
-    public GestioneMagazzinoController(MagazzinoService magazzinoService) {
-        if (magazzinoService == null) {
-            throw new IllegalArgumentException("Il service magazzino non può essere null");
+    public GestioneVeicoliController(VeicoloService veicoloService) {
+        if (veicoloService == null) {
+            throw new IllegalArgumentException("Il service veicoli non può essere null");
         }
-        this.magazzinoService = magazzinoService;
+        this.veicoloService = veicoloService;
     }
 
-    public StatoDisponibilita controllaPezzo(String idPezzo) {
-        return magazzinoService.controllaDisponibilita(idPezzo);
+    public Legends creaLegends(String idVeicolo) {
+        return veicoloService.creaLegends(idVeicolo);
     }
 
-    public VoceMagazzino cercaPezzo(String idPezzo) {
-        return magazzinoService.cercaPezzo(idPezzo);
+    public void eliminaLegends(String idVeicolo) {
+        veicoloService.eliminaLegends(idVeicolo);
     }
 
-    public List<VoceMagazzino> visualizzaMagazzino() {
-        return magazzinoService.visualizzaMagazzino();
+    public Legends sostituisciPezzo(String idVeicolo, String idPezzoVecchio, String idPezzoNuovo) {
+        return veicoloService.sostituisciPezzo(idVeicolo, idPezzoVecchio, idPezzoNuovo);
     }
 
-    public List<VoceMagazzino> visualizzaPezziDisponibili() {
-        return magazzinoService.visualizzaPezziDisponibili();
+    public boolean puoCreareLegends() {
+        return veicoloService.puoCreareLegends();
     }
 
-    public void aggiungiPezzo(Pezzo pezzo) {
-        magazzinoService.aggiungiPezzo(pezzo);
+    public Legends cercaLegends(String idVeicolo) {
+        return veicoloService.trovaLegendsPerId(idVeicolo);
     }
 
-    public void rimuoviPezzo(String idPezzo) {
-        magazzinoService.rimuoviPezzo(idPezzo);
+    public List<Legends> visualizzaLegends() {
+        return veicoloService.trovaTutteLegends();
+    }
+
+    public Map<TipoPezzo, Integer> visualizzaRicettaLegends() {
+        return veicoloService.getRicettaLegends();
     }
 }

@@ -1,4 +1,4 @@
-package it.unipv.bitFactory.dao.magazzino;
+package it.unipv.bitFactory.dao.sqlite;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
-import it.unipv.bitFactory.dao.DAOException;
+import it.unipv.bitFactory.dao.interfacce.DAOException;
 import it.unipv.bitFactory.model.magazzino.VoceMagazzino;
 import it.unipv.bitFactory.model.pezzi.Pezzo;
 import it.unipv.bitFactory.model.pezzi.TipoPezzo;

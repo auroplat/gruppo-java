@@ -51,11 +51,8 @@ public final class ServerMain {
 
             HtmlRenderer renderer = new HtmlRenderer();
 
-            // Il lock delle sessioni è completamente interno a
-            // UsuraPezziThread: non serve alcun lock esterno condiviso.
             usuraPezziThread = new UsuraPezziThread(sessioniController);
 
-            // start(), non run(): crea un thread reale distinto.
             usuraPezziThread.start();
 
             BitFactoryWebServer server = new BitFactoryWebServer(

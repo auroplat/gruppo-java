@@ -14,14 +14,9 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
-import it.unipv.bitFactory.controller.GestioneMagazzinoController;
-import it.unipv.bitFactory.controller.GestionePrenotazioniController;
-import it.unipv.bitFactory.controller.GestioneSessioniController;
+import it.unipv.bitFactory.controller.*;
 import it.unipv.bitFactory.thread.UsuraPezziThread;
-import it.unipv.bitFactory.web.handler.MagazzinoHttpHandler;
-import it.unipv.bitFactory.web.handler.MacchineApiHttpHandler;
-import it.unipv.bitFactory.web.handler.PrenotazioniHttpHandler;
-import it.unipv.bitFactory.web.handler.SessioniHttpHandler;
+import it.unipv.bitFactory.web.handler.*;
 import it.unipv.bitFactory.web.view.HtmlRenderer;
 
 public final class BitFactoryWebServer {
@@ -40,15 +35,11 @@ public final class BitFactoryWebServer {
             HtmlRenderer renderer) throws IOException {
 
         if (porta < 1 || porta > 65535) {
-            throw new IllegalArgumentException(
-                    "La porta deve essere compresa tra 1 e 65535"
-            );
+            throw new IllegalArgumentException("La porta deve essere compresa tra 1 e 65535");
         }
 
         if (numeroThread <= 0) {
-            throw new IllegalArgumentException(
-                    "Il numero di thread deve essere maggiore di zero"
-            );
+            throw new IllegalArgumentException("Il numero di thread deve essere maggiore di zero");
         }
 
         Objects.requireNonNull(sessioniController);
@@ -60,7 +51,12 @@ public final class BitFactoryWebServer {
         this.porta = porta;
 
         server = HttpServer.create(new InetSocketAddress(porta), 0);
+        
+        ///////////////////////////////////////////////////////////////////QUA///////////////////////////////////////////
         threadPool = Executors.newFixedThreadPool(numeroThread);
+        server.setExecutor(threadPool);
+        
+        
 
         server.createContext("/", this::gestisciHome);
 
@@ -113,10 +109,6 @@ public final class BitFactoryWebServer {
                 )
         );
 
-        /*
-         * Senza il MagazzinoThread, il magazzino viene servito
-         * direttamente dal pool HTTP come tutti gli altri handler.
-         */
         server.createContext(
                 "/magazzino",
                 new MagazzinoHttpHandler(
@@ -133,7 +125,6 @@ public final class BitFactoryWebServer {
                 )
         );
 
-        server.setExecutor(threadPool);
     }
 
     private void gestisciHome(HttpExchange exchange)

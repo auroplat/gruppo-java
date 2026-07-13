@@ -1,10 +1,10 @@
-package it.unipv.bitFactory.service;
+package it.unipv.bitFactory.service.veicoli;
 
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
-import it.unipv.bitFactory.dao.VeicoloDAO;
+import it.unipv.bitFactory.dao.veicoli.VeicoloDAO;
 import it.unipv.bitFactory.model.pezzi.Pezzo;
 import it.unipv.bitFactory.model.pezzi.TipoPezzo;
 import it.unipv.bitFactory.model.veicoli.Legends;
@@ -18,68 +18,57 @@ public class VeicoloService {
         if (veicoloDAO == null) {
             throw new IllegalArgumentException("Il DAO veicoli non può essere null");
         }
+
         this.veicoloDAO = veicoloDAO;
         this.veicoloDAO.inizializzaDatabase();
     }
 
     public Legends creaLegends(String idVeicolo) {
-        validaIdVeicolo(idVeicolo);
+        if (idVeicolo == null || idVeicolo.isBlank()) {
+            throw new IllegalArgumentException("L'id del veicolo non può essere vuoto");
+        }
+
         if (veicoloDAO.esisteVeicolo(idVeicolo)) {
             throw new IllegalArgumentException("Esiste già un veicolo con id: " + idVeicolo);
         }
 
         Map<TipoPezzo, Integer> ricetta = getRicettaLegends();
+
         controllaDisponibilitaPezzi(ricetta);
 
         Legends legends = new Legends(idVeicolo);
+
         for (Map.Entry<TipoPezzo, Integer> richiesta : ricetta.entrySet()) {
-            List<Pezzo> pezziLiberi = veicoloDAO.trovaPezziLiberi(richiesta.getKey(), richiesta.getValue());
-            if (pezziLiberi.size() < richiesta.getValue()) {
-                throw new IllegalStateException("Pezzi non più disponibili per il tipo: " + richiesta.getKey());
+            TipoPezzo tipoPezzo = richiesta.getKey();
+            int quantita = richiesta.getValue();
+
+            List<Pezzo> pezziLiberi = veicoloDAO.trovaPezziLiberi(tipoPezzo, quantita);
+
+            if (pezziLiberi.size() < quantita) {
+                throw new IllegalStateException("Pezzi non più disponibili per il tipo: " + tipoPezzo);
             }
+
             for (Pezzo pezzo : pezziLiberi) {
-                legends.montaPezzo(pezzo);
+                legends.aggiungiPezzo(pezzo);
             }
         }
 
         veicoloDAO.salvaLegends(legends);
+
         return legends;
-    }
-
-    public Legends sostituisciPezzo(String idVeicolo, String idPezzoVecchio, String idPezzoNuovo) {
-        Legends legends = trovaLegendsPerId(idVeicolo);
-        Pezzo vecchio = legends.getPezzoPerId(idPezzoVecchio);
-        if (vecchio == null) {
-            throw new IllegalArgumentException("Il pezzo da sostituire non è montato sul veicolo: " + idPezzoVecchio);
-        }
-
-        Pezzo nuovo = veicoloDAO.trovaPezzoLiberoPerId(idPezzoNuovo)
-                .orElseThrow(() -> new IllegalArgumentException("Il nuovo pezzo non esiste oppure non è disponibile: " + idPezzoNuovo));
-
-        if (vecchio.getTipo() != nuovo.getTipo()) {
-            throw new IllegalArgumentException("Il pezzo sostitutivo deve essere di tipo " + vecchio.getTipo());
-        }
-
-        veicoloDAO.sostituisciPezzo(idVeicolo, idPezzoVecchio, idPezzoNuovo);
-        return trovaLegendsPerId(idVeicolo);
-    }
-
-    public void eliminaLegends(String idVeicolo) {
-        validaIdVeicolo(idVeicolo);
-        if (!veicoloDAO.esisteVeicolo(idVeicolo)) {
-            throw new IllegalArgumentException("Legends non trovata: " + idVeicolo);
-        }
-        veicoloDAO.eliminaVeicolo(idVeicolo);
     }
 
     public Map<TipoPezzo, Integer> getRicettaLegends() {
         Map<TipoPezzo, Integer> ricetta = new EnumMap<>(TipoPezzo.class);
+
         ricetta.put(TipoPezzo.SCOCCA, 1);
         ricetta.put(TipoPezzo.MOTORE, 1);
+        ricetta.put(TipoPezzo.CAMBIO, 1);
         ricetta.put(TipoPezzo.VOLANTE, 1);
         ricetta.put(TipoPezzo.RUOTA, 4);
         ricetta.put(TipoPezzo.FRENO, 4);
-        return Map.copyOf(ricetta);
+
+        return ricetta;
     }
 
     public boolean puoCreareLegends() {
@@ -92,7 +81,6 @@ public class VeicoloService {
     }
 
     public Legends trovaLegendsPerId(String idVeicolo) {
-        validaIdVeicolo(idVeicolo);
         return veicoloDAO.trovaLegendsPerId(idVeicolo)
                 .orElseThrow(() -> new IllegalArgumentException("Legends non trovata: " + idVeicolo));
     }
@@ -107,19 +95,21 @@ public class VeicoloService {
 
     private void controllaDisponibilitaPezzi(Map<TipoPezzo, Integer> ricetta) {
         for (Map.Entry<TipoPezzo, Integer> richiesta : ricetta.entrySet()) {
-            int disponibili = veicoloDAO.contaPezziLiberi(richiesta.getKey());
-            if (disponibili < richiesta.getValue()) {
-                throw new IllegalStateException(
-                        "Pezzi insufficienti per creare una Legends. Tipo: " + richiesta.getKey() +
-                        ", richiesti: " + richiesta.getValue() +
-                        ", disponibili: " + disponibili);
-            }
-        }
-    }
+            TipoPezzo tipoPezzo = richiesta.getKey();
+            int quantitaRichiesta = richiesta.getValue();
 
-    private void validaIdVeicolo(String idVeicolo) {
-        if (idVeicolo == null || idVeicolo.isBlank()) {
-            throw new IllegalArgumentException("L'id del veicolo non può essere vuoto");
+            int quantitaDisponibile = veicoloDAO.contaPezziLiberi(tipoPezzo);
+
+            if (quantitaDisponibile < quantitaRichiesta) {
+                throw new IllegalStateException(
+                        "Pezzi insufficienti per creare una Legends. Tipo pezzo: " +
+                                tipoPezzo +
+                                ", richiesti: " +
+                                quantitaRichiesta +
+                                ", disponibili: " +
+                                quantitaDisponibile
+                );
+            }
         }
     }
 }

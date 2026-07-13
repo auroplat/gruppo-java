@@ -1,4 +1,4 @@
-package it.unipv.bitFactory.dao.sqlite;
+package it.unipv.bitFactory.dao.magazzino;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -6,23 +6,30 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 
-import it.unipv.bitFactory.dao.interfacce.DAOException;
+import it.unipv.bitFactory.dao.DAOException;
+import it.unipv.bitFactory.model.magazzino.SoglieMagazzino;
+import it.unipv.bitFactory.model.magazzino.StatoDisponibilita;
 import it.unipv.bitFactory.model.magazzino.VoceMagazzino;
-import it.unipv.bitFactory.model.pezzi.Pezzo;
 import it.unipv.bitFactory.model.pezzi.TipoPezzo;
 
 public class SqliteMagazzinoDAO implements MagazzinoDAO {
 
     private final String urlDatabase;
+    private final SoglieMagazzino soglieMagazzino;
 
-    public SqliteMagazzinoDAO(String percorsoDatabase) {
+    public SqliteMagazzinoDAO(String percorsoDatabase, SoglieMagazzino soglieMagazzino) {
         if (percorsoDatabase == null || percorsoDatabase.isBlank()) {
             throw new IllegalArgumentException("Il percorso del database non può essere vuoto");
         }
+
+        if (soglieMagazzino == null) {
+            throw new IllegalArgumentException("Le soglie del magazzino non possono essere null");
+        }
+
         this.urlDatabase = "jdbc:sqlite:" + percorsoDatabase;
+        this.soglieMagazzino = soglieMagazzino;
     }
 
     private Connection getConnection() throws Exception {
@@ -31,14 +38,26 @@ public class SqliteMagazzinoDAO implements MagazzinoDAO {
 
     @Override
     public Optional<VoceMagazzino> trovaPerIdPezzo(String idPezzo) {
-        validaId(idPezzo);
-        String sql = "SELECT id_pezzo, tipo, id_macchina FROM pezzo WHERE id_pezzo = ?";
+        String sql = """
+            SELECT id_pezzo, tipo_pezzo, quantita
+            FROM magazzino
+            WHERE id_pezzo = ?
+            """;
 
-        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, idPezzo.trim());
+        try (
+                Connection conn = getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)
+        ) {
+            ps.setString(1, idPezzo);
+
             try (ResultSet rs = ps.executeQuery()) {
-                return rs.next() ? Optional.of(creaVoceDaResultSet(rs)) : Optional.empty();
+                if (rs.next()) {
+                    return Optional.of(creaVoceDaResultSet(rs));
+                }
             }
+
+            return Optional.empty();
+
         } catch (Exception e) {
             throw new DAOException("Errore durante la ricerca del pezzo in magazzino", e);
         }
@@ -46,101 +65,77 @@ public class SqliteMagazzinoDAO implements MagazzinoDAO {
 
     @Override
     public List<VoceMagazzino> trovaTutti() {
-        return eseguiRicerca("SELECT id_pezzo, tipo, id_macchina FROM pezzo ORDER BY tipo, id_pezzo");
-    }
-
-    @Override
-    public List<VoceMagazzino> trovaDisponibili() {
-        return eseguiRicerca("SELECT id_pezzo, tipo, id_macchina FROM pezzo WHERE id_macchina IS NULL ORDER BY tipo, id_pezzo");
-    }
-
-    @Override
-    public void inserisciPezzo(Pezzo pezzo) {
-        if (pezzo == null) {
-            throw new IllegalArgumentException("Il pezzo non può essere null");
-        }
-
         String sql = """
-            INSERT INTO pezzo (id_pezzo, tipo, id_macchina, km, km_max, tempo_utilizzo, tempo_max)
-            VALUES (?, ?, NULL, ?, ?, ?, ?)
+            SELECT id_pezzo, tipo_pezzo, quantita
+            FROM magazzino
+            ORDER BY tipo_pezzo, id_pezzo
             """;
 
-        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, pezzo.getIdPezzo());
-            ps.setString(2, tipoDatabase(pezzo.getTipo()));
-            ps.setDouble(3, pezzo.getKmAttuali());
-            ps.setDouble(4, pezzo.getKmMax());
-            ps.setInt(5, pezzo.getTempoAttuale());
-            ps.setInt(6, pezzo.getTempoMax());
-            ps.executeUpdate();
-        } catch (Exception e) {
-            throw new DAOException("Errore durante l'inserimento del pezzo", e);
-        }
-    }
-
-    @Override
-    public void eliminaPezzo(String idPezzo) {
-        validaId(idPezzo);
-        String sql = "DELETE FROM pezzo WHERE id_pezzo = ? AND id_macchina IS NULL";
-
-        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, idPezzo.trim());
-            if (ps.executeUpdate() != 1) {
-                throw new DAOException("Pezzo inesistente oppure montato su un veicolo: " + idPezzo);
-            }
-        } catch (DAOException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new DAOException("Errore durante l'eliminazione del pezzo", e);
-        }
-    }
-
-    private List<VoceMagazzino> eseguiRicerca(String sql) {
         List<VoceMagazzino> risultato = new ArrayList<>();
-        try (Connection conn = getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+
+        try (
+                Connection conn = getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()
+        ) {
             while (rs.next()) {
                 risultato.add(creaVoceDaResultSet(rs));
             }
+
             return risultato;
+
         } catch (Exception e) {
             throw new DAOException("Errore durante il caricamento del magazzino", e);
         }
     }
 
-    private VoceMagazzino creaVoceDaResultSet(ResultSet rs) throws Exception {
-        TipoPezzo tipo = tipoJava(rs.getString("tipo"));
-        if (tipo == null) {
-            throw new DAOException("Tipo pezzo non gestito: " + rs.getString("tipo"));
-        }
-        return new VoceMagazzino(rs.getString("id_pezzo"), tipo, rs.getString("id_macchina"));
-    }
-
-    private String tipoDatabase(TipoPezzo tipo) {
-        return switch (tipo) {
-            case RUOTA -> "pneumatico";
-            case FRENO -> "freno";
-            default -> tipo.name().toLowerCase(Locale.ROOT);
-        };
-    }
-
-    private TipoPezzo tipoJava(String valore) {
-        if (valore == null) return null;
-        return switch (valore.trim().toLowerCase(Locale.ROOT)) {
-            case "pneumatico", "pneumatici", "ruota", "gomme" -> TipoPezzo.RUOTA;
-            case "freno", "freni" -> TipoPezzo.FRENO;
-            case "scocca" -> TipoPezzo.SCOCCA;
-            case "motore" -> TipoPezzo.MOTORE;
-            case "cambio" -> TipoPezzo.CAMBIO;
-            case "volante" -> TipoPezzo.VOLANTE;
-            default -> null;
-        };
-    }
-
-    private void validaId(String idPezzo) {
+    @Override
+    public void aggiornaQuantita(String idPezzo, int nuovaQuantita) {
         if (idPezzo == null || idPezzo.isBlank()) {
             throw new IllegalArgumentException("L'id del pezzo non può essere vuoto");
         }
+
+        if (nuovaQuantita < 0) {
+            throw new IllegalArgumentException("La nuova quantità non può essere negativa");
+        }
+
+        String sql = """
+            UPDATE magazzino
+            SET quantita = ?
+            WHERE id_pezzo = ?
+            """;
+
+        try (
+                Connection conn = getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)
+        ) {
+            ps.setInt(1, nuovaQuantita);
+            ps.setString(2, idPezzo);
+
+            int righeModificate = ps.executeUpdate();
+
+            if (righeModificate == 0) {
+                throw new DAOException("Nessun pezzo trovato con id: " + idPezzo);
+            }
+
+        } catch (Exception e) {
+            throw new DAOException("Errore durante l'aggiornamento della quantità", e);
+        }
+    }
+
+    private VoceMagazzino creaVoceDaResultSet(ResultSet rs) throws Exception {
+        String idPezzo = rs.getString("id_pezzo");
+        TipoPezzo tipoPezzo = TipoPezzo.valueOf(rs.getString("tipo_pezzo"));
+        int quantita = rs.getInt("quantita");
+
+        StatoDisponibilita stato =
+                soglieMagazzino.calcolaStato(quantita);
+
+        return new VoceMagazzino(
+                idPezzo,
+                tipoPezzo,
+                quantita,
+                stato
+        );
     }
 }

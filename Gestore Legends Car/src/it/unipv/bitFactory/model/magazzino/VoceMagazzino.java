@@ -2,38 +2,55 @@ package it.unipv.bitFactory.model.magazzino;
 
 import it.unipv.bitFactory.model.pezzi.TipoPezzo;
 
-/** Rappresenta un singolo pezzo fisico, identificato dal proprio ID. */
 public class VoceMagazzino {
 
     private final String idPezzo;
     private final TipoPezzo tipoPezzo;
-    private final String idVeicolo;
+    private final int quantita;
+    private final StatoDisponibilita statoDisponibilita;
 
-    public VoceMagazzino(String idPezzo, TipoPezzo tipoPezzo, String idVeicolo) {
+    public VoceMagazzino(
+            String idPezzo,
+            TipoPezzo tipoPezzo,
+            int quantita,
+            StatoDisponibilita statoDisponibilita) {
+
         if (idPezzo == null || idPezzo.isBlank()) {
             throw new IllegalArgumentException("L'id del pezzo non può essere vuoto");
         }
+
         if (tipoPezzo == null) {
             throw new IllegalArgumentException("Il tipo pezzo non può essere null");
         }
 
-        this.idPezzo = idPezzo.trim();
+        if (quantita < 0) {
+            throw new IllegalArgumentException("La quantità non può essere negativa");
+        }
+
+        if (statoDisponibilita == null) {
+            throw new IllegalArgumentException("Lo stato disponibilità non può essere null");
+        }
+
+        this.idPezzo = idPezzo;
         this.tipoPezzo = tipoPezzo;
-        this.idVeicolo = idVeicolo == null || idVeicolo.isBlank() ? null : idVeicolo.trim();
+        this.quantita = quantita;
+        this.statoDisponibilita = statoDisponibilita;
     }
 
-    public String getIdPezzo() { return idPezzo; }
-    public TipoPezzo getTipoPezzo() { return tipoPezzo; }
-    public String getIdVeicolo() { return idVeicolo; }
+    public String getIdPezzo() {
+        return idPezzo;
+    }
 
-    public boolean isDisponibile() {
-        return idVeicolo == null;
+    public TipoPezzo getTipoPezzo() {
+        return tipoPezzo;
+    }
+
+    public int getQuantita() {
+        return quantita;
     }
 
     public StatoDisponibilita getStatoDisponibilita() {
-        return isDisponibile()
-                ? StatoDisponibilita.DISPONIBILE
-                : StatoDisponibilita.MONTATO_SU_VEICOLO;
+        return statoDisponibilita;
     }
 
     @Override
@@ -41,8 +58,8 @@ public class VoceMagazzino {
         return "VoceMagazzino{" +
                 "idPezzo='" + idPezzo + '\'' +
                 ", tipoPezzo=" + tipoPezzo +
-                ", idVeicolo='" + idVeicolo + '\'' +
-                ", statoDisponibilita=" + getStatoDisponibilita() +
+                ", quantita=" + quantita +
+                ", statoDisponibilita=" + statoDisponibilita +
                 '}';
     }
 }

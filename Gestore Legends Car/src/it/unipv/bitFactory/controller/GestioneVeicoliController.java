@@ -15,19 +15,12 @@ public class GestioneVeicoliController {
         if (veicoloService == null) {
             throw new IllegalArgumentException("Il service veicoli non può essere null");
         }
+
         this.veicoloService = veicoloService;
     }
 
     public Legends creaLegends(String idVeicolo) {
         return veicoloService.creaLegends(idVeicolo);
-    }
-
-    public void eliminaLegends(String idVeicolo) {
-        veicoloService.eliminaLegends(idVeicolo);
-    }
-
-    public Legends sostituisciPezzo(String idVeicolo, String idPezzoVecchio, String idPezzoNuovo) {
-        return veicoloService.sostituisciPezzo(idVeicolo, idPezzoVecchio, idPezzoNuovo);
     }
 
     public boolean puoCreareLegends() {

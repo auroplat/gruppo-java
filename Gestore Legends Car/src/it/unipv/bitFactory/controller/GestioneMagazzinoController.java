@@ -5,7 +5,7 @@ import java.util.Map;
 
 import it.unipv.bitFactory.model.pezzi.TipoPezzo;
 import it.unipv.bitFactory.model.veicoli.Legends;
-import it.unipv.bitFactory.service.veicoli.VeicoloService;
+import it.unipv.bitFactory.service.VeicoloService;
 
 public class GestioneVeicoliController {
 

@@ -1,10 +1,10 @@
-package it.unipv.bitFactory.service.veicoli;
+package it.unipv.bitFactory.service;
 
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
-import it.unipv.bitFactory.dao.veicoli.VeicoloDAO;
+import it.unipv.bitFactory.dao.VeicoloDAO;
 import it.unipv.bitFactory.model.pezzi.Pezzo;
 import it.unipv.bitFactory.model.pezzi.TipoPezzo;
 import it.unipv.bitFactory.model.veicoli.Legends;
@@ -76,7 +76,6 @@ public class VeicoloService {
         Map<TipoPezzo, Integer> ricetta = new EnumMap<>(TipoPezzo.class);
         ricetta.put(TipoPezzo.SCOCCA, 1);
         ricetta.put(TipoPezzo.MOTORE, 1);
-        ricetta.put(TipoPezzo.CAMBIO, 1);
         ricetta.put(TipoPezzo.VOLANTE, 1);
         ricetta.put(TipoPezzo.RUOTA, 4);
         ricetta.put(TipoPezzo.FRENO, 4);

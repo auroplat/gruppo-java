@@ -6,7 +6,6 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
-import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -18,7 +17,6 @@ import com.sun.net.httpserver.HttpServer;
 import it.unipv.bitFactory.controller.GestioneMagazzinoController;
 import it.unipv.bitFactory.controller.GestionePrenotazioniController;
 import it.unipv.bitFactory.controller.GestioneSessioniController;
-import it.unipv.bitFactory.thread.MagazzinoThread;
 import it.unipv.bitFactory.thread.UsuraPezziThread;
 import it.unipv.bitFactory.web.handler.MagazzinoHttpHandler;
 import it.unipv.bitFactory.web.handler.MacchineApiHttpHandler;
@@ -39,7 +37,6 @@ public final class BitFactoryWebServer {
             GestioneMagazzinoController magazzinoController,
             GestionePrenotazioniController prenotazioniController,
             UsuraPezziThread usuraPezziThread,
-            MagazzinoThread magazzinoThread,
             HtmlRenderer renderer) throws IOException {
 
         if (porta < 1 || porta > 65535) {
@@ -58,7 +55,6 @@ public final class BitFactoryWebServer {
         Objects.requireNonNull(magazzinoController);
         Objects.requireNonNull(prenotazioniController);
         Objects.requireNonNull(usuraPezziThread);
-        Objects.requireNonNull(magazzinoThread);
         Objects.requireNonNull(renderer);
 
         this.porta = porta;
@@ -117,17 +113,15 @@ public final class BitFactoryWebServer {
                 )
         );
 
-        MagazzinoHttpHandler magazzinoHandler =
+        /*
+         * Senza il MagazzinoThread, il magazzino viene servito
+         * direttamente dal pool HTTP come tutti gli altri handler.
+         */
+        server.createContext(
+                "/magazzino",
                 new MagazzinoHttpHandler(
                         magazzinoController,
                         renderer
-                );
-
-        server.createContext(
-                "/magazzino",
-                creaHandlerMagazzinoConThread(
-                        magazzinoHandler,
-                        magazzinoThread
                 )
         );
 
@@ -140,45 +134,6 @@ public final class BitFactoryWebServer {
         );
 
         server.setExecutor(threadPool);
-    }
-
-    /**
-     * Le GET del magazzino restano sul pool HTTP.
-     * Le POST vengono eseguite realmente dal MagazzinoThread.
-     */
-    private HttpHandler creaHandlerMagazzinoConThread(
-            MagazzinoHttpHandler delegate,
-            MagazzinoThread magazzinoThread) {
-
-        return exchange -> {
-            if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
-                delegate.handle(exchange);
-                return;
-            }
-
-            try {
-                magazzinoThread.inviaModifica(
-                        "modifica magazzino " + exchange.getRequestURI(),
-                        () -> delegate.handle(exchange)
-                ).join();
-
-            } catch (CompletionException e) {
-                Throwable causa = e.getCause();
-
-                if (causa instanceof IOException erroreIo) {
-                    throw erroreIo;
-                }
-
-                if (causa instanceof RuntimeException erroreRuntime) {
-                    throw erroreRuntime;
-                }
-
-                throw new IOException(
-                        "Errore nel thread del magazzino",
-                        causa
-                );
-            }
-        };
     }
 
     private void gestisciHome(HttpExchange exchange)

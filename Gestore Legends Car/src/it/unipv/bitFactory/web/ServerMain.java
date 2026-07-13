@@ -34,10 +34,6 @@ public final class ServerMain {
     public static void main(String[] args) {
 
         try {
-
-            /*
-             * Percorso del database SQLite.
-             */
             Path databasePath = Path.of(
                     "data",
                     "database_bfactory.db"
@@ -45,48 +41,22 @@ public final class ServerMain {
 
             String percorsoDatabase =
                     databasePath.toString();
-
-            /*
-             * -------------------------------------------------
-             * PARTE SESSIONI
-             * -------------------------------------------------
-             */
-
-            /*
-             * DAO usato per leggere e aggiornare
-             * le macchine e i relativi pezzi.
-             */
+            
             LegendsDAO legendsDAO =
                     new SqliteLegendsDAO(
                             percorsoDatabase
                     );
 
-            /*
-             * DAO usato per inserire lo storico
-             * delle sessioni nella tabella sessioni.
-             */
             SessioneDAO sessioneDAO =
                     new SqliteSessioneDAO(
                             percorsoDatabase
                     );
 
-            /*
-             * Il controller riceve entrambi i DAO:
-             *
-             * - legendsDAO aggiorna macchina e pezzi;
-             * - sessioneDAO registra la sessione.
-             */
             GestioneSessioniController sessioniController =
                     new GestioneSessioniController(
                             legendsDAO,
                             sessioneDAO
                     );
-
-            /*
-             * -------------------------------------------------
-             * PARTE MAGAZZINO
-             * -------------------------------------------------
-             */
 
             MagazzinoDAO magazzinoDAO =
                     new SqliteMagazzinoDAO(
@@ -103,12 +73,6 @@ public final class ServerMain {
                     new GestioneMagazzinoController(
                             magazzinoService
                     );
-
-            /*
-             * -------------------------------------------------
-             * PARTE EVENTI E PRENOTAZIONI
-             * -------------------------------------------------
-             */
 
             EventoDAO eventoDAO =
                     new SqliteEventoDAO(
@@ -143,12 +107,6 @@ public final class ServerMain {
                     new GestionePrenotazioniController(
                             sistemaPrenotazioni
                     );
-
-            /*
-             * -------------------------------------------------
-             * AVVIO SERVER WEB
-             * -------------------------------------------------
-             */
 
             HtmlRenderer renderer =
                     new HtmlRenderer();

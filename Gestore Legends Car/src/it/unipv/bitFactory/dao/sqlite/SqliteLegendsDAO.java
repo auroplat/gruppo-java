@@ -379,7 +379,6 @@ public final class SqliteLegendsDAO implements LegendsDAO {
             try {
                 return Optional.of(TipoPezzo.valueOf(nomeEnum));
             } catch (IllegalArgumentException ignored) {
-                // Prova l'eventuale nome alternativo.
             }
         }
 

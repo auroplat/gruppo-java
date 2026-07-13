@@ -1,10 +1,11 @@
-package it.unipv.bitFactory.service;
+package it.unipv.bitFactory.service.magazzino;
 
 import java.util.List;
 
-import it.unipv.bitFactory.dao.interfacce.MagazzinoDAO;
+import it.unipv.bitFactory.dao.magazzino.MagazzinoDAO;
 import it.unipv.bitFactory.model.magazzino.StatoDisponibilita;
 import it.unipv.bitFactory.model.magazzino.VoceMagazzino;
+import it.unipv.bitFactory.model.pezzi.Pezzo;
 
 public class MagazzinoService {
 
@@ -14,15 +15,11 @@ public class MagazzinoService {
         if (magazzinoDAO == null) {
             throw new IllegalArgumentException("Il DAO magazzino non può essere null");
         }
-
         this.magazzinoDAO = magazzinoDAO;
     }
 
     public StatoDisponibilita controllaDisponibilita(String idPezzo) {
-        VoceMagazzino voce = magazzinoDAO.trovaPerIdPezzo(idPezzo)
-                .orElseThrow(() -> new IllegalArgumentException("Pezzo non trovato: " + idPezzo));
-
-        return voce.getStatoDisponibilita();
+        return cercaPezzo(idPezzo).getStatoDisponibilita();
     }
 
     public VoceMagazzino cercaPezzo(String idPezzo) {
@@ -34,9 +31,20 @@ public class MagazzinoService {
         return magazzinoDAO.trovaTutti();
     }
 
-    public StatoDisponibilita aggiornaQuantitaPezzo(String idPezzo, int nuovaQuantita) {
-        magazzinoDAO.aggiornaQuantita(idPezzo, nuovaQuantita);
+    public List<VoceMagazzino> visualizzaPezziDisponibili() {
+        return magazzinoDAO.trovaDisponibili();
+    }
 
-        return controllaDisponibilita(idPezzo);
+    public void aggiungiPezzo(Pezzo pezzo) {
+        magazzinoDAO.inserisciPezzo(pezzo);
+    }
+
+    public void rimuoviPezzo(String idPezzo) {
+        VoceMagazzino voce = cercaPezzo(idPezzo);
+        if (!voce.isDisponibile()) {
+            throw new IllegalStateException(
+                    "Non è possibile eliminare il pezzo perché è montato sul veicolo: " + voce.getIdVeicolo());
+        }
+        magazzinoDAO.eliminaPezzo(idPezzo);
     }
 }

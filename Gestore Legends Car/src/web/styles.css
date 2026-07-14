@@ -542,3 +542,39 @@ h1 {
 .header-only-logout {
     justify-content: flex-end;
 }
+
+.events-panel {
+    max-height: 620px;
+    overflow: hidden;
+}
+
+.events-list {
+    max-height: 470px;
+    overflow-y: auto;
+    padding-right: 8px;
+    scroll-behavior: smooth;
+}
+.events-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.events-list::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 999px;
+}
+
+.events-list::-webkit-scrollbar-thumb {
+    background: rgba(240, 68, 68, 0.85);
+    border-radius: 999px;
+}
+
+.events-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 91, 91, 1);
+}
+
+.topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-left: auto;
+}

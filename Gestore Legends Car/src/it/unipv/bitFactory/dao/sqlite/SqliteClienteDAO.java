@@ -22,37 +22,24 @@ public final class SqliteClienteDAO implements ClienteDAO {
 
     public SqliteClienteDAO(String databasePath) {
         if (databasePath == null || databasePath.isBlank()) {
-            throw new IllegalArgumentException(
-                    "Il percorso del database non può essere vuoto"
-            );
+            throw new IllegalArgumentException("Il percorso del database non può essere vuoto");
         }
 
-        Path path = Path.of(databasePath)
-                .toAbsolutePath()
-                .normalize();
+        Path path = Path.of(databasePath).toAbsolutePath().normalize();
 
         if (!Files.isRegularFile(path)) {
-            throw new IllegalArgumentException(
-                    "Database SQLite non trovato: " + path
-            );
+            throw new IllegalArgumentException("Database SQLite non trovato: " + path);
         }
 
         if (!Files.isReadable(path) || !Files.isWritable(path)) {
-            throw new IllegalArgumentException(
-                    "Il database deve essere leggibile e modificabile: " + path
-            );
+            throw new IllegalArgumentException("Il database deve essere leggibile e modificabile: " + path);
         }
 
         this.jdbcUrl = "jdbc:sqlite:" + path;
 
         try {
             Class.forName("org.sqlite.JDBC");
-        } catch (ClassNotFoundException e) {
-            throw new DAOException(
-                    "Driver SQLite JDBC non trovato",
-                    e
-            );
-        }
+        } catch (ClassNotFoundException e) {throw new DAOException("Driver SQLite JDBC non trovato", e);}
     }
 
     @Override
@@ -70,22 +57,14 @@ public final class SqliteClienteDAO implements ClienteDAO {
         List<Cliente> clienti = new ArrayList<>();
 
         try (Connection connection = apriConnessione();
-             PreparedStatement statement =
-                     connection.prepareStatement(sql);
+             PreparedStatement statement = connection.prepareStatement(sql);
              ResultSet result = statement.executeQuery()) {
 
-            while (result.next()) {
-                clienti.add(creaCliente(result));
-            }
+            while (result.next()) {clienti.add(creaCliente(result));}
 
             return clienti;
 
-        } catch (SQLException e) {
-            throw new DAOException(
-                    "Errore durante il caricamento dei clienti",
-                    e
-            );
-        }
+        } catch (SQLException e) {throw new DAOException("Errore durante il caricamento dei clienti", e);}
     }
 
     @Override
@@ -103,34 +82,23 @@ public final class SqliteClienteDAO implements ClienteDAO {
                 """;
 
         try (Connection connection = apriConnessione();
-             PreparedStatement statement =
-                     connection.prepareStatement(sql)) {
+             PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, emailValida);
 
             try (ResultSet result = statement.executeQuery()) {
-                if (!result.next()) {
-                    return Optional.empty();
-                }
+            	
+                if (!result.next()) {return Optional.empty();}
 
                 return Optional.of(creaCliente(result));
             }
 
-        } catch (SQLException e) {
-            throw new DAOException(
-                    "Errore durante la ricerca del cliente " + emailValida,
-                    e
-            );
-        }
+        } catch (SQLException e) {throw new DAOException("Errore durante la ricerca del cliente " + emailValida, e);}
     }
 
     @Override
     public boolean salva(Cliente cliente) {
-        if (cliente == null) {
-            throw new IllegalArgumentException(
-                    "Il cliente non può essere null"
-            );
-        }
+        if (cliente == null) {throw new IllegalArgumentException("Il cliente non può essere null");}
 
         String sql = """
                 INSERT INTO clienti (
@@ -149,27 +117,17 @@ public final class SqliteClienteDAO implements ClienteDAO {
                 """;
 
         try (Connection connection = apriConnessione();
-             PreparedStatement statement =
-                     connection.prepareStatement(sql)) {
+             PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, cliente.getEmail());
             statement.setString(2, cliente.getNome());
             statement.setString(3, cliente.getCognome());
-            statement.setString(
-                    4,
-                    cliente.getDataNascita().toString()
-            );
+            statement.setString(4, cliente.getDataNascita().toString());
             statement.setString(5, cliente.getTelefono());
 
             return statement.executeUpdate() > 0;
 
-        } catch (SQLException e) {
-            throw new DAOException(
-                    "Errore durante il salvataggio del cliente "
-                            + cliente.getEmail(),
-                    e
-            );
-        }
+        } catch (SQLException e) {throw new DAOException("Errore durante il salvataggio del cliente " + cliente.getEmail(), e);}
     }
 
     @Override
@@ -182,48 +140,34 @@ public final class SqliteClienteDAO implements ClienteDAO {
                 """;
 
         try (Connection connection = apriConnessione();
-             PreparedStatement statement =
-                     connection.prepareStatement(sql)) {
+             PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, emailValida);
 
             return statement.executeUpdate() > 0;
 
         } catch (SQLException e) {
-            throw new DAOException(
-                    "Errore durante l'eliminazione del cliente "
-                            + emailValida,
-                    e
-            );
+            throw new DAOException("Errore durante l'eliminazione del cliente " + emailValida,e);
         }
     }
 
     private Connection apriConnessione()
-            throws SQLException {
-
-        return DriverManager.getConnection(jdbcUrl);
-    }
+        throws SQLException {return DriverManager.getConnection(jdbcUrl);}
 
     private Cliente creaCliente(ResultSet result)
-            throws SQLException {
+        throws SQLException {
 
-        return new Cliente(
-                result.getString("nome"),
-                result.getString("cognome"),
-                LocalDate.parse(
-                        result.getString("data_nascita")
-                ),
-                result.getString("email_cliente"),
-                result.getString("telefono")
+        return new Cliente(result.getString("nome"),
+                		   result.getString("cognome"),
+                		   LocalDate.parse(result.getString("data_nascita")),
+                		   result.getString("email_cliente"),
+                		   result.getString("telefono")
         );
     }
 
     private String validaEmail(String email) {
-        if (email == null || email.isBlank()) {
-            throw new IllegalArgumentException(
-                    "L'email non può essere vuota"
-            );
-        }
+    	
+        if (email == null || email.isBlank()) {throw new IllegalArgumentException("L'email non può essere vuota");}
 
         return email.trim().toLowerCase();
     }

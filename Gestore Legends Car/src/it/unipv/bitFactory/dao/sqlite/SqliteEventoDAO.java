@@ -21,25 +21,17 @@ public final class SqliteEventoDAO implements EventoDAO {
 
     public SqliteEventoDAO(String databasePath) {
         if (databasePath == null || databasePath.isBlank()) {
-            throw new IllegalArgumentException(
-                    "Il percorso del database non può essere vuoto"
-            );
+            throw new IllegalArgumentException("Il percorso del database non può essere vuoto");
         }
 
-        Path path = Path.of(databasePath)
-                .toAbsolutePath()
-                .normalize();
+        Path path = Path.of(databasePath).toAbsolutePath().normalize();
 
         if (!Files.isRegularFile(path)) {
-            throw new IllegalArgumentException(
-                    "Database SQLite non trovato: " + path
-            );
+            throw new IllegalArgumentException("Database SQLite non trovato: " + path);
         }
 
         if (!Files.isReadable(path) || !Files.isWritable(path)) {
-            throw new IllegalArgumentException(
-                    "Il database deve essere leggibile e modificabile: " + path
-            );
+            throw new IllegalArgumentException("Il database deve essere leggibile e modificabile: " + path);
         }
 
         this.jdbcUrl = "jdbc:sqlite:" + path;
@@ -47,10 +39,7 @@ public final class SqliteEventoDAO implements EventoDAO {
         try {
             Class.forName("org.sqlite.JDBC");
         } catch (ClassNotFoundException e) {
-            throw new DAOException(
-                    "Driver SQLite JDBC non trovato",
-                    e
-            );
+            throw new DAOException("Driver SQLite JDBC non trovato",e);
         }
     }
 
@@ -67,8 +56,7 @@ public final class SqliteEventoDAO implements EventoDAO {
         List<Evento> eventi = new ArrayList<>();
 
         try (Connection connection = apriConnessione();
-             PreparedStatement statement =
-                     connection.prepareStatement(sql);
+             PreparedStatement statement = connection.prepareStatement(sql);
              ResultSet result = statement.executeQuery()) {
 
             while (result.next()) {
@@ -78,10 +66,7 @@ public final class SqliteEventoDAO implements EventoDAO {
             return eventi;
 
         } catch (SQLException e) {
-            throw new DAOException(
-                    "Errore durante il caricamento degli eventi",
-                    e
-            );
+            throw new DAOException("Errore durante il caricamento degli eventi",e);
         }
     }
 
@@ -98,39 +83,27 @@ public final class SqliteEventoDAO implements EventoDAO {
                 """;
 
         try (Connection connection = apriConnessione();
-             PreparedStatement statement =
-                     connection.prepareStatement(sql)) {
-
+             PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, nome);
 
             try (ResultSet result = statement.executeQuery()) {
-                if (result.next()) {
-                    return creaEvento(result);
-                }
-
+                if (result.next()) {return creaEvento(result);}
                 return null;
             }
 
         } catch (SQLException e) {
-            throw new DAOException(
-                    "Errore durante la ricerca dell'evento " + nome,
-                    e
-            );
+            throw new DAOException("Errore durante la ricerca dell'evento " + nome,e);
         }
     }
 
     @Override
     public boolean aggiungiEvento(Evento evento) {
         if (evento == null) {
-            throw new IllegalArgumentException(
-                    "L'evento non può essere null"
-            );
+            throw new IllegalArgumentException("L'evento non può essere null");
         }
 
         if (evento.getPostiDisponibili() < 0) {
-            throw new IllegalArgumentException(
-                    "I posti disponibili non possono essere negativi"
-            );
+            throw new IllegalArgumentException("I posti disponibili non possono essere negativi");
         }
 
         String sql = """
@@ -143,46 +116,26 @@ public final class SqliteEventoDAO implements EventoDAO {
                 """;
 
         try (Connection connection = apriConnessione();
-             PreparedStatement statement =
-                     connection.prepareStatement(sql)) {
+             PreparedStatement statement = connection.prepareStatement(sql)) {
 
-            statement.setString(
-                    1,
-                    validaNomeEvento(evento.getNomeEvento())
-            );
-
-            statement.setString(
-                    2,
-                    evento.getDataEvento()
-            );
-
-            statement.setInt(
-                    3,
-                    evento.getPostiDisponibili()
-            );
+            statement.setString(1, validaNomeEvento(evento.getNomeEvento()));
+            statement.setString(2, evento.getDataEvento());
+            statement.setInt(3, evento.getPostiDisponibili());
 
             return statement.executeUpdate() > 0;
 
         } catch (SQLException e) {
-            throw new DAOException(
-                    "Errore durante l'aggiunta dell'evento "
-                            + evento.getNomeEvento(),
-                    e
-            );
+            throw new DAOException("Errore durante l'aggiunta dell'evento " + evento.getNomeEvento(),e);
         }
     }
 
     @Override
-    public boolean aggiornaPosti(
-            String nomeEvento,
-            int nuoviPosti) {
+    public boolean aggiornaPosti(String nomeEvento,int nuoviPosti) {
 
         String nome = validaNomeEvento(nomeEvento);
 
         if (nuoviPosti < 0) {
-            throw new IllegalArgumentException(
-                    "I posti disponibili non possono essere negativi"
-            );
+            throw new IllegalArgumentException("I posti disponibili non possono essere negativi");
         }
 
         String sql = """
@@ -192,8 +145,7 @@ public final class SqliteEventoDAO implements EventoDAO {
                 """;
 
         try (Connection connection = apriConnessione();
-             PreparedStatement statement =
-                     connection.prepareStatement(sql)) {
+             PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setInt(1, nuoviPosti);
             statement.setString(2, nome);
@@ -201,11 +153,7 @@ public final class SqliteEventoDAO implements EventoDAO {
             return statement.executeUpdate() > 0;
 
         } catch (SQLException e) {
-            throw new DAOException(
-                    "Errore durante l'aggiornamento dei posti dell'evento "
-                            + nome,
-                    e
-            );
+            throw new DAOException("Errore durante l'aggiornamento dei posti dell'evento " + nome, e);
         }
     }
 
@@ -219,34 +167,25 @@ public final class SqliteEventoDAO implements EventoDAO {
                 """;
 
         try (Connection connection = apriConnessione();
-             PreparedStatement statement =
-                     connection.prepareStatement(sql)) {
+             PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, nome);
 
             return statement.executeUpdate() > 0;
 
         } catch (SQLException e) {
-            throw new DAOException(
-                    "Errore durante l'eliminazione dell'evento "
-                            + nome,
-                    e
-            );
+            throw new DAOException("Errore durante l'eliminazione dell'evento " + nome,e);
         }
     }
 
     private Connection apriConnessione()
             throws SQLException {
 
-        Connection connection =
-                DriverManager.getConnection(jdbcUrl);
+        Connection connection = DriverManager.getConnection(jdbcUrl);
 
-        try (Statement statement =
-                     connection.createStatement()) {
+        try (Statement statement = connection.createStatement()) {
 
-            statement.execute(
-                    "PRAGMA foreign_keys = ON"
-            );
+            statement.execute("PRAGMA foreign_keys = ON");
         }
 
         return connection;
@@ -255,18 +194,15 @@ public final class SqliteEventoDAO implements EventoDAO {
     private Evento creaEvento(ResultSet result)
             throws SQLException {
 
-        return new Evento(
-                result.getString("nome_evento"),
-                result.getString("data_evento"),
-                result.getInt("posti_disponibili")
+        return new Evento(result.getString("nome_evento"),
+                		  result.getString("data_evento"),
+                		  result.getInt("posti_disponibili")
         );
     }
 
     private String validaNomeEvento(String nomeEvento) {
         if (nomeEvento == null || nomeEvento.isBlank()) {
-            throw new IllegalArgumentException(
-                    "Il nome dell'evento non può essere vuoto"
-            );
+            throw new IllegalArgumentException("Il nome dell'evento non può essere vuoto");
         }
 
         return nomeEvento.trim();

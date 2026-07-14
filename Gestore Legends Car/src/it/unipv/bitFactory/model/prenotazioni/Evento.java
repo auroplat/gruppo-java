@@ -6,9 +6,7 @@ public class Evento {
     private String dataEvento;
     private int postiDisponibili;
 
-    public Evento(String nomeEvento,
-                  String dataEvento,
-                  int postiDisponibili) {
+    public Evento(String nomeEvento, String dataEvento, int postiDisponibili) {
 
         this.nomeEvento = nomeEvento;
         this.dataEvento = dataEvento;

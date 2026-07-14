@@ -25,9 +25,7 @@ public final class SqliteSessioneDAO implements SessioneDAO {
             throw new IllegalArgumentException("Il percorso del database non può essere vuoto");
         }
 
-        Path path = Path.of(databasePath)
-                .toAbsolutePath()
-                .normalize();
+        Path path = Path.of(databasePath).toAbsolutePath().normalize();
 
         if (!Files.isRegularFile(path)) {
             throw new IllegalArgumentException("Database SQLite non trovato: " + path);

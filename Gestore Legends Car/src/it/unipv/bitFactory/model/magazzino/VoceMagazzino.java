@@ -9,11 +9,7 @@ public class VoceMagazzino {
     private final int quantita;
     private final StatoDisponibilita statoDisponibilita;
 
-    public VoceMagazzino(
-            String idPezzo,
-            TipoPezzo tipoPezzo,
-            int quantita,
-            StatoDisponibilita statoDisponibilita) {
+    public VoceMagazzino(String idPezzo, TipoPezzo tipoPezzo, int quantita, StatoDisponibilita statoDisponibilita) {
 
         if (idPezzo == null || idPezzo.isBlank()) {
             throw new IllegalArgumentException("L'id del pezzo non può essere vuoto");

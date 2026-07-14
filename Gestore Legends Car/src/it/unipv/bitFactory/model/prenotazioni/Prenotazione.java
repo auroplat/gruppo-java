@@ -8,10 +8,7 @@ public final class Prenotazione {
     private final String emailCliente;
     private final String telefonoCliente;
 
-    public Prenotazione(
-            String nomeEvento,
-            String emailCliente,
-            String telefonoCliente) {
+    public Prenotazione(String nomeEvento, String emailCliente, String telefonoCliente) {
 
         if (nomeEvento == null || nomeEvento.isBlank()) {
             throw new IllegalArgumentException("Il nome dell'evento non può essere vuoto");

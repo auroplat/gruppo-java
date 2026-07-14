@@ -7,51 +7,30 @@ public final class GestionePrenotazioniController {
 
     private final SistemaPrenotazioni sistema;
 
-    public GestionePrenotazioniController(
-            SistemaPrenotazioni sistema) {
+    public GestionePrenotazioniController(SistemaPrenotazioni sistema) {
 
         if (sistema == null) {
-            throw new IllegalArgumentException(
-                    "Il sistema prenotazioni non può essere null"
-            );
+            throw new IllegalArgumentException("Il sistema prenotazioni non può essere null");
         }
 
         this.sistema = sistema;
     }
 
-    public String prenota(
-            Cliente cliente,
-            String nomeEvento) {
+    public String prenota(Cliente cliente, String nomeEvento) {
 
-        if (cliente == null) {
-            return "Cliente non valido.";
-        }
+        if (cliente == null) {return "Cliente non valido.";}
 
-        if (nomeEvento == null || nomeEvento.isBlank()) {
-            return "Evento non valido.";
-        }
+        if (nomeEvento == null || nomeEvento.isBlank()) {return "Evento non valido.";}
 
-        return sistema.effettuaPrenotazione(
-                cliente,
-                nomeEvento
-        );
+        return sistema.effettuaPrenotazione(cliente, nomeEvento);
     }
 
-    public String annullaPrenotazione(
-            String emailCliente,
-            String nomeEvento) {
+    public String annullaPrenotazione(String emailCliente, String nomeEvento) {
 
-        if (emailCliente == null || emailCliente.isBlank()) {
-            return "Email non valida.";
-        }
+        if (emailCliente == null || emailCliente.isBlank()) {return "Email non valida.";}
 
-        if (nomeEvento == null || nomeEvento.isBlank()) {
-            return "Evento non valido.";
-        }
+        if (nomeEvento == null || nomeEvento.isBlank()) {return "Evento non valido.";}
 
-        return sistema.annullaPrenotazione(
-                emailCliente,
-                nomeEvento
-        );
+        return sistema.annullaPrenotazione(emailCliente,nomeEvento);
     }
 }

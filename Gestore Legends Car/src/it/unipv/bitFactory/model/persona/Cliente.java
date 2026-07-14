@@ -12,12 +12,7 @@ public final class Cliente {
     private final String email;
     private final String telefono;
 
-    public Cliente(
-            String nome,
-            String cognome,
-            LocalDate dataNascita,
-            String email,
-            String telefono) {
+    public Cliente(String nome, String cognome, LocalDate dataNascita, String email, String telefono) {
 
         if (nome == null || nome.isBlank()) {
             throw new IllegalArgumentException("Il nome non può essere vuoto");

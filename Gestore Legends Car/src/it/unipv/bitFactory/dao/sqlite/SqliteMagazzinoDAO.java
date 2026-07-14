@@ -27,9 +27,7 @@ public class SqliteMagazzinoDAO implements MagazzinoDAO {
     private final String urlDatabase;
     private final SoglieMagazzino soglieMagazzino;
 
-    public SqliteMagazzinoDAO(
-            String percorsoDatabase,
-            SoglieMagazzino soglieMagazzino) {
+    public SqliteMagazzinoDAO(String percorsoDatabase,SoglieMagazzino soglieMagazzino) {
 
         if (percorsoDatabase == null || percorsoDatabase.isBlank()) {
             throw new IllegalArgumentException("Il percorso del database non può essere vuoto");

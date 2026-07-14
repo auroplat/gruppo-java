@@ -591,5 +591,27 @@ h1 {
         grid-column: auto;
     }
     
-    
+    .logout-container {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+}
+
+}
+
+.logout-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 18px;
+    background-color: #ff3e46;
+    color: white;
+    text-decoration: none;
+    border-radius: 9px;
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+
+.logout-button:hover {
+    background-color: #e8323a;
 }

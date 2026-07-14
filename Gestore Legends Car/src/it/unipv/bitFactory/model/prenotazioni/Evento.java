@@ -8,6 +8,15 @@ public class Evento {
 
     public Evento(String nomeEvento, String dataEvento, int postiDisponibili) {
     	
+        if (nomeEvento == null || nomeEvento.isBlank()) {
+            throw new IllegalArgumentException("Il nome dell'evento non può essere vuoto");
+        }
+        if (dataEvento == null || dataEvento.isBlank()) {
+                throw new IllegalArgumentException("La data dell'evento non può essere vuota");
+        }
+        if (postiDisponibili < 0) {
+                throw new IllegalArgumentException("I posti disponibili non possono essere negativi");        
+        }       
         this.nomeEvento = nomeEvento;
         this.dataEvento = dataEvento;
         this.postiDisponibili = postiDisponibili;

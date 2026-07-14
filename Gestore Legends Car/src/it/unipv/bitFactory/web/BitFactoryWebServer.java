@@ -88,6 +88,19 @@ public final class BitFactoryWebServer {
                         "text/html; charset=UTF-8"
                 )
         );
+        
+        server.createContext(
+                "/gestione-eventi.html",
+                new RuoloHttpHandler(
+                        creaHandlerRisorsaStatica(
+                                "/gestione-eventi.html",
+                                "/web/gestione-eventi.html",
+                                "text/html; charset=UTF-8"
+                        ),
+                        gestoreSessioniLogin,
+                        Ruolo.EVENTI
+                )
+        );
 
         server.createContext(
                 "/prenotazione",
@@ -106,6 +119,15 @@ public final class BitFactoryWebServer {
                         "text/html; charset=UTF-8"
                 )
         );
+        
+        server.createContext(
+                "/eventi",
+                new EventiApiHttpHandler(
+                        gestoreEventi,
+                        false
+                )
+        );
+        
 
         //css
         server.createContext(
@@ -155,12 +177,7 @@ public final class BitFactoryWebServer {
         );
 
         //api
-        server.createContext(
-                "/api/eventi",
-                new EventiApiHttpHandler(
-                        gestoreEventi
-                )
-        );
+
         
         server.createContext(
                 "/api/macchine",
@@ -192,6 +209,17 @@ public final class BitFactoryWebServer {
                         ),
                         gestoreSessioniLogin,
                         Ruolo.MAGAZZINO
+                )
+        );
+        server.createContext(
+                "/creazione-eventi",
+                new RuoloHttpHandler(
+                        new EventiApiHttpHandler(
+                                gestoreEventi,
+                                true
+                        ),
+                        gestoreSessioniLogin,
+                        Ruolo.EVENTI
                 )
         );
         

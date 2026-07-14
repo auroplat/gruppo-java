@@ -134,7 +134,7 @@ public class LoginHttpHandler implements HttpHandler {
             case EVENTI ->
                     reindirizza(
                             exchange,
-                            "/eventi.html"
+                            "/gestione-eventi.html"
                     );
 
             case SESSIONI ->

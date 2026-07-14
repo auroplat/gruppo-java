@@ -3,6 +3,7 @@ package it.unipv.bitFactory.web.handler;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
+import java.util.Map;
 
 import com.sun.net.httpserver.HttpExchange;
 
@@ -13,59 +14,60 @@ public final class EventiApiHttpHandler
         extends BaseHttpHandler {
 
     private final GestoreEventi gestoreEventi;
+    private final boolean accettaCreazione;
+
+    public EventiApiHttpHandler(GestoreEventi gestoreEventi) {
+        this(gestoreEventi, false);
+    }
 
     public EventiApiHttpHandler(
-            GestoreEventi gestoreEventi) {
+            GestoreEventi gestoreEventi,
+            boolean accettaCreazione) {
 
         this.gestoreEventi = Objects.requireNonNull(
                 gestoreEventi,
                 "Il gestore degli eventi non può essere null"
         );
+
+        this.accettaCreazione = accettaCreazione;
     }
 
     @Override
-    public void handle(HttpExchange exchange)
-            throws IOException {
+    public void handle(HttpExchange exchange) throws IOException {
 
-        /*
-         * Questa rotta accetta soltanto richieste GET.
-         */
-        if (!isGet(exchange)) {
-
-            exchange.getResponseHeaders().set(
-                    "Allow",
-                    "GET"
-            );
-
-            sendJson(
-                    exchange,
-                    405,
-                    """
-                    {
-                        "errore": "Metodo HTTP non consentito"
-                    }
-                    """
-            );
-
+        if (isGet(exchange)) {
+            gestisciLettura(exchange);
             return;
         }
 
+        if (isPost(exchange)) {
+            gestisciCreazione(exchange);
+            return;
+        }
+
+        exchange.getResponseHeaders().set(
+                "Allow",
+                accettaCreazione ? "GET, POST" : "GET"
+        );
+
+        sendJson(
+                exchange,
+                405,
+                """
+                {
+                    "successo": false,
+                    "messaggio": "Metodo HTTP non consentito"
+                }
+                """
+        );
+    }
+    
+    private void gestisciLettura(HttpExchange exchange) throws IOException {
+
         try {
+            List<Evento> eventi = gestoreEventi.getEventi();
 
-            /*
-             * Recupera gli eventi dal database attraverso:
-             *
-             * GestoreEventi
-             *      ↓
-             * EventoDAO
-             *      ↓
-             * SqliteEventoDAO
-             */
-            List<Evento> eventi =
-                    gestoreEventi.getEventi();
-
-            String json =
-                    convertiEventiInJson(eventi);
+            String json = convertiEventiInJson(eventi);
 
             sendJson(
                     exchange,
@@ -74,7 +76,6 @@ public final class EventiApiHttpHandler
             );
 
         } catch (RuntimeException e) {
-
             e.printStackTrace();
 
             sendJson(
@@ -82,7 +83,97 @@ public final class EventiApiHttpHandler
                     500,
                     """
                     {
-                        "errore": "Impossibile caricare gli eventi"
+                        "successo": false,
+                        "messaggio": "Impossibile caricare gli eventi"
+                    }
+                    """
+            );
+        }
+    }
+    
+    private void gestisciCreazione(HttpExchange exchange) throws IOException {
+
+        if (!accettaCreazione) {
+            exchange.getResponseHeaders().set("Allow", "GET");
+
+            sendJson(
+                    exchange,
+                    405,
+                    """
+                    {
+                        "successo": false,
+                        "messaggio": "Questa rotta accetta soltanto la lettura degli eventi"
+                    }
+                    """
+            );
+
+            return;
+        }
+
+        try {
+            Map<String, String> parametri = leggiParametriForm(exchange);
+
+            String nomeEvento = parametroObbligatorio(parametri, "nomeEvento");
+            String dataEvento = parametroObbligatorio(parametri, "dataEvento");
+
+            int postiDisponibili = Integer.parseInt(
+                    parametroObbligatorio(parametri, "postiDisponibili")
+            );
+
+            String messaggio = gestoreEventi.creaEvento(
+                    nomeEvento,
+                    dataEvento,
+                    postiDisponibili
+            );
+
+            boolean successo = messaggio != null
+                    && messaggio.toLowerCase().startsWith("evento creato");
+
+            sendJson(
+                    exchange,
+                    successo ? 201 : 400,
+                    """
+                    {
+                        "successo": %s,
+                        "messaggio": "%s"
+                    }
+                    """.formatted(successo, escapeJson(messaggio))
+            );
+
+        } catch (NumberFormatException e) {
+            sendJson(
+                    exchange,
+                    400,
+                    """
+                    {
+                        "successo": false,
+                        "messaggio": "I posti disponibili devono essere un numero intero."
+                    }
+                    """
+            );
+
+        } catch (IllegalArgumentException e) {
+            sendJson(
+                    exchange,
+                    400,
+                    """
+                    {
+                        "successo": false,
+                        "messaggio": "%s"
+                    }
+                    """.formatted(escapeJson(e.getMessage()))
+            );
+
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+
+            sendJson(
+                    exchange,
+                    500,
+                    """
+                    {
+                        "successo": false,
+                        "messaggio": "Errore durante la creazione dell'evento."
                     }
                     """
             );

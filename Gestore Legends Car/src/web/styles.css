@@ -511,19 +511,34 @@ h1 {
     transform: translateY(20px) !important;
 }
 
+.topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
 .logout-button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 10px 18px;
-    background-color: #ff3e46;
+    min-height: 34px;
+    padding: 0 16px;
+    border: 0;
+    border-radius: 10px;
+    background: var(--accent);
     color: white;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
     text-decoration: none;
-    border-radius: 9px;
-    font-weight: 700;
-    font-size: 0.85rem;
+    transition: background 160ms ease, transform 160ms ease;
 }
 
 .logout-button:hover {
-    background-color: #e8323a;
+    transform: translateY(-1px);
+    background: var(--accent-hover);
+}
+.header-only-logout {
+    justify-content: flex-end;
 }

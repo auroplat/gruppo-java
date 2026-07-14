@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Creazione eventi BitFactory">
-    <title>BitFactory | Crea evento</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>BitFactory | Gestione eventi</title>
+    <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
     <header class="page-shell topbar">
@@ -13,13 +12,13 @@
             <span class="brand-mark">B</span>
             <span>BitFactory</span>
         </a>
-        <nav class="topbar-actions" aria-label="Navigazione gestione eventi">
-            <a class="topbar-link" href="/eventi.html">Eventi pubblici</a>
-            <a class="topbar-link" href="/logout">Esci</a>
+
+        <nav class="topbar-actions" aria-label="Azioni utente">
+            <a class="logout-button" href="/logout">Esci</a>
         </nav>
     </header>
 
-    <main class="page-shell event-management-layout">
+    <main class="page-shell event-management-layout single-panel-layout">
         <section class="booking-intro" aria-labelledby="page-title">
             <span class="eyebrow">Gestione eventi</span>
             <h1 id="page-title">Crea un nuovo evento.</h1>
@@ -28,193 +27,69 @@
                 servizio eventi e dal DAO SQLite, così l'interfaccia resta separata
                 dalla logica del database.
             </p>
-
-            <div class="selected-event compact-summary" aria-live="polite">
-                <span>Eventi presenti</span>
-                <strong id="event-count">—</strong>
-                <p id="events-status">Caricamento eventi dal database…</p>
-            </div>
         </section>
 
-        <section class="management-stack" aria-label="Pannelli gestione eventi">
-            <section class="booking-card" aria-labelledby="form-title">
-                <h2 id="form-title">Nuovo evento</h2>
-                <p class="form-note">
-                    Il nome evento viene usato anche dalle prenotazioni: sceglilo chiaro e non duplicato.
-                </p>
+        <section class="booking-card" aria-labelledby="form-title">
+            <h2 id="form-title">Nuovo evento</h2>
+            <p class="form-note">
+                Il nome evento viene usato anche dalle prenotazioni: sceglilo chiaro e non duplicato.
+            </p>
 
-                <form id="event-form" class="form-grid" action="/eventi" method="post" novalidate>
-                    <div class="field full">
-                        <label for="nomeEvento">Nome evento</label>
-                        <input
-                            id="nomeEvento"
-                            name="nomeEvento"
-                            type="text"
-                            maxlength="80"
-                            placeholder="Es. Track Day Pavia"
-                            autocomplete="off"
-                            required>
-                    </div>
-
-                    <div class="field">
-                        <label for="dataEvento">Data evento</label>
-                        <input
-                            id="dataEvento"
-                            name="dataEvento"
-                            type="date"
-                            required>
-                    </div>
-
-                    <div class="field">
-                        <label for="postiDisponibili">Posti disponibili</label>
-                        <input
-                            id="postiDisponibili"
-                            name="postiDisponibili"
-                            type="number"
-                            min="1"
-                            step="1"
-                            inputmode="numeric"
-                            placeholder="Es. 12"
-                            required>
-                    </div>
-
-                    <div class="field full">
-                        <button class="primary-button compact-button" type="submit">
-                            Crea evento
-                        </button>
-                        <p class="form-note">
-                            Dopo il salvataggio l'evento comparirà anche nella pagina delle prenotazioni.
-                        </p>
-                    </div>
-                </form>
-
-                <div id="form-message" class="operation-message" role="status" aria-live="polite"></div>
-            </section>
-
-            <section class="events-panel compact-panel" aria-labelledby="events-title">
-                <div class="panel-heading">
-                    <div>
-                        <h2 id="events-title">Eventi già inseriti</h2>
-                        <p>La lista viene caricata all'apertura della pagina.</p>
-                    </div>
-                    <span class="source-badge">Database</span>
+            <form id="event-form" class="form-grid" action="/creazione-eventi" method="post" novalidate>
+                <div class="field full">
+                    <label for="nomeEvento">Nome evento</label>
+                    <input
+                        id="nomeEvento"
+                        name="nomeEvento"
+                        type="text"
+                        maxlength="80"
+                        placeholder="Es. Track Day Pavia"
+                        autocomplete="off"
+                        required>
                 </div>
 
-                <div class="events-list compact-events-list" id="events-list" aria-live="polite">
-                    <div class="events-message">Caricamento in corso…</div>
+                <div class="field">
+                    <label for="dataEvento">Data evento</label>
+                    <input
+                        id="dataEvento"
+                        name="dataEvento"
+                        type="date"
+                        required>
                 </div>
-            </section>
+
+                <div class="field">
+                    <label for="postiDisponibili">Posti disponibili</label>
+                    <input
+                        id="postiDisponibili"
+                        name="postiDisponibili"
+                        type="number"
+                        min="1"
+                        step="1"
+                        inputmode="numeric"
+                        placeholder="Es. 12"
+                        required>
+                </div>
+
+                <div class="field full">
+                    <button class="primary-button compact-button" type="submit">
+                        Crea evento
+                    </button>
+
+                    <p class="form-note">
+                        Dopo il salvataggio l'evento comparirà anche nella pagina delle prenotazioni.
+                    </p>
+                </div>
+            </form>
+
+            <div id="form-message" class="operation-message" role="status" aria-live="polite"></div>
         </section>
     </main>
 
     <script>
-        const GET_EVENTI_ENDPOINT = "/api/eventi";
-        const CREA_EVENTO_ENDPOINT = "/eventi";
+        const CREA_EVENTO_ENDPOINT = "/creazione-eventi";
 
         const form = document.getElementById("event-form");
         const formMessage = document.getElementById("form-message");
-        const eventsList = document.getElementById("events-list");
-        const eventCount = document.getElementById("event-count");
-        const eventsStatus = document.getElementById("events-status");
-
-        const monthLabels = ["Gen", "Feb", "Mar", "Apr", "Mag", "Giu", "Lug", "Ago", "Set", "Ott", "Nov", "Dic"];
-
-        function escapeHtml(value) {
-            return String(value)
-                .replaceAll("&", "&amp;")
-                .replaceAll("<", "&lt;")
-                .replaceAll(">", "&gt;")
-                .replaceAll('"', "&quot;")
-                .replaceAll("'", "&#039;");
-        }
-
-        function parseDateParts(value) {
-            const isoMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
-            if (!isoMatch) {
-                return null;
-            }
-
-            return {
-                year: Number(isoMatch[1]),
-                month: Number(isoMatch[2]),
-                day: Number(isoMatch[3]),
-                sortable: `${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}`
-            };
-        }
-
-        function formatShortDate(value) {
-            const parts = parseDateParts(value);
-            if (!parts) {
-                return { day: "--", month: "---", datetime: value };
-            }
-
-            return {
-                day: String(parts.day).padStart(2, "0"),
-                month: monthLabels[parts.month - 1] ?? "---",
-                datetime: parts.sortable
-            };
-        }
-
-        function formatLongDate(value) {
-            const parts = parseDateParts(value);
-            if (!parts) {
-                return value;
-            }
-
-            return `${String(parts.day).padStart(2, "0")}/${String(parts.month).padStart(2, "0")}/${parts.year}`;
-        }
-
-        function normalizeEvent(rawEvent) {
-            return {
-                nomeEvento: String(rawEvent.nomeEvento ?? rawEvent.nome_evento ?? "").trim(),
-                dataEvento: String(rawEvent.dataEvento ?? rawEvent.data_evento ?? "").trim(),
-                postiDisponibili: Number(rawEvent.postiDisponibili ?? rawEvent.posti_disponibili ?? 0)
-            };
-        }
-
-        function compareEvents(first, second) {
-            const firstDate = parseDateParts(first.dataEvento)?.sortable ?? first.dataEvento;
-            const secondDate = parseDateParts(second.dataEvento)?.sortable ?? second.dataEvento;
-            return firstDate.localeCompare(secondDate) || first.nomeEvento.localeCompare(second.nomeEvento);
-        }
-
-        function renderEvents(events) {
-            eventsList.replaceChildren();
-
-            if (events.length === 0) {
-                eventsList.innerHTML = `<div class="events-message">Nessun evento presente nel database.</div>`;
-                eventCount.textContent = "0";
-                eventsStatus.textContent = "Nessun evento registrato.";
-                return;
-            }
-
-            const orderedEvents = [...events].sort(compareEvents);
-            eventCount.textContent = String(orderedEvents.length).padStart(2, "0");
-            eventsStatus.textContent = `${orderedEvents.length} ${orderedEvents.length === 1 ? "evento caricato" : "eventi caricati"}.`;
-
-            for (const evento of orderedEvents) {
-                const date = formatShortDate(evento.dataEvento);
-                const posti = Number.isFinite(evento.postiDisponibili) ? evento.postiDisponibili : 0;
-
-                const card = document.createElement("article");
-                card.className = "event-card";
-                card.innerHTML = `
-                    <time class="event-date" datetime="${escapeHtml(date.datetime)}">
-                        <strong>${escapeHtml(date.day)}</strong>
-                        <span>${escapeHtml(date.month)}</span>
-                    </time>
-                    <div class="event-info">
-                        <h3>${escapeHtml(evento.nomeEvento)}</h3>
-                        <div class="event-meta">
-                            <span>${escapeHtml(formatLongDate(evento.dataEvento))}</span>
-                            <span>${posti} ${posti === 1 ? "posto" : "posti"}</span>
-                        </div>
-                    </div>
-                `;
-
-                eventsList.appendChild(card);
-            }
-        }
 
         function showMessage(message, success) {
             formMessage.textContent = message;
@@ -223,36 +98,9 @@
                 : "operation-message visible error";
         }
 
-        async function loadEvents() {
-            try {
-                const response = await fetch(GET_EVENTI_ENDPOINT, {
-                    method: "GET",
-                    headers: { "Accept": "application/json" },
-                    cache: "no-store"
-                });
-
-                if (!response.ok) {
-                    throw new Error(`Stato HTTP ${response.status}`);
-                }
-
-                const payload = await response.json();
-                const rawEvents = Array.isArray(payload) ? payload : payload.eventi;
-
-                if (!Array.isArray(rawEvents)) {
-                    throw new Error("Formato JSON non valido");
-                }
-
-                renderEvents(rawEvents.map(normalizeEvent));
-            } catch (error) {
-                console.error(error);
-                eventsList.innerHTML = `<div class="events-message error">Impossibile caricare gli eventi dal database.</div>`;
-                eventCount.textContent = "—";
-                eventsStatus.textContent = "Errore nel caricamento.";
-            }
-        }
-
         form.addEventListener("submit", async (event) => {
             event.preventDefault();
+
             formMessage.className = "operation-message";
             formMessage.textContent = "";
 
@@ -273,12 +121,6 @@
                     body: formData
                 });
 
-                const contentType = response.headers.get("Content-Type") ?? "";
-
-                if (!contentType.includes("application/json")) {
-                    throw new Error("Risposta non JSON. Verifica di essere autenticato con ruolo EVENTI.");
-                }
-
                 const result = await response.json();
 
                 if (!response.ok || !result.successo) {
@@ -288,14 +130,15 @@
 
                 showMessage(result.messaggio ?? "Evento creato correttamente.", true);
                 form.reset();
-                await loadEvents();
+
             } catch (error) {
                 console.error(error);
-                showMessage("Operazione non completata. Controlla login, ruolo EVENTI ed endpoint /eventi.", false);
+                showMessage(
+                    "Operazione non completata. Controlla login, ruolo EVENTI ed endpoint /creazione-eventi.",
+                    false
+                );
             }
         });
-
-        loadEvents();
     </script>
 </body>
 </html>

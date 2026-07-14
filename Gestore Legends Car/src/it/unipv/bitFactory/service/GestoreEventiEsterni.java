@@ -21,13 +21,10 @@ public class GestoreEventiEsterni {
 
     public void caricaEventiDaCSVEsterno(String percorsoFile) {
 
-        try (BufferedReader br =
-                     new BufferedReader(new FileReader(percorsoFile))) {
+        try (BufferedReader br = new BufferedReader(new FileReader(percorsoFile))) {
 
             String riga;
-
             br.readLine(); 
-
             while ((riga = br.readLine()) != null) {
 
                 Evento evento = adapter.convertiRiga(riga);

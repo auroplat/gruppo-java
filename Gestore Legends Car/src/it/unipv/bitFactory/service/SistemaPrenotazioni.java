@@ -16,10 +16,7 @@ public final class SistemaPrenotazioni {
     private final EventoDAO eventoDAO;
     private final PrenotazioneDAO prenotazioneDAO;
 
-    public SistemaPrenotazioni(
-            ClienteDAO clienteDAO,
-            EventoDAO eventoDAO,
-            PrenotazioneDAO prenotazioneDAO) {
+    public SistemaPrenotazioni(ClienteDAO clienteDAO, EventoDAO eventoDAO, PrenotazioneDAO prenotazioneDAO) {
 
         this.clienteDAO = Objects.requireNonNull( clienteDAO,"Il DAO dei clienti non può essere null" );
 

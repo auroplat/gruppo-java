@@ -39,7 +39,9 @@ public final class SqliteClienteDAO implements ClienteDAO {
 
         try {
             Class.forName("org.sqlite.JDBC");
-        } catch (ClassNotFoundException e) {throw new DAOException("Driver SQLite JDBC non trovato", e);}
+        } catch (ClassNotFoundException e) {
+            throw new DAOException("Driver SQLite JDBC non trovato", e);
+        }
     }
 
     @Override
@@ -60,11 +62,15 @@ public final class SqliteClienteDAO implements ClienteDAO {
              PreparedStatement statement = connection.prepareStatement(sql);
              ResultSet result = statement.executeQuery()) {
 
-            while (result.next()) {clienti.add(creaCliente(result));}
+            while (result.next()) {
+                clienti.add(creaCliente(result));
+            }
 
             return clienti;
 
-        } catch (SQLException e) {throw new DAOException("Errore durante il caricamento dei clienti", e);}
+        } catch (SQLException e) {
+            throw new DAOException("Errore durante il caricamento dei clienti", e);
+        }
     }
 
     @Override
@@ -87,18 +93,20 @@ public final class SqliteClienteDAO implements ClienteDAO {
             statement.setString(1, emailValida);
 
             try (ResultSet result = statement.executeQuery()) {
-            	
                 if (!result.next()) {return Optional.empty();}
-
                 return Optional.of(creaCliente(result));
             }
 
-        } catch (SQLException e) {throw new DAOException("Errore durante la ricerca del cliente " + emailValida, e);}
+        } catch (SQLException e) {
+            throw new DAOException("Errore durante la ricerca del cliente " + emailValida, e);
+        }
     }
 
     @Override
     public boolean salva(Cliente cliente) {
-        if (cliente == null) {throw new IllegalArgumentException("Il cliente non può essere null");}
+        if (cliente == null) {
+            throw new IllegalArgumentException("Il cliente non può essere null");
+        }
 
         String sql = """
                 INSERT INTO clienti (
@@ -127,7 +135,10 @@ public final class SqliteClienteDAO implements ClienteDAO {
 
             return statement.executeUpdate() > 0;
 
-        } catch (SQLException e) {throw new DAOException("Errore durante il salvataggio del cliente " + cliente.getEmail(), e);}
+        } catch (SQLException e) {
+            throw new DAOException(
+                    "Errore durante il salvataggio del cliente " + cliente.getEmail(), e);
+        }
     }
 
     @Override
@@ -147,27 +158,30 @@ public final class SqliteClienteDAO implements ClienteDAO {
             return statement.executeUpdate() > 0;
 
         } catch (SQLException e) {
-            throw new DAOException("Errore durante l'eliminazione del cliente " + emailValida,e);
+            throw new DAOException(
+                    "Errore durante l'eliminazione del cliente " + emailValida, e);
         }
     }
 
     private Connection apriConnessione()
-        throws SQLException {return DriverManager.getConnection(jdbcUrl);}
+            throws SQLException {return DriverManager.getConnection(jdbcUrl);}
 
     private Cliente creaCliente(ResultSet result)
-        throws SQLException {
+            throws SQLException {
 
-        return new Cliente(result.getString("nome"),
-                		   result.getString("cognome"),
-                		   LocalDate.parse(result.getString("data_nascita")),
-                		   result.getString("email_cliente"),
-                		   result.getString("telefono")
+        return new Cliente(
+                result.getString("nome"),
+                result.getString("cognome"),
+                LocalDate.parse(result.getString("data_nascita")),
+                result.getString("email_cliente"),
+                result.getString("telefono")
         );
     }
 
     private String validaEmail(String email) {
-    	
-        if (email == null || email.isBlank()) {throw new IllegalArgumentException("L'email non può essere vuota");}
+        if (email == null || email.isBlank()) {
+            throw new IllegalArgumentException("L'email non può essere vuota");
+        }
 
         return email.trim().toLowerCase();
     }

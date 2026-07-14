@@ -17,7 +17,7 @@ public class GestioneMagazzinoController {
         if (magazzinoService == null) {
             throw new IllegalArgumentException("Il service magazzino non può essere null");
         }
-        
+
         this.magazzinoService = magazzinoService;
     }
 
@@ -28,7 +28,7 @@ public class GestioneMagazzinoController {
     public List<VoceMagazzino> visualizzaMagazzino() {return magazzinoService.visualizzaMagazzino();}
 
     public StatoDisponibilita aggiornaQuantitaPezzo(String idPezzo, int nuovaQuantita) {
-        return magazzinoService.aggiornaQuantitaPezzo(idPezzo,nuovaQuantita);
+        return magazzinoService.aggiornaQuantitaPezzo(idPezzo, nuovaQuantita);
     }
 
     public List<Pezzo> trovaPezziLiberi(TipoPezzo tipoPezzo) {return magazzinoService.trovaPezziLiberi(tipoPezzo);}

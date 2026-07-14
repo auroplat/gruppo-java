@@ -9,7 +9,11 @@ public class VoceMagazzino {
     private final int quantita;
     private final StatoDisponibilita statoDisponibilita;
 
-    public VoceMagazzino(String idPezzo, TipoPezzo tipoPezzo, int quantita, StatoDisponibilita statoDisponibilita) {
+    public VoceMagazzino(
+            String idPezzo,
+            TipoPezzo tipoPezzo,
+            int quantita,
+            StatoDisponibilita statoDisponibilita) {
 
         if (idPezzo == null || idPezzo.isBlank()) {
             throw new IllegalArgumentException("L'id del pezzo non può essere vuoto");
@@ -33,13 +37,21 @@ public class VoceMagazzino {
         this.statoDisponibilita = statoDisponibilita;
     }
 
-    public String getIdPezzo() {return idPezzo;}
+    public String getIdPezzo() {
+        return idPezzo;
+    }
 
-    public TipoPezzo getTipoPezzo() {return tipoPezzo;}
+    public TipoPezzo getTipoPezzo() {
+        return tipoPezzo;
+    }
 
-    public int getQuantita() {return quantita;}
+    public int getQuantita() {
+        return quantita;
+    }
 
-    public StatoDisponibilita getStatoDisponibilita() {return statoDisponibilita;}
+    public StatoDisponibilita getStatoDisponibilita() {
+        return statoDisponibilita;
+    }
 
     @Override
     public String toString() {

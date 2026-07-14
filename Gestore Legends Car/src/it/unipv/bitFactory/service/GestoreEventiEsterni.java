@@ -15,16 +15,20 @@ public class GestoreEventiEsterni {
     private AdapterEventiEsterni adapter;
 
     public GestoreEventiEsterni() {
+
         eventi = new ArrayList<>();
         adapter = new AdapterEventiEsterni();
     }
 
     public void caricaEventiDaCSVEsterno(String percorsoFile) {
 
-        try (BufferedReader br = new BufferedReader(new FileReader(percorsoFile))) {
+        try (BufferedReader br =
+                     new BufferedReader(new FileReader(percorsoFile))) {
 
             String riga;
-            br.readLine(); 
+
+            br.readLine(); // salta header
+
             while ((riga = br.readLine()) != null) {
 
                 Evento evento = adapter.convertiRiga(riga);
@@ -32,9 +36,12 @@ public class GestoreEventiEsterni {
             }
 
         } catch (IOException e) {
-        	System.out.println("Errore lettura file eventi esterni");
+
+            System.out.println("Errore lettura file eventi esterni");
         }
     }
 
-    public List<Evento> getEventi() { return eventi; }
+    public List<Evento> getEventi() {
+        return eventi;
+    }
 }

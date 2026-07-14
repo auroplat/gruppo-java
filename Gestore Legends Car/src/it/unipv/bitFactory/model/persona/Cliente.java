@@ -12,34 +12,53 @@ public final class Cliente {
     private final String email;
     private final String telefono;
 
-    public Cliente(String nome, String cognome, LocalDate dataNascita, String email, String telefono) {
+    public Cliente(
+            String nome,
+            String cognome,
+            LocalDate dataNascita,
+            String email,
+            String telefono) {
 
         if (nome == null || nome.isBlank()) {
-            throw new IllegalArgumentException("Il nome non può essere vuoto");
+            throw new IllegalArgumentException(
+                    "Il nome non può essere vuoto"
+            );
         }
 
         if (cognome == null || cognome.isBlank()) {
-            throw new IllegalArgumentException("Il cognome non può essere vuoto");
+            throw new IllegalArgumentException(
+                    "Il cognome non può essere vuoto"
+            );
         }
 
         if (dataNascita == null) {
-            throw new IllegalArgumentException("La data di nascita non può essere null");
+            throw new IllegalArgumentException(
+                    "La data di nascita non può essere null"
+            );
         }
 
         if (dataNascita.isAfter(LocalDate.now())) {
-            throw new IllegalArgumentException("La data di nascita non può essere futura");
+            throw new IllegalArgumentException(
+                    "La data di nascita non può essere futura"
+            );
         }
 
         if (email == null || email.isBlank()) {
-            throw new IllegalArgumentException("L'email non può essere vuota");
+            throw new IllegalArgumentException(
+                    "L'email non può essere vuota"
+            );
         }
 
         if (!email.contains("@")) {
-            throw new IllegalArgumentException("L'email non è valida");
+            throw new IllegalArgumentException(
+                    "L'email non è valida"
+            );
         }
 
         if (telefono == null || telefono.isBlank()) {
-            throw new IllegalArgumentException("Il telefono non può essere vuoto");
+            throw new IllegalArgumentException(
+                    "Il telefono non può essere vuoto"
+            );
         }
 
         this.nome = nome.trim();
@@ -49,30 +68,50 @@ public final class Cliente {
         this.telefono = telefono.trim();
     }
 
-    public String getNome() {return nome;}
+    public String getNome() {
+        return nome;
+    }
 
-    public String getCognome() {return cognome;}
+    public String getCognome() {
+        return cognome;
+    }
 
-    public LocalDate getDataNascita() {return dataNascita;}
+    public LocalDate getDataNascita() {
+        return dataNascita;
+    }
 
-    public String getEmail() {return email;}
+    public String getEmail() {
+        return email;
+    }
 
-    public String getTelefono() {return telefono;}
+    public String getTelefono() {
+        return telefono;
+    }
 
-    public int getEta() {return Period.between(dataNascita, LocalDate.now()).getYears();}
+    public int getEta() {
+        return Period.between(
+                dataNascita,
+                LocalDate.now()
+        ).getYears();
+    }
 
     @Override
     public boolean equals(Object object) {
-    	
-        if (this == object) {return true;}
+        if (this == object) {
+            return true;
+        }
 
-        if (!(object instanceof Cliente altroCliente)) {return false;}
+        if (!(object instanceof Cliente altroCliente)) {
+            return false;
+        }
 
         return email.equals(altroCliente.email);
     }
 
     @Override
-    public int hashCode() {return Objects.hash(email);}
+    public int hashCode() {
+        return Objects.hash(email);
+    }
 
     @Override
     public String toString() {

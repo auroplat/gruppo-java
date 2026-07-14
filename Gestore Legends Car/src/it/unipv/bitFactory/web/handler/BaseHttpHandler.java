@@ -22,15 +22,22 @@ public abstract class BaseHttpHandler implements HttpHandler {
     protected Map<String, String> leggiParametriForm(
             HttpExchange exchange) throws IOException {
 
-        String contentType = exchange.getRequestHeaders().getFirst("Content-Type");
+        String contentType = exchange.getRequestHeaders()
+                .getFirst("Content-Type");
 
-        if (contentType == null || !contentType.toLowerCase().startsWith("application/x-www-form-urlencoded")) {
+        if (contentType == null
+                || !contentType.toLowerCase().startsWith(
+                        "application/x-www-form-urlencoded"
+                )) {
             throw new IllegalArgumentException(
                     "Formato del form non supportato"
             );
         }
 
-        String body = new String(exchange.getRequestBody().readAllBytes(),StandardCharsets.UTF_8);
+        String body = new String(
+                exchange.getRequestBody().readAllBytes(),
+                StandardCharsets.UTF_8
+        );
 
         Map<String, String> parametri = new LinkedHashMap<>();
 
@@ -67,7 +74,10 @@ public abstract class BaseHttpHandler implements HttpHandler {
         return valore.trim();
     }
 
-    protected void sendHtml(HttpExchange exchange,int statusCode,String html) throws IOException {
+    protected void sendHtml(
+            HttpExchange exchange,
+            int statusCode,
+            String html) throws IOException {
 
         sendBytes(
                 exchange,
@@ -77,7 +87,10 @@ public abstract class BaseHttpHandler implements HttpHandler {
         );
     }
 
-    protected void sendJson(HttpExchange exchange,int statusCode,String json) throws IOException {
+    protected void sendJson(
+            HttpExchange exchange,
+            int statusCode,
+            String json) throws IOException {
 
         sendBytes(
                 exchange,
@@ -87,23 +100,34 @@ public abstract class BaseHttpHandler implements HttpHandler {
         );
     }
 
-    protected void redirect(HttpExchange exchange,String indirizzo) throws IOException {
+    protected void redirect(
+            HttpExchange exchange,
+            String indirizzo) throws IOException {
 
         exchange.getResponseHeaders().set("Location", indirizzo);
         exchange.sendResponseHeaders(303, -1);
         exchange.close();
     }
 
-    protected void sendResource(HttpExchange exchange,String resourcePath,String contentType) throws IOException {
+    protected void sendResource(
+            HttpExchange exchange,
+            String resourcePath,
+            String contentType) throws IOException {
 
-        try (var input = BaseHttpHandler.class.getResourceAsStream(resourcePath)) {
+        try (var input = BaseHttpHandler.class
+                .getResourceAsStream(resourcePath)) {
 
             if (input == null) {
                 sendHtml(exchange, 404, "<h1>Risorsa non trovata</h1>");
                 return;
             }
 
-            sendBytes(exchange, 200, input.readAllBytes(), contentType);
+            sendBytes(
+                    exchange,
+                    200,
+                    input.readAllBytes(),
+                    contentType
+            );
         }
     }
 

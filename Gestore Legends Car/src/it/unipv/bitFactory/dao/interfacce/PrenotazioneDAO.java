@@ -13,15 +13,9 @@ public interface PrenotazioneDAO {
 
     List<Prenotazione> cercaPerCliente(String emailCliente);
 
-    Optional<Prenotazione> cerca(
-            String nomeEvento,
-            String emailCliente
-    );
+    Optional<Prenotazione> cerca(String nomeEvento, String emailCliente);
 
     boolean aggiungi(Prenotazione prenotazione);
 
-    boolean elimina(
-            String nomeEvento,
-            String emailCliente
-    );
+    boolean elimina(String nomeEvento, String emailCliente);
 }

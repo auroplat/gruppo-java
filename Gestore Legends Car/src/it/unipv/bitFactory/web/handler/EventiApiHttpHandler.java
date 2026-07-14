@@ -26,10 +26,16 @@ public final class EventiApiHttpHandler
     @Override
     public void handle(HttpExchange exchange)
             throws IOException {
-    	
+
+        /*
+         * Questa rotta accetta soltanto richieste GET.
+         */
         if (!isGet(exchange)) {
 
-            exchange.getResponseHeaders().set("Allow", "GET");
+            exchange.getResponseHeaders().set(
+                    "Allow",
+                    "GET"
+            );
 
             sendJson(
                     exchange,
@@ -43,12 +49,23 @@ public final class EventiApiHttpHandler
 
             return;
         }
-        //leggo eventi da database
+
         try {
 
-            List<Evento> eventi = gestoreEventi.getEventi();
+            /*
+             * Recupera gli eventi dal database attraverso:
+             *
+             * GestoreEventi
+             *      ↓
+             * EventoDAO
+             *      ↓
+             * SqliteEventoDAO
+             */
+            List<Evento> eventi =
+                    gestoreEventi.getEventi();
 
-            String json = convertiEventiInJson(eventi);
+            String json =
+                    convertiEventiInJson(eventi);
 
             sendJson(
                     exchange,
@@ -75,7 +92,8 @@ public final class EventiApiHttpHandler
     private String convertiEventiInJson(
             List<Evento> eventi) {
 
-        StringBuilder json = new StringBuilder();
+        StringBuilder json =
+                new StringBuilder();
 
         json.append("[");
 

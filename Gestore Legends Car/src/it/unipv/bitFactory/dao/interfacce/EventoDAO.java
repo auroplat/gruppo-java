@@ -14,8 +14,5 @@ public interface EventoDAO {
 
     boolean eliminaEvento(String nome);
 
-    boolean aggiornaPosti(
-            String nome,
-            int nuoviPosti
-    );
+    boolean aggiornaPosti(String nome, int nuoviPosti);
 }

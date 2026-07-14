@@ -26,25 +26,17 @@ public final class SqliteLegendsDAO implements LegendsDAO {
 
     public SqliteLegendsDAO(String databasePath) {
         if (databasePath == null || databasePath.isBlank()) {
-            throw new IllegalArgumentException(
-                    "Il percorso del database non può essere vuoto"
-            );
+            throw new IllegalArgumentException("Il percorso del database non può essere vuoto");
         }
 
-        Path path = Path.of(databasePath)
-                .toAbsolutePath()
-                .normalize();
+        Path path = Path.of(databasePath).toAbsolutePath().normalize();
 
         if (!Files.isRegularFile(path)) {
-            throw new IllegalArgumentException(
-                    "Database SQLite non trovato: " + path
-            );
+            throw new IllegalArgumentException("Database SQLite non trovato: " + path);
         }
 
         if (!Files.isReadable(path) || !Files.isWritable(path)) {
-            throw new IllegalArgumentException(
-                    "Il database deve essere leggibile e modificabile: " + path
-            );
+            throw new IllegalArgumentException("Il database deve essere leggibile e modificabile: " + path);
         }
 
         this.jdbcUrl = "jdbc:sqlite:" + path;
@@ -52,19 +44,14 @@ public final class SqliteLegendsDAO implements LegendsDAO {
         try {
             Class.forName("org.sqlite.JDBC");
         } catch (ClassNotFoundException e) {
-            throw new DAOException(
-                    "Driver SQLite JDBC non trovato",
-                    e
-            );
+            throw new DAOException("Driver SQLite JDBC non trovato", e);
         }
     }
 
     @Override
     public void salva(Legends legends) {
         if (legends == null) {
-            throw new IllegalArgumentException(
-                    "La macchina da salvare non può essere null"
-            );
+            throw new IllegalArgumentException("La macchina da salvare non può essere null");
         }
 
         try (Connection connection = apriConnessione()) {
@@ -80,11 +67,7 @@ public final class SqliteLegendsDAO implements LegendsDAO {
             }
 
         } catch (SQLException e) {
-            throw new DAOException(
-                    "Errore durante il salvataggio della macchina "
-                            + legends.getId(),
-                    e
-            );
+            throw new DAOException("Errore durante il salvataggio della macchina " + legends.getId(), e);
         }
     }
 
@@ -97,10 +80,7 @@ public final class SqliteLegendsDAO implements LegendsDAO {
                     caricaMacchina(connection, idMacchina)
             );
         } catch (SQLException e) {
-            throw new DAOException(
-                    "Errore durante la lettura della macchina " + idMacchina,
-                    e
-            );
+            throw new DAOException("Errore durante la lettura della macchina " + idMacchina,  e);
         }
     }
 
@@ -127,10 +107,7 @@ public final class SqliteLegendsDAO implements LegendsDAO {
             return macchine;
 
         } catch (SQLException e) {
-            throw new DAOException(
-                    "Errore durante la lettura delle macchine",
-                    e
-            );
+            throw new DAOException("Errore durante la lettura delle macchine", e);
         }
     }
 
@@ -153,10 +130,8 @@ public final class SqliteLegendsDAO implements LegendsDAO {
         try (Connection connection = apriConnessione()) {
             connection.setAutoCommit(false);
 
-            try (PreparedStatement eliminaPezzi =
-                         connection.prepareStatement(eliminaPezziSql);
-                 PreparedStatement eliminaMacchina =
-                         connection.prepareStatement(eliminaMacchinaSql)) {
+            try (PreparedStatement eliminaPezzi = connection.prepareStatement(eliminaPezziSql);
+                 PreparedStatement eliminaMacchina =connection.prepareStatement(eliminaMacchinaSql)) {
 
                 eliminaPezzi.setString(1, idMacchina);
                 eliminaPezzi.executeUpdate();
@@ -172,10 +147,7 @@ public final class SqliteLegendsDAO implements LegendsDAO {
             }
 
         } catch (SQLException e) {
-            throw new DAOException(
-                    "Errore durante l'eliminazione della macchina " + idMacchina,
-                    e
-            );
+            throw new DAOException("Errore durante l'eliminazione della macchina " + idMacchina, e);
         }
     }
 
@@ -189,9 +161,7 @@ public final class SqliteLegendsDAO implements LegendsDAO {
         return connection;
     }
 
-    private Legends caricaMacchina(
-            Connection connection,
-            String idMacchina) throws SQLException {
+    private Legends caricaMacchina(Connection connection, String idMacchina) throws SQLException {
 
         String sql = """
                 SELECT id_macchina, COALESCE(km_macchina, 0) AS km_macchina
@@ -203,9 +173,7 @@ public final class SqliteLegendsDAO implements LegendsDAO {
             statement.setString(1, idMacchina);
 
             try (ResultSet result = statement.executeQuery()) {
-                if (!result.next()) {
-                    return null;
-                }
+                if (!result.next()) {return null;}
 
                 Legends legends = creaMacchinaDaResultSet(result);
                 caricaPezzi(connection, legends, idMacchina);
@@ -217,21 +185,14 @@ public final class SqliteLegendsDAO implements LegendsDAO {
     private Legends creaMacchinaDaResultSet(ResultSet result)
             throws SQLException {
 
-        Legends legends = new Legends(
-                result.getString("id_macchina")
-        );
+        Legends legends = new Legends(result.getString("id_macchina"));
 
-        legends.percorriKm(
-                result.getDouble("km_macchina")
-        );
+        legends.percorriKm(result.getDouble("km_macchina"));
 
         return legends;
     }
 
-    private void caricaPezzi(
-            Connection connection,
-            Legends legends,
-            String idMacchina) throws SQLException {
+    private void caricaPezzi(Connection connection, Legends legends, String idMacchina) throws SQLException {
 
         String sql = """
                 SELECT id_pezzo,
@@ -254,22 +215,11 @@ public final class SqliteLegendsDAO implements LegendsDAO {
                             result.getString("tipo")
                     );
 
-                    // Tipi non presenti nel modello Java (es. batteria,
-                    // sensore) restano nel DB e non vengono caricati.
-                    if (tipo.isEmpty()) {
-                        continue;
-                    }
+                    if (tipo.isEmpty()) {continue;}
 
-                    Pezzo pezzo = new Pezzo(
-                            tipo.get(),
-                            result.getDouble("km_max"),
-                            result.getInt("tempo_max")
-                    );
+                    Pezzo pezzo = new Pezzo(tipo.get(), result.getDouble("km_max"), result.getInt("tempo_max"));
 
-                    pezzo.aggiornaUtilizzo(
-                            result.getDouble("km"),
-                            result.getInt("tempo_utilizzo")
-                    );
+                    pezzo.aggiornaUtilizzo(result.getDouble("km"), result.getInt("tempo_utilizzo"));
 
                     legends.modificaPezzo(pezzo);
                 }
@@ -277,9 +227,7 @@ public final class SqliteLegendsDAO implements LegendsDAO {
         }
     }
 
-    private void salvaMacchina(
-            Connection connection,
-            Legends legends) throws SQLException {
+    private void salvaMacchina(Connection connection, Legends legends) throws SQLException {
 
         String sql = """
                 INSERT INTO macchine (id_macchina, km_macchina)
@@ -295,9 +243,7 @@ public final class SqliteLegendsDAO implements LegendsDAO {
         }
     }
 
-    private void salvaPezzi(
-            Connection connection,
-            Legends legends) throws SQLException {
+    private void salvaPezzi(Connection connection, Legends legends) throws SQLException {
 
         String aggiornaSql = """
                 UPDATE pezzo
@@ -322,15 +268,11 @@ public final class SqliteLegendsDAO implements LegendsDAO {
                 VALUES (?, ?, ?, ?, ?, ?, ?)
                 """;
 
-        try (PreparedStatement aggiorna =
-                     connection.prepareStatement(aggiornaSql);
-             PreparedStatement inserisci =
-                     connection.prepareStatement(inserisciSql)) {
+        try (PreparedStatement aggiorna = connection.prepareStatement(aggiornaSql);
+             PreparedStatement inserisci = connection.prepareStatement(inserisciSql)) {
 
             for (Pezzo pezzo : legends.getTuttiPezzi()) {
-                String tipoDatabase = convertiTipoPerDatabase(
-                        pezzo.getTipo()
-                );
+                String tipoDatabase = convertiTipoPerDatabase(pezzo.getTipo());
 
                 aggiorna.setDouble(1, pezzo.getKmAttuali());
                 aggiorna.setDouble(2, pezzo.getKmMax());
@@ -355,16 +297,11 @@ public final class SqliteLegendsDAO implements LegendsDAO {
         }
     }
 
-    private Optional<TipoPezzo> convertiTipoDalDatabase(
-            String valoreDatabase) {
+    private Optional<TipoPezzo> convertiTipoDalDatabase(String valoreDatabase) {
 
-        if (valoreDatabase == null || valoreDatabase.isBlank()) {
-            return Optional.empty();
-        }
+        if (valoreDatabase == null || valoreDatabase.isBlank()) {return Optional.empty();}
 
-        String tipoDb = valoreDatabase
-                .trim()
-                .toLowerCase(Locale.ROOT);
+        String tipoDb = valoreDatabase.trim().toLowerCase(Locale.ROOT);
 
         List<String> nomiEnum = switch (tipoDb) {
             case "motore" -> List.of("MOTORE");
@@ -387,9 +324,7 @@ public final class SqliteLegendsDAO implements LegendsDAO {
 
     private String convertiTipoPerDatabase(TipoPezzo tipo) {
         if (tipo == null) {
-            throw new IllegalArgumentException(
-                    "Il tipo del pezzo non può essere null"
-            );
+            throw new IllegalArgumentException("Il tipo del pezzo non può essere null");
         }
 
         return switch (tipo.name()) {
@@ -403,16 +338,12 @@ public final class SqliteLegendsDAO implements LegendsDAO {
     }
 
     private String generaIdPezzo() {
-        return "PZ-" + UUID.randomUUID()
-                .toString()
-                .replace("-", "");
+        return "PZ-" + UUID.randomUUID().toString().replace("-", "");
     }
 
     private String validaId(String id) {
         if (id == null || id.isBlank()) {
-            throw new IllegalArgumentException(
-                    "L'id della macchina non può essere vuoto"
-            );
+            throw new IllegalArgumentException("L'id della macchina non può essere vuoto");
         }
 
         return id.trim();
@@ -422,7 +353,6 @@ public final class SqliteLegendsDAO implements LegendsDAO {
         try {
             connection.rollback();
         } catch (SQLException ignored) {
-            // Conserva l'eccezione originale.
         }
     }
 }

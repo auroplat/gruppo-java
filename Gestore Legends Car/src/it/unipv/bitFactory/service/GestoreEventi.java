@@ -12,17 +12,27 @@ public final class GestoreEventi {
 
     public GestoreEventi(EventoDAO eventoDAO) {
 
-        this.eventoDAO = Objects.requireNonNull( eventoDAO, "Il DAO degli eventi non può essere null" ); }
+        this.eventoDAO = Objects.requireNonNull(
+                eventoDAO,
+                "Il DAO degli eventi non può essere null"
+        );
+    }
 
     public List<Evento> getEventi() {
 
-        return List.copyOf( eventoDAO.caricaEventi());
+        return List.copyOf(
+                eventoDAO.caricaEventi()
+        );
     }
 
     public Evento cercaEvento(String nomeEvento) {
 
-        if (nomeEvento == null || nomeEvento.isBlank()) { return null; }
+        if (nomeEvento == null || nomeEvento.isBlank()) {
+            return null;
+        }
 
-        return eventoDAO.cercaEvento( nomeEvento.trim() );
+        return eventoDAO.cercaEvento(
+                nomeEvento.trim()
+        );
     }
 }

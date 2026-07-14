@@ -16,7 +16,8 @@ import it.unipv.bitFactory.dao.interfacce.DAOException;
 import it.unipv.bitFactory.dao.interfacce.PrenotazioneDAO;
 import it.unipv.bitFactory.model.prenotazioni.Prenotazione;
 
-public final class SqlitePrenotazioneDAO implements PrenotazioneDAO {
+public final class SqlitePrenotazioneDAO
+        implements PrenotazioneDAO {
 
     private final String jdbcUrl;
 
@@ -40,7 +41,7 @@ public final class SqlitePrenotazioneDAO implements PrenotazioneDAO {
         try {
             Class.forName("org.sqlite.JDBC");
         } catch (ClassNotFoundException e) {
-            throw new DAOException("Driver SQLite JDBC non trovato",e);
+            throw new DAOException("Driver SQLite JDBC non trovato", e);
         }
     }
 
@@ -101,13 +102,12 @@ public final class SqlitePrenotazioneDAO implements PrenotazioneDAO {
             return prenotazioni;
 
         } catch (SQLException e) {
-            throw new DAOException("Errore durante la ricerca delle prenotazioni per l'evento " + evento,e);
+            throw new DAOException("Errore durante la ricerca delle prenotazioni per l'evento " + evento, e);
         }
     }
 
     @Override
-    public List<Prenotazione> cercaPerCliente(
-            String emailCliente) {
+    public List<Prenotazione> cercaPerCliente(String emailCliente) {
 
         String email = validaEmail(emailCliente);
 
@@ -136,14 +136,12 @@ public final class SqlitePrenotazioneDAO implements PrenotazioneDAO {
             return prenotazioni;
 
         } catch (SQLException e) {
-            throw new DAOException("Errore durante la ricerca delle prenotazioni del cliente " + email,e);
+            throw new DAOException("Errore durante la ricerca delle prenotazioni del cliente " + email, e);
         }
     }
 
     @Override
-    public Optional<Prenotazione> cerca(
-            String nomeEvento,
-            String emailCliente) {
+    public Optional<Prenotazione> cerca(String nomeEvento, String emailCliente) {
 
         String evento = validaNomeEvento(nomeEvento);
         String email = validaEmail(emailCliente);
@@ -170,7 +168,7 @@ public final class SqlitePrenotazioneDAO implements PrenotazioneDAO {
             }
 
         } catch (SQLException e) {
-            throw new DAOException("Errore durante la ricerca della prenotazione",e);
+            throw new DAOException("Errore durante la ricerca della prenotazione", e);
         }
     }
 
@@ -192,16 +190,13 @@ public final class SqlitePrenotazioneDAO implements PrenotazioneDAO {
         try (Connection connection = apriConnessione();
              PreparedStatement statement = connection.prepareStatement(sql)) {
 
-            statement.setString(1,prenotazione.getNomeEvento());
-
-            statement.setString(2,prenotazione.getEmailCliente());
-
-            statement.setString(3,prenotazione.getTelefonoCliente());
-
+            statement.setString(1, prenotazione.getNomeEvento());
+            statement.setString(2, prenotazione.getEmailCliente());
+            statement.setString(3, prenotazione.getTelefonoCliente());
             return statement.executeUpdate() > 0;
 
         } catch (SQLException e) {
-            throw new DAOException("Errore durante il salvataggio della prenotazione. Il cliente potrebbe essere già prenotato.",e);
+            throw new DAOException("Errore durante il salvataggio della prenotazione.Il cliente potrebbe essere già prenotato.", e);
         }
     }
 
@@ -226,17 +221,16 @@ public final class SqlitePrenotazioneDAO implements PrenotazioneDAO {
             return statement.executeUpdate() > 0;
 
         } catch (SQLException e) {
-            throw new DAOException("Errore durante l'annullamento della prenotazione",e);
+            throw new DAOException("Errore durante l'annullamento della prenotazione", e);
         }
     }
 
     private Connection apriConnessione()
-            throws SQLException {
+    throws SQLException {
 
         Connection connection = DriverManager.getConnection(jdbcUrl);
 
         try (Statement statement = connection.createStatement()) {
-
             statement.execute("PRAGMA foreign_keys = ON");
         }
 
@@ -256,7 +250,7 @@ public final class SqlitePrenotazioneDAO implements PrenotazioneDAO {
         if (nomeEvento == null || nomeEvento.isBlank()) {
             throw new IllegalArgumentException("Il nome dell'evento non può essere vuoto");
         }
-
+        
         return nomeEvento.trim();
     }
 

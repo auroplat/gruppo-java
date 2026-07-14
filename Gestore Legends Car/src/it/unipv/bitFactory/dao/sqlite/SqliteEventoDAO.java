@@ -39,7 +39,7 @@ public final class SqliteEventoDAO implements EventoDAO {
         try {
             Class.forName("org.sqlite.JDBC");
         } catch (ClassNotFoundException e) {
-            throw new DAOException("Driver SQLite JDBC non trovato",e);
+            throw new DAOException("Driver SQLite JDBC non trovato", e);
         }
     }
 
@@ -66,7 +66,7 @@ public final class SqliteEventoDAO implements EventoDAO {
             return eventi;
 
         } catch (SQLException e) {
-            throw new DAOException("Errore durante il caricamento degli eventi",e);
+            throw new DAOException("Errore durante il caricamento degli eventi", e);
         }
     }
 
@@ -84,15 +84,17 @@ public final class SqliteEventoDAO implements EventoDAO {
 
         try (Connection connection = apriConnessione();
              PreparedStatement statement = connection.prepareStatement(sql)) {
+
             statement.setString(1, nome);
 
             try (ResultSet result = statement.executeQuery()) {
                 if (result.next()) {return creaEvento(result);}
+
                 return null;
             }
 
         } catch (SQLException e) {
-            throw new DAOException("Errore durante la ricerca dell'evento " + nome,e);
+            throw new DAOException("Errore durante la ricerca dell'evento " + nome, e);
         }
     }
 
@@ -125,12 +127,12 @@ public final class SqliteEventoDAO implements EventoDAO {
             return statement.executeUpdate() > 0;
 
         } catch (SQLException e) {
-            throw new DAOException("Errore durante l'aggiunta dell'evento " + evento.getNomeEvento(),e);
+            throw new DAOException("Errore durante l'aggiunta dell'evento " + evento.getNomeEvento(), e);
         }
     }
 
     @Override
-    public boolean aggiornaPosti(String nomeEvento,int nuoviPosti) {
+    public boolean aggiornaPosti(String nomeEvento, int nuoviPosti) {
 
         String nome = validaNomeEvento(nomeEvento);
 
@@ -174,7 +176,7 @@ public final class SqliteEventoDAO implements EventoDAO {
             return statement.executeUpdate() > 0;
 
         } catch (SQLException e) {
-            throw new DAOException("Errore durante l'eliminazione dell'evento " + nome,e);
+            throw new DAOException("Errore durante l'eliminazione dell'evento " + nome, e);
         }
     }
 
@@ -194,9 +196,10 @@ public final class SqliteEventoDAO implements EventoDAO {
     private Evento creaEvento(ResultSet result)
             throws SQLException {
 
-        return new Evento(result.getString("nome_evento"),
-                		  result.getString("data_evento"),
-                		  result.getInt("posti_disponibili")
+        return new Evento(
+                result.getString("nome_evento"),
+                result.getString("data_evento"),
+                result.getInt("posti_disponibili")
         );
     }
 

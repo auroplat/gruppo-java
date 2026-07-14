@@ -15,7 +15,6 @@ public class Pezzo {
     }
 
     public Pezzo(String idPezzo, TipoPezzo tipo, double kmMax, int tempoMax) {
-    	
         if (idPezzo == null || idPezzo.isBlank()) {
             throw new IllegalArgumentException("L'id del pezzo non può essere vuoto");
         }
@@ -34,7 +33,9 @@ public class Pezzo {
         this.tempoAttuale = 0;
     }
 
-    private static String generaId() {return "PZ-" + UUID.randomUUID().toString().replace("-", "");}
+    private static String generaId() {
+        return "PZ-" + UUID.randomUUID().toString().replace("-", "");
+    }
 
     public void aggiornaKm(double km) {
         if (km < 0) {

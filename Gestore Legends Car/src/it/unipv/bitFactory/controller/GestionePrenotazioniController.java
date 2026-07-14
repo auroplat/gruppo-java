@@ -31,6 +31,6 @@ public final class GestionePrenotazioniController {
 
         if (nomeEvento == null || nomeEvento.isBlank()) {return "Evento non valido.";}
 
-        return sistema.annullaPrenotazione(emailCliente,nomeEvento);
+        return sistema.annullaPrenotazione(emailCliente, nomeEvento);
     }
 }

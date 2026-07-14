@@ -48,7 +48,9 @@ public class VeicoloService {
                 throw new IllegalStateException("Pezzi non più disponibili per il tipo: " + tipoPezzo);
             }
 
-            for (Pezzo pezzo : pezziLiberi) { legends.aggiungiPezzo(pezzo); }
+            for (Pezzo pezzo : pezziLiberi) {
+                legends.aggiungiPezzo(pezzo);
+            }
         }
 
         veicoloDAO.salvaLegends(legends);
@@ -82,9 +84,13 @@ public class VeicoloService {
                 .orElseThrow(() -> new IllegalArgumentException("Legends non trovata: " + idVeicolo));
     }
 
-    public List<Legends> trovaTutteLegends() { return veicoloDAO.trovaTutteLegends(); }
+    public List<Legends> trovaTutteLegends() {
+        return veicoloDAO.trovaTutteLegends();
+    }
 
-    public TipoVeicolo getTipoVeicoloGestito() { return TipoVeicolo.LEGENDS;  }
+    public TipoVeicolo getTipoVeicoloGestito() {
+        return TipoVeicolo.LEGENDS;
+    }
 
     private void controllaDisponibilitaPezzi(Map<TipoPezzo, Integer> ricetta) {
         for (Map.Entry<TipoPezzo, Integer> richiesta : ricetta.entrySet()) {

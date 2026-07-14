@@ -16,7 +16,9 @@ public class MagazzinoService {
 
     public MagazzinoService(MagazzinoDAO magazzinoDAO) {
         if (magazzinoDAO == null) {
-            throw new IllegalArgumentException( "Il DAO magazzino non può essere null"  );
+            throw new IllegalArgumentException(
+                    "Il DAO magazzino non può essere null"
+            );
         }
 
         this.magazzinoDAO = magazzinoDAO;
@@ -28,10 +30,14 @@ public class MagazzinoService {
 
     public VoceMagazzino cercaPezzo(String idPezzo) {
         return magazzinoDAO.trovaPerIdPezzo(idPezzo)
-                .orElseThrow(() -> new IllegalArgumentException( "Pezzo non trovato: " + idPezzo ));
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Pezzo non trovato: " + idPezzo
+                ));
     }
 
-    public List<VoceMagazzino> visualizzaMagazzino() { return magazzinoDAO.trovaTutti(); }
+    public List<VoceMagazzino> visualizzaMagazzino() {
+        return magazzinoDAO.trovaTutti();
+    }
 
     public StatoDisponibilita aggiornaQuantitaPezzo(
             String idPezzo,
@@ -39,7 +45,9 @@ public class MagazzinoService {
 
         magazzinoDAO.aggiornaQuantita(idPezzo, nuovaQuantita);
 
-        if (nuovaQuantita == 0) {  return StatoDisponibilita.ESAURITO; }
+        if (nuovaQuantita == 0) {
+            return StatoDisponibilita.ESAURITO;
+        }
 
         return controllaDisponibilita(idPezzo);
     }

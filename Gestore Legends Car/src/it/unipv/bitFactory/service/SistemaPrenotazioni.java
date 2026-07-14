@@ -16,36 +16,66 @@ public final class SistemaPrenotazioni {
     private final EventoDAO eventoDAO;
     private final PrenotazioneDAO prenotazioneDAO;
 
-    public SistemaPrenotazioni(ClienteDAO clienteDAO, EventoDAO eventoDAO, PrenotazioneDAO prenotazioneDAO) {
+    public SistemaPrenotazioni(
+            ClienteDAO clienteDAO,
+            EventoDAO eventoDAO,
+            PrenotazioneDAO prenotazioneDAO) {
 
-        this.clienteDAO = Objects.requireNonNull( clienteDAO,"Il DAO dei clienti non può essere null" );
+        this.clienteDAO = Objects.requireNonNull(
+                clienteDAO,
+                "Il DAO dei clienti non può essere null"
+        );
 
-        this.eventoDAO = Objects.requireNonNull( eventoDAO, "Il DAO degli eventi non può essere null" );
+        this.eventoDAO = Objects.requireNonNull(
+                eventoDAO,
+                "Il DAO degli eventi non può essere null"
+        );
 
-        this.prenotazioneDAO = Objects.requireNonNull( prenotazioneDAO, "Il DAO delle prenotazioni non può essere null" ); 
-        }
+        this.prenotazioneDAO = Objects.requireNonNull(
+                prenotazioneDAO,
+                "Il DAO delle prenotazioni non può essere null"
+        );
+    }
 
     public String effettuaPrenotazione(
             Cliente cliente,
             String nomeEvento) {
 
-        if (cliente == null) { return "Cliente non valido."; }
+        if (cliente == null) {
+            return "Cliente non valido.";
+        }
 
         String eventoRichiesto =
                 normalizzaNomeEvento(nomeEvento);
 
-        if (cliente.getEta() < 18) { return "Il cliente deve essere maggiorenne."; }
+        if (cliente.getEta() < 18) {
+            return "Il cliente deve essere maggiorenne.";
+        }
 
-        Evento evento = eventoDAO.cercaEvento( eventoRichiesto );
+        Evento evento =
+                eventoDAO.cercaEvento(
+                        eventoRichiesto
+                );
 
-        if (evento == null) { return "Evento non trovato."; }
+        if (evento == null) {
+            return "Evento non trovato.";
+        }
 
         if (evento.getPostiDisponibili() <= 0) {
 
-            return "Prenotazione non possibile: nessun posto disponibile.";  }
+            return "Prenotazione non possibile: "
+                    + "nessun posto disponibile.";
+        }
 
-        String email = normalizzaEmail( cliente.getEmail());
+        String email =
+                normalizzaEmail(
+                        cliente.getEmail()
+                );
 
+        /*
+         * Evita che lo stesso cliente si prenoti due
+         * volte allo stesso evento.
+         */
         if (prenotazioneDAO
                 .cerca(
                         evento.getNomeEvento(),
@@ -53,8 +83,14 @@ public final class SistemaPrenotazioni {
                 )
                 .isPresent()) {
 
-            return "Il cliente è già prenotato per questo evento."; }
+            return "Il cliente è già prenotato "
+                    + "per questo evento.";
+        }
 
+        /*
+         * Salva il cliente solamente se non è già
+         * presente nella tabella clienti.
+         */
         if (clienteDAO
                 .cercaPerEmail(email)
                 .isEmpty()) {
@@ -63,7 +99,9 @@ public final class SistemaPrenotazioni {
                     clienteDAO.salva(cliente);
 
             if (!clienteSalvato) {
-                return "Impossibile salvare i dati del cliente."; }
+                return "Impossibile salvare "
+                        + "i dati del cliente.";
+            }
         }
 
         Prenotazione prenotazione =
@@ -78,9 +116,12 @@ public final class SistemaPrenotazioni {
                         prenotazione
                 );
 
-        if (!prenotazioneSalvata) { return "Impossibile salvare la prenotazione."; }
+        if (!prenotazioneSalvata) {
+            return "Impossibile salvare la prenotazione.";
+        }
 
-        int nuoviPosti = evento.getPostiDisponibili() - 1;
+        int nuoviPosti =
+                evento.getPostiDisponibili() - 1;
 
         boolean postiAggiornati =
                 eventoDAO.aggiornaPosti(
@@ -89,12 +130,19 @@ public final class SistemaPrenotazioni {
                 );
 
         if (!postiAggiornati) {
+
+            /*
+             * Compensazione: se non riesce ad aggiornare
+             * i posti, elimina la prenotazione appena
+             * inserita.
+             */
             prenotazioneDAO.elimina(
                     evento.getNomeEvento(),
                     email
             );
 
-            return "La prenotazione non è stata completata: impossibile aggiornare i posti.";
+            return "La prenotazione non è stata completata: "
+                    + "impossibile aggiornare i posti.";
         }
 
         return "Prenotazione completata con successo.";
@@ -115,7 +163,9 @@ public final class SistemaPrenotazioni {
                         eventoRichiesto
                 );
 
-        if (evento == null) { return "Evento non trovato."; }
+        if (evento == null) {
+            return "Evento non trovato.";
+        }
 
         Optional<Prenotazione> prenotazione =
                 prenotazioneDAO.cerca(
@@ -123,7 +173,9 @@ public final class SistemaPrenotazioni {
                         email
                 );
 
-        if (prenotazione.isEmpty()) { return "Prenotazione non trovata.";  }
+        if (prenotazione.isEmpty()) {
+            return "Prenotazione non trovata.";
+        }
 
         boolean eliminata =
                 prenotazioneDAO.elimina(
@@ -131,9 +183,12 @@ public final class SistemaPrenotazioni {
                         email
                 );
 
-        if (!eliminata) { return "Impossibile annullare la prenotazione."; }
+        if (!eliminata) {
+            return "Impossibile annullare la prenotazione.";
+        }
 
-        int nuoviPosti = evento.getPostiDisponibili() + 1;
+        int nuoviPosti =
+                evento.getPostiDisponibili() + 1;
 
         boolean postiAggiornati =
                 eventoDAO.aggiornaPosti(
@@ -141,9 +196,18 @@ public final class SistemaPrenotazioni {
                         nuoviPosti
                 );
 
-        if (!postiAggiornati) { prenotazioneDAO.aggiungi( prenotazione.get());
+        if (!postiAggiornati) {
 
-            return "Annullamento non completato: impossibile aggiornare i posti.";
+            /*
+             * Compensazione: ripristina la prenotazione
+             * se non riesce a restituire il posto.
+             */
+            prenotazioneDAO.aggiungi(
+                    prenotazione.get()
+            );
+
+            return "Annullamento non completato: "
+                    + "impossibile aggiornare i posti.";
         }
 
         return "Prenotazione annullata con successo.";
@@ -152,8 +216,13 @@ public final class SistemaPrenotazioni {
     private String normalizzaNomeEvento(
             String nomeEvento) {
 
-        if (nomeEvento == null || nomeEvento.isBlank()) {
-            throw new IllegalArgumentException( "Il nome dell'evento non può essere vuoto" ); }
+        if (nomeEvento == null
+                || nomeEvento.isBlank()) {
+
+            throw new IllegalArgumentException(
+                    "Il nome dell'evento non può essere vuoto"
+            );
+        }
 
         return nomeEvento.trim();
     }
@@ -162,14 +231,20 @@ public final class SistemaPrenotazioni {
             String email) {
 
         if (email == null || email.isBlank()) {
-            throw new IllegalArgumentException( "L'email non può essere vuota" );
+
+            throw new IllegalArgumentException(
+                    "L'email non può essere vuota"
+            );
         }
 
         String normalizzata =
                 email.trim().toLowerCase();
 
         if (!normalizzata.contains("@")) {
-            throw new IllegalArgumentException( "L'email inserita non è valida" );
+
+            throw new IllegalArgumentException(
+                    "L'email inserita non è valida"
+            );
         }
 
         return normalizzata;

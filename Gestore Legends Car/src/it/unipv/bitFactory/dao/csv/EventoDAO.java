@@ -14,8 +14,7 @@ public class EventoDAO {
 
         List<Evento> eventi = new ArrayList<>();
 
-        try (BufferedReader lettore =
-                     new BufferedReader(new FileReader(percorsoFile))) {
+        try (BufferedReader lettore = new BufferedReader(new FileReader(percorsoFile))) {
 
             lettore.readLine();
 

@@ -36,15 +36,14 @@ public class GestioneSessioniController {
             throw new IllegalArgumentException("La sessione non può essere null");
         }
 
-        Legends legends = legendsDAO.trovaPerId(idMacchina).orElseThrow(() -> new IllegalArgumentException("Macchina non trovata: " + idMacchina));
+        Legends legends = legendsDAO.trovaPerId(idMacchina)
+                .orElseThrow(() -> new IllegalArgumentException("Macchina non trovata: " + idMacchina));
 
         legends.applicaSessione(sessione);
-
         legendsDAO.salva(legends);
-
         sessioneDAO.salva(idMacchina, sessione);
     }
-    
+
     public List<String> elencaIdMacchine() {
         return legendsDAO.trovaTutte().stream().map(Legends::getId).toList();
     }

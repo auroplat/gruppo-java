@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BitFactory - Accesso</title>
+    <link rel="stylesheet" href="/login.css">
+</head>
+
+<body>
+    <div class="page-shell">
+        <header class="topbar">
+            <a class="brand" href="/login.html" aria-label="BitFactory">
+                <span class="brand-mark">B</span>
+                <span>BitFactory</span>
+            </a>
+
+            <span class="topbar-link">Gestione racing experience</span>
+        </header>
+
+        <main class="login-layout">
+            <section class="login-intro">
+                <span class="eyebrow">Area di accesso</span>
+
+                <h1>Scegli come entrare.</h1>
+
+                <p>
+                    I clienti possono consultare gli eventi e gestire le proprie
+                    prenotazioni senza credenziali. Gli addetti accedono invece
+                    alla propria area operativa tramite username e password.
+                </p>
+
+                <div class="access-summary">
+                    <div class="summary-item">
+                        <strong>Cliente</strong>
+                        <span>Eventi e prenotazioni</span>
+                    </div>
+
+                    <div class="summary-item">
+                        <strong>Addetto</strong>
+                        <span>Area riservata per ruolo</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="access-panel" aria-label="Selezione accesso">
+                <div id="messaggioErrore"
+                     class="alert-message"
+                     role="alert"
+                     hidden>
+                </div>
+
+                <article class="access-card client-card">
+                    <div class="card-icon" aria-hidden="true">01</div>
+
+                    <div class="card-content">
+                        <span class="card-label">Accesso pubblico</span>
+                        <h2>Continua come cliente</h2>
+                        <p>
+                            Visualizza gli eventi disponibili, effettua una
+                            prenotazione oppure annullane una già registrata.
+                        </p>
+                    </div>
+
+                    <a class="secondary-button" href="/eventi.html">
+                        Entra come cliente
+                    </a>
+                </article>
+
+                <div class="access-divider">
+                    <span>oppure</span>
+                </div>
+
+                <article class="access-card">
+                    <div class="card-icon" aria-hidden="true">02</div>
+
+                    <div class="card-content">
+                        <span class="card-label">Area riservata</span>
+                        <h2>Accesso addetto</h2>
+                        <p>
+                            Inserisci le credenziali assegnate per accedere
+                            esclusivamente ai servizi relativi al tuo ruolo.
+                        </p>
+                    </div>
+
+                    <form class="login-form" action="/login" method="post">
+                        <div class="field">
+                            <label for="username">Username</label>
+                            <input
+                                type="text"
+                                id="username"
+                                name="username"
+                                autocomplete="username"
+                                placeholder="Inserisci lo username"
+                                required>
+                        </div>
+
+                        <div class="field">
+                            <label for="password">Password</label>
+                            <div class="password-field">
+                                <input
+                                    type="password"
+                                    id="password"
+                                    name="password"
+                                    autocomplete="current-password"
+                                    placeholder="Inserisci la password"
+                                    required>
+
+                                <button
+                                    class="password-toggle"
+                                    type="button"
+                                    id="passwordToggle"
+                                    aria-label="Mostra password"
+                                    aria-pressed="false">
+                                    Mostra
+                                </button>
+                            </div>
+                        </div>
+
+                        <button class="primary-button" type="submit">
+                            Accedi all'area riservata
+                        </button>
+                    </form>
+                </article>
+            </section>
+        </main>
+    </div>
+
+    <script>
+		
+        const params = new URLSearchParams(window.location.search);
+        const errore = params.get("errore");
+        const messaggioErrore = document.getElementById("messaggioErrore");
+
+        const messaggi = {
+            credenziali: "Username o password non corretti.",
+            ruolo: "Il ruolo associato all'addetto non è valido.",
+            server: "Si è verificato un errore durante il login.",
+			accesso: "Devi effettuare il login per accedere a quest'area."
+        };
+
+        if (errore) {
+            messaggioErrore.textContent =
+                messaggi[errore] || "Non è stato possibile effettuare l'accesso.";
+            messaggioErrore.hidden = false;
+        }
+
+        const passwordInput = document.getElementById("password");
+        const passwordToggle = document.getElementById("passwordToggle");
+
+        passwordToggle.addEventListener("click", () => {
+            const passwordVisibile = passwordInput.type === "text";
+
+            passwordInput.type = passwordVisibile ? "password" : "text";
+            passwordToggle.textContent = passwordVisibile ? "Mostra" : "Nascondi";
+            passwordToggle.setAttribute(
+                "aria-label",
+                passwordVisibile ? "Mostra password" : "Nascondi password"
+            );
+            passwordToggle.setAttribute(
+                "aria-pressed",
+                String(!passwordVisibile)
+            );
+        });
+    </script>
+</body>
+</html>

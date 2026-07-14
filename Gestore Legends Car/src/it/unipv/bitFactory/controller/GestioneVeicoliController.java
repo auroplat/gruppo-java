@@ -19,13 +19,23 @@ public class GestioneVeicoliController {
         this.veicoloService = veicoloService;
     }
 
-    public Legends creaLegends(String idVeicolo) {return veicoloService.creaLegends(idVeicolo);}
+    public Legends creaLegends(String idVeicolo) {
+        return veicoloService.creaLegends(idVeicolo);
+    }
 
-    public boolean puoCreareLegends() {return veicoloService.puoCreareLegends();}
+    public boolean puoCreareLegends() {
+        return veicoloService.puoCreareLegends();
+    }
 
-    public Legends cercaLegends(String idVeicolo) {return veicoloService.trovaLegendsPerId(idVeicolo);}
+    public Legends cercaLegends(String idVeicolo) {
+        return veicoloService.trovaLegendsPerId(idVeicolo);
+    }
 
-    public List<Legends> visualizzaLegends() {return veicoloService.trovaTutteLegends();}
+    public List<Legends> visualizzaLegends() {
+        return veicoloService.trovaTutteLegends();
+    }
 
-    public Map<TipoPezzo, Integer> visualizzaRicettaLegends() {return veicoloService.getRicettaLegends();}
+    public Map<TipoPezzo, Integer> visualizzaRicettaLegends() {
+        return veicoloService.getRicettaLegends();
+    }
 }

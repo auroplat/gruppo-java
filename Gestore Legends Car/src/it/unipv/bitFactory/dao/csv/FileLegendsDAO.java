@@ -42,7 +42,6 @@ public class FileLegendsDAO implements LegendsDAO {
 
         // Se la macchina esiste già, viene aggiornata.
         archivio.put(legends.getId(), legends);
-
         scriviTutte(archivio.values());
     }
 
@@ -57,9 +56,7 @@ public class FileLegendsDAO implements LegendsDAO {
     }
 
     @Override
-    public List<Legends> trovaTutte() {
-        return new ArrayList<>(leggiTutteComeMappa().values());
-    }
+    public List<Legends> trovaTutte() {return new ArrayList<>(leggiTutteComeMappa().values());}
 
     @Override
     public void elimina(String id) {
@@ -69,30 +66,23 @@ public class FileLegendsDAO implements LegendsDAO {
 
         Map<String, Legends> archivio = leggiTutteComeMappa();
         archivio.remove(id);
-
         scriviTutte(archivio.values());
     }
 
     private Map<String, Legends> leggiTutteComeMappa() {
         Map<String, Legends> archivio = new LinkedHashMap<>();
 
-        if (!Files.exists(filePath)) {
-            return archivio;
-        }
+        if (!Files.exists(filePath)) {return archivio;}
 
         try {
             List<String> righe = Files.readAllLines(filePath);
 
             for (String riga : righe) {
-                if (riga == null || riga.isBlank()) {
-                    continue;
-                }
+                if (riga == null || riga.isBlank()) {continue;}
 
                 String[] campi = riga.split(SEPARATORE, -1);
 
-                if (campi.length == 0) {
-                    continue;
-                }
+                if (campi.length == 0) {continue;}
 
                 switch (campi[0]) {
                     case RECORD_MACCHINA:
@@ -181,9 +171,7 @@ public class FileLegendsDAO implements LegendsDAO {
         try {
             Path parent = filePath.getParent();
 
-            if (parent != null) {
-                Files.createDirectories(parent);
-            }
+            if (parent != null) {Files.createDirectories(parent);}
 
             Files.write(filePath, righe);
 

@@ -10,14 +10,10 @@ public class SessioneEsternaAdapter extends Sessione {
 
     private final SessioneEsterna sessioneEsterna;
 
-    public SessioneEsternaAdapter(
-            SessioneEsterna sessioneEsterna) {
+    public SessioneEsternaAdapter(SessioneEsterna sessioneEsterna) {
 
-        super(
-                Objects.requireNonNull(
-                        sessioneEsterna,
-                        "La sessione esterna non può essere null"
-                ).getCircuito(),
+        super(Objects.requireNonNull(sessioneEsterna, "La sessione esterna non può essere null")
+        		.getCircuito(),
                 sessioneEsterna.getDistanzaKm(),
                 sessioneEsterna.getDurataMinuti()
         );
@@ -27,12 +23,8 @@ public class SessioneEsternaAdapter extends Sessione {
 
     @Override
     public TipoSessione getTipoSessione() {
-        return TipoSessione.daStringa(
-                sessioneEsterna.getCategoria()
-        );
+        return TipoSessione.daStringa(sessioneEsterna.getCategoria());
     }
 
-    public SessioneEsterna getSessioneEsterna() {
-        return sessioneEsterna;
-    }
+    public SessioneEsterna getSessioneEsterna() {return sessioneEsterna;}
 }

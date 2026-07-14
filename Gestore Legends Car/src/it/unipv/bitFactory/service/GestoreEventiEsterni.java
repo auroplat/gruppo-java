@@ -15,7 +15,6 @@ public class GestoreEventiEsterni {
     private AdapterEventiEsterni adapter;
 
     public GestoreEventiEsterni() {
-
         eventi = new ArrayList<>();
         adapter = new AdapterEventiEsterni();
     }
@@ -27,7 +26,7 @@ public class GestoreEventiEsterni {
 
             String riga;
 
-            br.readLine(); // salta header
+            br.readLine(); 
 
             while ((riga = br.readLine()) != null) {
 
@@ -36,12 +35,9 @@ public class GestoreEventiEsterni {
             }
 
         } catch (IOException e) {
-
-            System.out.println("Errore lettura file eventi esterni");
+        	System.out.println("Errore lettura file eventi esterni");
         }
     }
 
-    public List<Evento> getEventi() {
-        return eventi;
-    }
+    public List<Evento> getEventi() { return eventi; }
 }

@@ -31,15 +31,9 @@ public final class BitFactoryWebServer {
             HtmlRenderer renderer) throws IOException {
 
         if (porta < 1 || porta > 65535) {
-            throw new IllegalArgumentException(
-                    "La porta deve essere compresa tra 1 e 65535"
-            );
-        }
+            throw new IllegalArgumentException( "La porta deve essere compresa tra 1 e 65535"); }
 
-        if (numeroThread <= 0) {
-            throw new IllegalArgumentException(
-                    "Il numero di thread deve essere maggiore di zero"
-            );
+        if (numeroThread <= 0) { throw new IllegalArgumentException( "Il numero di thread deve essere maggiore di zero");
         }
 
         if (sessioniController == null || magazzinoController == null || prenotazioniController == null
@@ -189,7 +183,6 @@ public final class BitFactoryWebServer {
                 exchange.getRequestURI().getPath();
 
         if (!"/".equals(percorso)) {
-
             inviaErrore(
                     exchange,
                     404,
@@ -199,14 +192,7 @@ public final class BitFactoryWebServer {
             return;
         }
 
-        if (!"GET".equalsIgnoreCase(
-                exchange.getRequestMethod())) {
-
-            exchange.getResponseHeaders().set(
-                    "Allow",
-                    "GET"
-            );
-
+        if (!"GET".equalsIgnoreCase( exchange.getRequestMethod())) { exchange.getResponseHeaders().set( "Allow", "GET");
             inviaErrore(
                     exchange,
                     405,
@@ -229,13 +215,11 @@ public final class BitFactoryWebServer {
             String contentType) {
 
         return exchange -> {
-
             String percorsoRichiesto =
                     exchange.getRequestURI().getPath();
 
             if (!percorsoHttp.equals(
                     percorsoRichiesto)) {
-
                 inviaErrore(
                         exchange,
                         404,
@@ -247,7 +231,6 @@ public final class BitFactoryWebServer {
 
             if (!"GET".equalsIgnoreCase(
                     exchange.getRequestMethod())) {
-
                 exchange.getResponseHeaders().set(
                         "Allow",
                         "GET"
@@ -282,7 +265,6 @@ public final class BitFactoryWebServer {
                              )) {
 
             if (input == null) {
-
                 inviaErrore(
                         exchange,
                         404,
@@ -295,21 +277,16 @@ public final class BitFactoryWebServer {
 
             byte[] contenuto =
                     input.readAllBytes();
-
             exchange.getResponseHeaders().set(
                     "Content-Type",
-                    contentType
-            );
-
+                    contentType );
             exchange.getResponseHeaders().set(
                     "Cache-Control",
-                    "no-cache"
-            );
+                    "no-cache" );
 
             exchange.sendResponseHeaders(
                     200,
-                    contenuto.length
-            );
+                    contenuto.length );
 
             try (OutputStream output =
                          exchange.getResponseBody()) {
@@ -329,10 +306,7 @@ public final class BitFactoryWebServer {
                         StandardCharsets.UTF_8
                 );
 
-        exchange.getResponseHeaders().set(
-                "Content-Type",
-                "text/plain; charset=UTF-8"
-        );
+        exchange.getResponseHeaders().set( "Content-Type", "text/plain; charset=UTF-8" );
 
         exchange.sendResponseHeaders(
                 codice,
@@ -341,16 +315,13 @@ public final class BitFactoryWebServer {
 
         try (OutputStream output =
                      exchange.getResponseBody()) {
-
             output.write(contenuto);
         }
     }
 
     //avvio server
     public void avvia() {
-
         server.start();
-
         System.out.println(
                 "Server BitFactory avviato su "
                         + "http://localhost:"
@@ -360,12 +331,9 @@ public final class BitFactoryWebServer {
 
     
     //Arresta il server e il pool di thread.
-    
     public void arresta() {
-
         server.stop(0);
         threadPool.shutdown();
-
         System.out.println(
                 "Server BitFactory arrestato"
         );

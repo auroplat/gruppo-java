@@ -21,82 +21,36 @@ public final class ServerMain {
     public static void main(String[] args) {
 
         try {
-            Path databasePath = Path.of(
-                    "data",
-                    "database_bfactory.db"
-            ).toAbsolutePath().normalize();
+            Path databasePath = Path.of( "data", "database_bfactory.db" ).toAbsolutePath().normalize();
 
-            String percorsoDatabase =
-                    databasePath.toString();
+            String percorsoDatabase =  databasePath.toString();
             
-            LegendsDAO legendsDAO =
-                    new SqliteLegendsDAO(
-                            percorsoDatabase
-                    );
+            LegendsDAO legendsDAO = new SqliteLegendsDAO( percorsoDatabase );
 
-            SessioneDAO sessioneDAO =
-                    new SqliteSessioneDAO(
-                            percorsoDatabase
-                    );
+            SessioneDAO sessioneDAO = new SqliteSessioneDAO(  percorsoDatabase  );
 
-            GestioneSessioniController sessioniController =
-                    new GestioneSessioniController(
-                            legendsDAO,
-                            sessioneDAO
-                    );
+            GestioneSessioniController sessioniController =  new GestioneSessioniController( legendsDAO, sessioneDAO  );
 
-            MagazzinoDAO magazzinoDAO =
-                    new SqliteMagazzinoDAO(
-                            percorsoDatabase,
-                            new SoglieMagazzino(2)
-                    );
+            MagazzinoDAO magazzinoDAO = new SqliteMagazzinoDAO(  percorsoDatabase, new SoglieMagazzino(2) );
 
-            MagazzinoService magazzinoService =
-                    new MagazzinoService(
-                            magazzinoDAO
-                    );
+            MagazzinoService magazzinoService =new MagazzinoService( magazzinoDAO );
 
-            GestioneMagazzinoController magazzinoController =
-                    new GestioneMagazzinoController(
-                            magazzinoService
-                    );
+            GestioneMagazzinoController magazzinoController = new GestioneMagazzinoController( magazzinoService );
 
-            EventoDAO eventoDAO =
-                    new SqliteEventoDAO(
-                            percorsoDatabase
-                    );
+            EventoDAO eventoDAO = new SqliteEventoDAO(  percorsoDatabase );
 
-            ClienteDAO clienteDAO =
-                    new SqliteClienteDAO(
-                            percorsoDatabase
-                    );
+            ClienteDAO clienteDAO = new SqliteClienteDAO( percorsoDatabase );
 
-            PrenotazioneDAO prenotazioneDAO =
-                    new SqlitePrenotazioneDAO(
-                            percorsoDatabase
-                    );
+            PrenotazioneDAO prenotazioneDAO = new SqlitePrenotazioneDAO( percorsoDatabase );
 
-            GestoreEventi gestoreEventi =
-                    new GestoreEventi(
-                            eventoDAO
-                    );
+            GestoreEventi gestoreEventi = new GestoreEventi(  eventoDAO  );
 
 
-            SistemaPrenotazioni sistemaPrenotazioni =
-                    new SistemaPrenotazioni(
-                            clienteDAO,
-                            eventoDAO,
-                            prenotazioneDAO
-                    );
+            SistemaPrenotazioni sistemaPrenotazioni = new SistemaPrenotazioni( clienteDAO, eventoDAO,prenotazioneDAO  );
 
-            GestionePrenotazioniController
-                    prenotazioniController =
-                    new GestionePrenotazioniController(
-                            sistemaPrenotazioni
-                    );
+            GestionePrenotazioniController prenotazioniController = new GestionePrenotazioniController( sistemaPrenotazioni  );
 
-            HtmlRenderer renderer =
-                    new HtmlRenderer();
+            HtmlRenderer renderer = new HtmlRenderer();
 
             BitFactoryWebServer server =
                     new BitFactoryWebServer(
@@ -109,23 +63,15 @@ public final class ServerMain {
                             renderer
                     );
 
-            Runtime.getRuntime().addShutdownHook(
-                    new Thread(server::arresta)
-            );
+            Runtime.getRuntime().addShutdownHook( new Thread(server::arresta) );
 
-            System.out.println(
-                    "Database SQLite: "
-                            + databasePath
-            );
+            System.out.println( "Database SQLite: " + databasePath );
 
             server.avvia();
 
         } catch (Exception e) {
 
-            System.err.println(
-                    "Errore durante l'avvio del server: "
-                            + e.getMessage()
-            );
+            System.err.println( "Errore durante l'avvio del server: " + e.getMessage() );
 
             e.printStackTrace();
         }

@@ -62,12 +62,6 @@ public final class PrenotazioniHttpHandler
             Map<String, String> parametri =
                     leggiParametriForm(exchange);
 
-            /*
-             * Entrambi i form inviano questo parametro:
-             *
-             * prenota  -> nuova prenotazione
-             * annulla  -> cancellazione prenotazione
-             */
             String operazione =
                     parametroObbligatorio(
                             parametri,
@@ -175,10 +169,6 @@ public final class PrenotazioniHttpHandler
         String patenteValida =
                 parametri.get("patenteValida");
 
-        /*
-         * Una checkbox non selezionata non viene
-         * proprio inviata dal browser.
-         */
         if (!"true".equalsIgnoreCase(patenteValida)) {
 
             throw new IllegalArgumentException(
@@ -187,10 +177,6 @@ public final class PrenotazioniHttpHandler
             );
         }
 
-        /*
-         * Il simbolo + viene mostrato separatamente
-         * nell'interfaccia.
-         */
         if (!telefono.matches("[0-9]{6,15}")) {
 
             throw new IllegalArgumentException(
@@ -239,10 +225,6 @@ public final class PrenotazioniHttpHandler
             Map<String, String> parametri)
             throws IOException {
 
-        /*
-         * Per eliminare una prenotazione servono
-         * soltanto nome evento ed email.
-         */
         String nomeEvento =
                 parametroObbligatorio(
                         parametri,
@@ -274,13 +256,6 @@ public final class PrenotazioniHttpHandler
                         "prenotazione annullata"
                 );
 
-        /*
-         * Per ora viene riutilizzata la stessa pagina
-         * grafica dell'esito della prenotazione.
-         *
-         * Il messaggio mostrerà comunque chiaramente
-         * che la prenotazione è stata annullata.
-         */
         sendHtml(
                 exchange,
                 successo ? 200 : 404,

@@ -2,27 +2,14 @@ package it.unipv.bitFactory.web;
 
 import java.nio.file.Path;
 
-import it.unipv.bitFactory.controller.GestioneMagazzinoController;
-import it.unipv.bitFactory.controller.GestionePrenotazioniController;
-import it.unipv.bitFactory.controller.GestioneSessioniController;
-import it.unipv.bitFactory.dao.interfacce.ClienteDAO;
-import it.unipv.bitFactory.dao.interfacce.EventoDAO;
-import it.unipv.bitFactory.dao.interfacce.LegendsDAO;
-import it.unipv.bitFactory.dao.interfacce.MagazzinoDAO;
-import it.unipv.bitFactory.dao.interfacce.PrenotazioneDAO;
+import it.unipv.bitFactory.controller.*;
+import it.unipv.bitFactory.dao.interfacce.*;
 import it.unipv.bitFactory.dao.interfacce.SessioneDAO;
-import it.unipv.bitFactory.dao.sqlite.SqliteClienteDAO;
-import it.unipv.bitFactory.dao.sqlite.SqliteEventoDAO;
-import it.unipv.bitFactory.dao.sqlite.SqliteLegendsDAO;
-import it.unipv.bitFactory.dao.sqlite.SqliteMagazzinoDAO;
-import it.unipv.bitFactory.dao.sqlite.SqlitePrenotazioneDAO;
-import it.unipv.bitFactory.dao.sqlite.SqliteSessioneDAO;
+import it.unipv.bitFactory.dao.sqlite.*;
 
 import it.unipv.bitFactory.model.magazzino.SoglieMagazzino;
 
-import it.unipv.bitFactory.service.GestoreEventi;
-import it.unipv.bitFactory.service.MagazzinoService;
-import it.unipv.bitFactory.service.SistemaPrenotazioni;
+import it.unipv.bitFactory.service.*;
 
 import it.unipv.bitFactory.web.view.HtmlRenderer;
 

@@ -8,21 +8,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
-import com.sun.net.httpserver.HttpServer;
+import com.sun.net.httpserver.*;
 
-import it.unipv.bitFactory.controller.GestioneMagazzinoController;
-import it.unipv.bitFactory.controller.GestionePrenotazioniController;
-import it.unipv.bitFactory.controller.GestioneSessioniController;
+import it.unipv.bitFactory.controller.*;
 import it.unipv.bitFactory.service.GestoreEventi;
-import it.unipv.bitFactory.web.handler.EventiApiHttpHandler;
-import it.unipv.bitFactory.web.handler.MagazzinoApiHttpHandler;
-import it.unipv.bitFactory.web.handler.MagazzinoHttpHandler;
-import it.unipv.bitFactory.web.handler.PezziLiberiApiHttpHandler;
-import it.unipv.bitFactory.web.handler.MacchineApiHttpHandler;
-import it.unipv.bitFactory.web.handler.PrenotazioniHttpHandler;
-import it.unipv.bitFactory.web.handler.SessioniHttpHandler;
+import it.unipv.bitFactory.web.handler.*;
 import it.unipv.bitFactory.web.view.HtmlRenderer;
 
 public final class BitFactoryWebServer {
@@ -52,16 +42,10 @@ public final class BitFactoryWebServer {
             );
         }
 
-        if (sessioniController == null
-                || magazzinoController == null
-                || prenotazioniController == null
-                || gestoreEventi == null
-                || renderer == null) {
+        if (sessioniController == null || magazzinoController == null || prenotazioniController == null
+            || gestoreEventi == null || renderer == null) {
 
-            throw new IllegalArgumentException(
-                    "Controller, gestore eventi e renderer "
-                            + "non possono essere null"
-            );
+            throw new IllegalArgumentException("Controller, gestore eventi e renderer "+ "non possono essere null");
         }
 
         this.porta = porta;
@@ -74,25 +58,12 @@ public final class BitFactoryWebServer {
         threadPool =
                 Executors.newFixedThreadPool(numeroThread);
 
-        /*
-         * HOME
-         *
-         * Aprendo:
-         *
-         * http://localhost:8082/
-         *
-         * viene restituito eventi.html.
-         */
         server.createContext(
                 "/",
                 this::gestisciHome
         );
 
-        /*
-         * Permette di aprire anche:
-         *
-         * http://localhost:8082/eventi.html
-         */
+       
         server.createContext(
                 "/eventi.html",
                 creaHandlerRisorsaStatica(
@@ -102,14 +73,6 @@ public final class BitFactoryWebServer {
                 )
         );
 
-        /*
-         * Pagina con il form di prenotazione.
-         *
-         * Supportiamo entrambi gli indirizzi:
-         *
-         * /prenotazione
-         * /prenotazione.html
-         */
         server.createContext(
                 "/prenotazione",
                 creaHandlerRisorsaStatica(
@@ -128,9 +91,7 @@ public final class BitFactoryWebServer {
                 )
         );
 
-        /*
-         * Foglio di stile usato dalle pagine.
-         */
+        //css
         server.createContext(
                 "/styles.css",
                 creaHandlerRisorsaStatica(
@@ -148,94 +109,6 @@ public final class BitFactoryWebServer {
                         "text/css; charset=UTF-8"
                 )
         );
-        /*
-         * Immagine di sfondo.
-         */
-        server.createContext(
-                "/racing-bg.svg",
-                creaHandlerRisorsaStatica(
-                        "/racing-bg.svg",
-                        "/web/racing-bg.svg",
-                        "image/svg+xml"
-                )
-        );
-
-        /*
-         * API EVENTI
-         *
-         * eventi.html esegue:
-         *
-         * GET /api/eventi
-         *
-         * L'handler recupera gli eventi dal database
-         * attraverso GestoreEventi.
-         */
-        server.createContext(
-                "/api/eventi",
-                new EventiApiHttpHandler(
-                        gestoreEventi
-                )
-        );
-
-        /*
-         * API MACCHINE
-         *
-         * Questa parte resta invariata.
-         */
-        server.createContext(
-                "/api/macchine",
-                new MacchineApiHttpHandler(
-                        sessioniController
-                )
-        );
-
-        /*
-         * API MAGAZZINO
-         *
-         * Restituisce il riepilogo delle quantità libere per tipo.
-         */
-        server.createContext(
-                "/api/magazzino",
-                new MagazzinoApiHttpHandler(
-                        magazzinoController
-                )
-        );
-
-        /*
-         * API PEZZI LIBERI
-         *
-         * Esempio: GET /api/pezzi-liberi?tipo=MOTORE
-         */
-        server.createContext(
-                "/api/pezzi-liberi",
-                new PezziLiberiApiHttpHandler(
-                        magazzinoController
-                )
-        );
-
-        /*
-         * GESTIONE SESSIONI
-         *
-         * Questa parte resta invariata.
-         */
-        server.createContext(
-                "/sessioni",
-                new SessioniHttpHandler(
-                        sessioniController,
-                        renderer
-                )
-        );
-
-        /*
-         * GESTIONE MAGAZZINO
-         */
-        server.createContext(
-                "/magazzino",
-                new MagazzinoHttpHandler(
-                        magazzinoController,
-                        renderer
-                )
-        );
         
         server.createContext(
                 "/stylesM.css",
@@ -246,13 +119,62 @@ public final class BitFactoryWebServer {
                 )
         );
 
-        /*
-         * SALVATAGGIO PRENOTAZIONI
-         *
-         * Il form di prenotazione eseguirà:
-         *
-         * POST /prenotazioni
-         */
+        //sfondo
+        server.createContext(
+                "/racing-bg.svg",
+                creaHandlerRisorsaStatica(
+                        "/racing-bg.svg",
+                        "/web/racing-bg.svg",
+                        "image/svg+xml"
+                )
+        );
+
+
+        server.createContext(
+                "/api/eventi",
+                new EventiApiHttpHandler(
+                        gestoreEventi
+                )
+        );
+
+        server.createContext(
+                "/api/macchine",
+                new MacchineApiHttpHandler(
+                        sessioniController
+                )
+        );
+
+        server.createContext(
+                "/api/magazzino",
+                new MagazzinoApiHttpHandler(
+                        magazzinoController
+                )
+        );
+
+        server.createContext(
+                "/api/pezzi-liberi",
+                new PezziLiberiApiHttpHandler(
+                        magazzinoController
+                )
+        );
+
+
+        server.createContext(
+                "/sessioni",
+                new SessioniHttpHandler(
+                        sessioniController,
+                        renderer
+                )
+        );
+
+        server.createContext(
+                "/magazzino",
+                new MagazzinoHttpHandler(
+                        magazzinoController,
+                        renderer
+                )
+        );
+        
         server.createContext(
                 "/prenotazioni",
                 new PrenotazioniHttpHandler(
@@ -264,22 +186,12 @@ public final class BitFactoryWebServer {
         server.setExecutor(threadPool);
     }
 
-    /**
-     * Gestisce la richiesta della home.
-     */
     private void gestisciHome(
             HttpExchange exchange) throws IOException {
 
         String percorso =
                 exchange.getRequestURI().getPath();
 
-        /*
-         * Il context "/" intercetta anche percorsi
-         * che non corrispondono ad altri context.
-         *
-         * Accettiamo quindi soltanto il percorso
-         * esattamente uguale a "/".
-         */
         if (!"/".equals(percorso)) {
 
             inviaErrore(
@@ -315,10 +227,6 @@ public final class BitFactoryWebServer {
         );
     }
 
-    /**
-     * Crea un handler per una risorsa statica,
-     * come HTML, CSS oppure SVG.
-     */
     private HttpHandler creaHandlerRisorsaStatica(
             String percorsoHttp,
             String percorsoRisorsa,
@@ -366,10 +274,6 @@ public final class BitFactoryWebServer {
         };
     }
 
-    /**
-     * Legge un file presente nelle risorse del progetto
-     * e lo restituisce al browser.
-     */
     private void inviaRisorsa(
             HttpExchange exchange,
             String percorsoRisorsa,
@@ -401,11 +305,6 @@ public final class BitFactoryWebServer {
                     contentType
             );
 
-            /*
-             * Impedisce al browser di mostrare
-             * vecchie versioni delle pagine durante
-             * lo sviluppo.
-             */
             exchange.getResponseHeaders().set(
                     "Cache-Control",
                     "no-cache"
@@ -424,9 +323,6 @@ public final class BitFactoryWebServer {
         }
     }
 
-    /**
-     * Invia una risposta testuale di errore.
-     */
     private void inviaErrore(
             HttpExchange exchange,
             int codice,
@@ -454,9 +350,7 @@ public final class BitFactoryWebServer {
         }
     }
 
-    /**
-     * Avvia il server.
-     */
+    //avvio server
     public void avvia() {
 
         server.start();
@@ -468,9 +362,9 @@ public final class BitFactoryWebServer {
         );
     }
 
-    /**
-     * Arresta il server e il pool di thread.
-     */
+    
+    //Arresta il server e il pool di thread.
+    
     public void arresta() {
 
         server.stop(0);

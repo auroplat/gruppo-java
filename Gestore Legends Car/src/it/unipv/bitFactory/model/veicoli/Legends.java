@@ -38,7 +38,6 @@ public class Legends extends Macchina {
         pezzi.put(pezzo.getIdPezzo(), pezzo);
     }
 
-    /** Compatibilità con il codice già presente: aggiorna o inserisce in base all'id. */
     public void modificaPezzo(Pezzo pezzo) {
         if (pezzo == null) {
             throw new IllegalArgumentException("Il pezzo non può essere null");

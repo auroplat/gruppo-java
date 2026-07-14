@@ -32,15 +32,11 @@ public class SqliteMagazzinoDAO implements MagazzinoDAO {
             SoglieMagazzino soglieMagazzino) {
 
         if (percorsoDatabase == null || percorsoDatabase.isBlank()) {
-            throw new IllegalArgumentException(
-                    "Il percorso del database non può essere vuoto"
-            );
+            throw new IllegalArgumentException("Il percorso del database non può essere vuoto");
         }
 
         if (soglieMagazzino == null) {
-            throw new IllegalArgumentException(
-                    "Le soglie del magazzino non possono essere null"
-            );
+            throw new IllegalArgumentException("Le soglie del magazzino non possono essere null");
         }
 
         this.urlDatabase = "jdbc:sqlite:" + percorsoDatabase;
@@ -87,10 +83,7 @@ public class SqliteMagazzinoDAO implements MagazzinoDAO {
             statement.execute(creaPezzi);
 
         } catch (SQLException e) {
-            throw new DAOException(
-                    "Errore durante l'inizializzazione del magazzino",
-                    e
-            );
+            throw new DAOException("Errore durante l'inizializzazione del magazzino", e );
         }
     }
 
@@ -131,10 +124,7 @@ public class SqliteMagazzinoDAO implements MagazzinoDAO {
             }
 
         } catch (SQLException e) {
-            throw new DAOException(
-                    "Errore durante la ricerca del pezzo in magazzino",
-                    e
-            );
+            throw new DAOException("Errore durante la ricerca del pezzo in magazzino", e );
         }
     }
 
@@ -171,10 +161,7 @@ public class SqliteMagazzinoDAO implements MagazzinoDAO {
             }
 
         } catch (SQLException e) {
-            throw new DAOException(
-                    "Errore durante il caricamento del magazzino",
-                    e
-            );
+            throw new DAOException( "Errore durante il caricamento del magazzino", e );
         }
 
         List<VoceMagazzino> risultato = new ArrayList<>();
@@ -200,9 +187,7 @@ public class SqliteMagazzinoDAO implements MagazzinoDAO {
         validaIdPezzo(idPezzo);
 
         if (nuovaQuantita < 0 || nuovaQuantita > 1) {
-            throw new IllegalArgumentException(
-                    "Per un singolo pezzo la quantità può essere soltanto 0 o 1"
-            );
+            throw new IllegalArgumentException("Per un singolo pezzo la quantità può essere soltanto 0 o 1" );
         }
 
         if (nuovaQuantita == 1) {
@@ -212,9 +197,7 @@ public class SqliteMagazzinoDAO implements MagazzinoDAO {
                     ));
 
             if (voce.getQuantita() != 1) {
-                throw new IllegalStateException(
-                        "Il pezzo è montato su una macchina e non può essere reso libero direttamente"
-                );
+                throw new IllegalStateException( "Il pezzo è montato su una macchina e non può essere reso libero direttamente" );
             }
             return;
         }
@@ -231,16 +214,11 @@ public class SqliteMagazzinoDAO implements MagazzinoDAO {
             statement.setString(1, idPezzo.trim());
 
             if (statement.executeUpdate() != 1) {
-                throw new IllegalArgumentException(
-                        "Pezzo libero non trovato: " + idPezzo
-                );
+                throw new IllegalArgumentException( "Pezzo libero non trovato: " + idPezzo );
             }
 
         } catch (SQLException e) {
-            throw new DAOException(
-                    "Errore durante la rimozione del pezzo dal magazzino",
-                    e
-            );
+            throw new DAOException( "Errore durante la rimozione del pezzo dal magazzino", e );
         }
     }
 
@@ -290,10 +268,7 @@ public class SqliteMagazzinoDAO implements MagazzinoDAO {
             return risultato;
 
         } catch (SQLException e) {
-            throw new DAOException(
-                    "Errore durante la ricerca dei pezzi liberi",
-                    e
-            );
+            throw new DAOException( "Errore durante la ricerca dei pezzi liberi", e );
         }
     }
 
@@ -307,15 +282,11 @@ public class SqliteMagazzinoDAO implements MagazzinoDAO {
         validaTipo(tipoPezzo);
 
         if (quantita <= 0) {
-            throw new IllegalArgumentException(
-                    "La quantità deve essere maggiore di zero"
-            );
+            throw new IllegalArgumentException( "La quantità deve essere maggiore di zero" );
         }
 
         if (kmMax < 0 || tempoMax < 0) {
-            throw new IllegalArgumentException(
-                    "Km massimi e tempo massimo non possono essere negativi"
-            );
+            throw new IllegalArgumentException( "Km massimi e tempo massimo non possono essere negativi" );
         }
 
         String sql = """
@@ -354,10 +325,7 @@ public class SqliteMagazzinoDAO implements MagazzinoDAO {
             }
 
         } catch (SQLException e) {
-            throw new DAOException(
-                    "Errore durante l'inserimento dei pezzi in magazzino",
-                    e
-            );
+            throw new DAOException( "Errore durante l'inserimento dei pezzi in magazzino", e  );
         }
     }
 
@@ -369,9 +337,7 @@ public class SqliteMagazzinoDAO implements MagazzinoDAO {
         validaIdMacchina(idMacchina);
 
         if (ricetta == null || ricetta.isEmpty()) {
-            throw new IllegalArgumentException(
-                    "La ricetta della macchina non può essere vuota"
-            );
+            throw new IllegalArgumentException( "La ricetta della macchina non può essere vuota" );
         }
 
         String id = idMacchina.trim();
@@ -381,9 +347,7 @@ public class SqliteMagazzinoDAO implements MagazzinoDAO {
 
             try {
                 if (esisteMacchina(conn, id)) {
-                    throw new IllegalArgumentException(
-                            "Esiste già una macchina con id: " + id
-                    );
+                    throw new IllegalArgumentException( "Esiste già una macchina con id: " + id );
                 }
 
                 Map<TipoPezzo, List<String>> pezziDaMontare =
@@ -396,9 +360,7 @@ public class SqliteMagazzinoDAO implements MagazzinoDAO {
                     validaTipo(tipo);
 
                     if (quantita == null || quantita <= 0) {
-                        throw new IllegalArgumentException(
-                                "Quantità non valida nella ricetta per " + tipo
-                        );
+                        throw new IllegalArgumentException( "Quantità non valida nella ricetta per " + tipo );
                     }
 
                     List<String> ids = trovaIdPezziLiberi(
@@ -438,9 +400,7 @@ public class SqliteMagazzinoDAO implements MagazzinoDAO {
                             associaPezzo.setString(2, idPezzo);
 
                             if (associaPezzo.executeUpdate() != 1) {
-                                throw new IllegalStateException(
-                                        "Il pezzo non è più disponibile: " + idPezzo
-                                );
+                                throw new IllegalStateException( "Il pezzo non è più disponibile: " + idPezzo );
                             }
                         }
                     }
@@ -454,10 +414,7 @@ public class SqliteMagazzinoDAO implements MagazzinoDAO {
             }
 
         } catch (SQLException e) {
-            throw new DAOException(
-                    "Errore durante la creazione della macchina",
-                    e
-            );
+            throw new DAOException( "Errore durante la creazione della macchina",  e  );
         }
     }
 
@@ -479,9 +436,7 @@ public class SqliteMagazzinoDAO implements MagazzinoDAO {
 
             try {
                 if (!esisteMacchina(conn, idMacchinaPulito)) {
-                    throw new IllegalArgumentException(
-                            "Macchina non trovata: " + idMacchinaPulito
-                    );
+                    throw new IllegalArgumentException( "Macchina non trovata: " + idMacchinaPulito  );
                 }
 
                 verificaNuovoPezzo(
@@ -494,9 +449,7 @@ public class SqliteMagazzinoDAO implements MagazzinoDAO {
                         conn,
                         idMacchinaPulito,
                         tipoPezzo
-                ).orElseThrow(() -> new IllegalStateException(
-                        "La macchina non possiede un pezzo di tipo " + tipoPezzo
-                ));
+                ).orElseThrow(() -> new IllegalStateException( "La macchina non possiede un pezzo di tipo " + tipoPezzo ));
 
                 try (PreparedStatement eliminaVecchio = conn.prepareStatement("""
                         DELETE FROM pezzo
@@ -508,9 +461,7 @@ public class SqliteMagazzinoDAO implements MagazzinoDAO {
                     eliminaVecchio.setString(2, idMacchinaPulito);
 
                     if (eliminaVecchio.executeUpdate() != 1) {
-                        throw new IllegalStateException(
-                                "Impossibile rimuovere il vecchio pezzo"
-                        );
+                        throw new IllegalStateException( "Impossibile rimuovere il vecchio pezzo" );
                     }
                 }
 
@@ -525,9 +476,7 @@ public class SqliteMagazzinoDAO implements MagazzinoDAO {
                     montaNuovo.setString(2, idNuovoPulito);
 
                     if (montaNuovo.executeUpdate() != 1) {
-                        throw new IllegalStateException(
-                                "Il nuovo pezzo non è più disponibile"
-                        );
+                        throw new IllegalStateException( "Il nuovo pezzo non è più disponibile" );
                     }
                 }
 
@@ -539,10 +488,7 @@ public class SqliteMagazzinoDAO implements MagazzinoDAO {
             }
 
         } catch (SQLException e) {
-            throw new DAOException(
-                    "Errore durante il cambio del pezzo",
-                    e
-            );
+            throw new DAOException( "Errore durante il cambio del pezzo",  e  );
         }
     }
 
@@ -608,23 +554,17 @@ public class SqliteMagazzinoDAO implements MagazzinoDAO {
 
             try (ResultSet result = statement.executeQuery()) {
                 if (!result.next()) {
-                    throw new IllegalArgumentException(
-                            "Pezzo non trovato: " + idPezzo
-                    );
+                    throw new IllegalArgumentException( "Pezzo non trovato: " + idPezzo );
                 }
 
                 if (result.getString("id_macchina") != null) {
-                    throw new IllegalStateException(
-                            "Il pezzo è già montato su una macchina"
-                    );
+                    throw new IllegalStateException( "Il pezzo è già montato su una macchina"  );
                 }
 
                 TipoPezzo tipoEffettivo = tipoJava(result.getString("tipo"));
 
                 if (tipoEffettivo != tipoRichiesto) {
-                    throw new IllegalArgumentException(
-                            "Il pezzo selezionato non è di tipo " + tipoRichiesto
-                    );
+                    throw new IllegalArgumentException( "Il pezzo selezionato non è di tipo " + tipoRichiesto );
                 }
             }
         }
@@ -726,31 +666,24 @@ public class SqliteMagazzinoDAO implements MagazzinoDAO {
         try {
             conn.rollback();
         } catch (SQLException ignored) {
-            // Il primo errore resta quello significativo per il chiamante.
         }
     }
 
     private void validaIdPezzo(String idPezzo) {
         if (idPezzo == null || idPezzo.isBlank()) {
-            throw new IllegalArgumentException(
-                    "L'id del pezzo non può essere vuoto"
-            );
+            throw new IllegalArgumentException( "L'id del pezzo non può essere vuoto" );
         }
     }
 
     private void validaIdMacchina(String idMacchina) {
         if (idMacchina == null || idMacchina.isBlank()) {
-            throw new IllegalArgumentException(
-                    "L'id della macchina non può essere vuoto"
-            );
+            throw new IllegalArgumentException( "L'id della macchina non può essere vuoto"  );
         }
     }
 
     private void validaTipo(TipoPezzo tipoPezzo) {
         if (tipoPezzo == null) {
-            throw new IllegalArgumentException(
-                    "Il tipo del pezzo non può essere null"
-            );
+            throw new IllegalArgumentException( "Il tipo del pezzo non può essere null"  );
         }
     }
 }

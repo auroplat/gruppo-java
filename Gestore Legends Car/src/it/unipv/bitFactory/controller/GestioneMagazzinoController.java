@@ -16,9 +16,7 @@ public class GestioneMagazzinoController {
             MagazzinoService magazzinoService) {
 
         if (magazzinoService == null) {
-            throw new IllegalArgumentException(
-                    "Il service magazzino non può essere null"
-            );
+            throw new IllegalArgumentException("Il service magazzino non può essere null");
         }
 
         this.magazzinoService = magazzinoService;

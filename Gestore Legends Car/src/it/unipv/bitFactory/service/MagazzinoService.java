@@ -16,9 +16,7 @@ public class MagazzinoService {
 
     public MagazzinoService(MagazzinoDAO magazzinoDAO) {
         if (magazzinoDAO == null) {
-            throw new IllegalArgumentException(
-                    "Il DAO magazzino non può essere null"
-            );
+            throw new IllegalArgumentException( "Il DAO magazzino non può essere null"  );
         }
 
         this.magazzinoDAO = magazzinoDAO;
@@ -30,9 +28,7 @@ public class MagazzinoService {
 
     public VoceMagazzino cercaPezzo(String idPezzo) {
         return magazzinoDAO.trovaPerIdPezzo(idPezzo)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Pezzo non trovato: " + idPezzo
-                ));
+                .orElseThrow(() -> new IllegalArgumentException( "Pezzo non trovato: " + idPezzo ));
     }
 
     public List<VoceMagazzino> visualizzaMagazzino() {

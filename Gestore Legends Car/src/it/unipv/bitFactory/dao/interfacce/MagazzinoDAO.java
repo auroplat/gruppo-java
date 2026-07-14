@@ -14,11 +14,6 @@ public interface MagazzinoDAO {
 
     List<VoceMagazzino> trovaTutti();
 
-    /**
-     * Metodo mantenuto per compatibilità con il codice precedente.
-     * Nel database ogni riga rappresenta un singolo pezzo, quindi i soli
-     * valori ammessi sono 0 (rimozione del pezzo libero) e 1 (pezzo presente).
-     */
     void aggiornaQuantita(String idPezzo, int nuovaQuantita);
 
     List<Pezzo> trovaPezziLiberi(TipoPezzo tipoPezzo);

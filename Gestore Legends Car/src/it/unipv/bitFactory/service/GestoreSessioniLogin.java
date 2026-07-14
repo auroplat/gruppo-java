@@ -20,9 +20,7 @@ public class GestoreSessioniLogin {
     public String creaSessione(Addetto addetto) {
 
         if (addetto == null) {
-            throw new IllegalArgumentException(
-                    "L'addetto non può essere nullo"
-            );
+            throw new IllegalArgumentException("L'addetto non può essere nullo");
         }
 
         String sessionId = UUID.randomUUID().toString();
@@ -33,16 +31,12 @@ public class GestoreSessioniLogin {
 
     public Addetto trovaAddetto(String sessionId) {
 
-        if (sessionId == null || sessionId.isBlank()) {
-            return null;
-        }
+        if (sessionId == null || sessionId.isBlank()) {return null;}
 
         return sessioni.get(sessionId);
     }
 
-    public boolean haRuolo(
-            String sessionId,
-            Ruolo ruoloRichiesto) {
+    public boolean haRuolo(String sessionId,Ruolo ruoloRichiesto) {
 
         if (ruoloRichiesto == null) {
             return false;
@@ -50,14 +44,11 @@ public class GestoreSessioniLogin {
 
         Addetto addetto = trovaAddetto(sessionId);
 
-        return addetto != null
-                && ruoloRichiesto.equals(addetto.getRuolo());
+        return addetto != null && ruoloRichiesto.equals(addetto.getRuolo());
     }
 
     public void eliminaSessione(String sessionId) {
 
-        if (sessionId != null && !sessionId.isBlank()) {
-            sessioni.remove(sessionId);
-        }
+        if (sessionId != null && !sessionId.isBlank()) {sessioni.remove(sessionId);}
     }
 }

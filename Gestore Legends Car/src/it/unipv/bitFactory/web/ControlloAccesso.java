@@ -18,22 +18,16 @@ public final class ControlloAccesso {
             HttpExchange exchange,
             GestoreSessioniLogin gestoreSessioniLogin) {
 
-        if (exchange == null || gestoreSessioniLogin == null) {
-            return null;
-        }
+        if (exchange == null || gestoreSessioniLogin == null) {return null;}
 
         String sessionId = leggiSessionId(exchange);
         return gestoreSessioniLogin.trovaAddetto(sessionId);
     }
 
-    public static boolean consentiRuolo(
-            HttpExchange exchange,
-            GestoreSessioniLogin gestoreSessioniLogin,
-            Ruolo ruoloRichiesto) throws IOException {
+    public static boolean consentiRuolo(HttpExchange exchange,
+    					GestoreSessioniLogin gestoreSessioniLogin, Ruolo ruoloRichiesto) throws IOException {
 
-        if (exchange == null
-                || gestoreSessioniLogin == null
-                || ruoloRichiesto == null) {
+        if (exchange == null || gestoreSessioniLogin == null || ruoloRichiesto == null) {
 
             if (exchange != null) {
                 reindirizzaAlLogin(exchange);
@@ -55,19 +49,13 @@ public final class ControlloAccesso {
         return true;
     }
 
-    public static String leggiSessionId(
-            HttpExchange exchange) {
+    public static String leggiSessionId(HttpExchange exchange) {
 
-        if (exchange == null) {
-            return null;
-        }
+        if (exchange == null) {return null;}
 
-        List<String> cookieHeaders =
-                exchange.getRequestHeaders().get("Cookie");
+        List<String> cookieHeaders = exchange.getRequestHeaders().get("Cookie");
 
-        if (cookieHeaders == null) {
-            return null;
-        }
+        if (cookieHeaders == null) {return null;}
 
         for (String cookieHeader : cookieHeaders) {
 
@@ -75,13 +63,9 @@ public final class ControlloAccesso {
 
             for (String cookie : cookies) {
 
-                String[] parti =
-                        cookie.trim().split("=", 2);
+                String[] parti = cookie.trim().split("=", 2);
 
-                if (parti.length == 2
-                        && GestoreSessioniLogin.NOME_COOKIE
-                        .equals(parti[0])) {
-
+                if (parti.length == 2 && GestoreSessioniLogin.NOME_COOKIE.equals(parti[0])) {
                     return parti[1];
                 }
             }
@@ -90,8 +74,7 @@ public final class ControlloAccesso {
         return null;
     }
 
-    private static void reindirizzaAlLogin(
-            HttpExchange exchange) throws IOException {
+    private static void reindirizzaAlLogin(HttpExchange exchange) throws IOException {
 
         exchange.getResponseHeaders().set(
                 "Location",

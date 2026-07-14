@@ -15,22 +15,19 @@ public class GestoreEventiEsterni {
     private AdapterEventiEsterni adapter;
 
     public GestoreEventiEsterni() {
-
         eventi = new ArrayList<>();
         adapter = new AdapterEventiEsterni();
     }
 
     public void caricaEventiDaCSVEsterno(String percorsoFile) {
 
-        try (BufferedReader br =
-                     new BufferedReader(new FileReader(percorsoFile))) {
+        try (BufferedReader br = new BufferedReader(new FileReader(percorsoFile))) {
 
             String riga;
 
             br.readLine(); // salta header
 
             while ((riga = br.readLine()) != null) {
-
                 Evento evento = adapter.convertiRiga(riga);
                 eventi.add(evento);
             }

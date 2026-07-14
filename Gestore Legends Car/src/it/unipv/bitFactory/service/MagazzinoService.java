@@ -16,9 +16,7 @@ public class MagazzinoService {
 
     public MagazzinoService(MagazzinoDAO magazzinoDAO) {
         if (magazzinoDAO == null) {
-            throw new IllegalArgumentException(
-                    "Il DAO magazzino non può essere null"
-            );
+            throw new IllegalArgumentException("Il DAO magazzino non può essere null");
         }
 
         this.magazzinoDAO = magazzinoDAO;
@@ -30,24 +28,18 @@ public class MagazzinoService {
 
     public VoceMagazzino cercaPezzo(String idPezzo) {
         return magazzinoDAO.trovaPerIdPezzo(idPezzo)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Pezzo non trovato: " + idPezzo
-                ));
+                .orElseThrow(() -> new IllegalArgumentException("Pezzo non trovato: " + idPezzo));
     }
 
     public List<VoceMagazzino> visualizzaMagazzino() {
         return magazzinoDAO.trovaTutti();
     }
 
-    public StatoDisponibilita aggiornaQuantitaPezzo(
-            String idPezzo,
-            int nuovaQuantita) {
+    public StatoDisponibilita aggiornaQuantitaPezzo(String idPezzo, int nuovaQuantita) {
 
         magazzinoDAO.aggiornaQuantita(idPezzo, nuovaQuantita);
 
-        if (nuovaQuantita == 0) {
-            return StatoDisponibilita.ESAURITO;
-        }
+        if (nuovaQuantita == 0) {return StatoDisponibilita.ESAURITO;}
 
         return controllaDisponibilita(idPezzo);
     }
@@ -56,42 +48,22 @@ public class MagazzinoService {
         return magazzinoDAO.trovaPezziLiberi(tipoPezzo);
     }
 
-    public void aggiungiPezzi(
-            TipoPezzo tipoPezzo,
-            int quantita,
-            double kmMax,
-            int tempoMax) {
+    public void aggiungiPezzi(TipoPezzo tipoPezzo, int quantita, double kmMax, int tempoMax) {
 
-        magazzinoDAO.aggiungiPezzi(
-                tipoPezzo,
-                quantita,
-                kmMax,
-                tempoMax
-        );
+        magazzinoDAO.aggiungiPezzi(tipoPezzo, quantita, kmMax, tempoMax);
     }
 
     public void creaMacchina(String idMacchina) {
-        magazzinoDAO.creaMacchina(
-                idMacchina,
-                ricettaLegends()
-        );
+        magazzinoDAO.creaMacchina(idMacchina, ricettaLegends());
     }
 
-    public void cambiaPezzo(
-            String idMacchina,
-            TipoPezzo tipoPezzo,
-            String idNuovoPezzo) {
+    public void cambiaPezzo(String idMacchina, TipoPezzo tipoPezzo, String idNuovoPezzo) {
 
-        magazzinoDAO.cambiaPezzo(
-                idMacchina,
-                tipoPezzo,
-                idNuovoPezzo
-        );
+        magazzinoDAO.cambiaPezzo(idMacchina, tipoPezzo, idNuovoPezzo);
     }
 
     private Map<TipoPezzo, Integer> ricettaLegends() {
-        Map<TipoPezzo, Integer> ricetta =
-                new EnumMap<>(TipoPezzo.class);
+        Map<TipoPezzo, Integer> ricetta = new EnumMap<>(TipoPezzo.class);
 
         ricetta.put(TipoPezzo.SCOCCA, 1);
         ricetta.put(TipoPezzo.MOTORE, 1);

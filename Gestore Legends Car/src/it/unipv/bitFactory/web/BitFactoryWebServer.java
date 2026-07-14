@@ -49,15 +49,11 @@ public final class BitFactoryWebServer {
             HtmlRenderer renderer) throws IOException {
 
         if (porta < 1 || porta > 65535) {
-            throw new IllegalArgumentException(
-                    "La porta deve essere compresa tra 1 e 65535"
-            );
+            throw new IllegalArgumentException("La porta deve essere compresa tra 1 e 65535");
         }
 
         if (numeroThread <= 0) {
-            throw new IllegalArgumentException(
-                    "Il numero di thread deve essere maggiore di zero"
-            );
+            throw new IllegalArgumentException("Il numero di thread deve essere maggiore di zero");
         }
 
         if (sessioniController == null
@@ -68,41 +64,22 @@ public final class BitFactoryWebServer {
                 || gestoreSessioniLogin == null
                 || renderer == null) {
 
-            throw new IllegalArgumentException(
-                    "Controller, servizi e renderer "
-                            + "non possono essere null"
-            );
+            throw new IllegalArgumentException("Controller, servizi e renderer non possono essere null");
         }
         
         this.porta = porta;
 
-        server = HttpServer.create(
-                new InetSocketAddress(porta),
-                0
-        );
+        server = HttpServer.create(new InetSocketAddress(porta), 0);
 
-        threadPool =
-                Executors.newFixedThreadPool(numeroThread);
+        threadPool = Executors.newFixedThreadPool(numeroThread);
 
-        /*
-         * HOME
-         *
-         * Aprendo:
-         *
-         * http://localhost:8082/
-         *
-         * viene restituito eventi.html.
-         */
+        
         server.createContext(
                 "/",
                 this::gestisciHome
         );
 
-        /*
-         * Permette di aprire anche:
-         *
-         * http://localhost:8082/eventi.html
-         */
+        //eventi e prenotazioni
         server.createContext(
                 "/eventi.html",
                 creaHandlerRisorsaStatica(
@@ -112,14 +89,6 @@ public final class BitFactoryWebServer {
                 )
         );
 
-        /*
-         * Pagina con il form di prenotazione.
-         *
-         * Supportiamo entrambi gli indirizzi:
-         *
-         * /prenotazione
-         * /prenotazione.html
-         */
         server.createContext(
                 "/prenotazione",
                 creaHandlerRisorsaStatica(
@@ -138,9 +107,7 @@ public final class BitFactoryWebServer {
                 )
         );
 
-        /*
-         * Foglio di stile usato dalle pagine.
-         */
+        //css
         server.createContext(
                 "/styles.css",
                 creaHandlerRisorsaStatica(
@@ -158,9 +125,26 @@ public final class BitFactoryWebServer {
                         "text/css; charset=UTF-8"
                 )
         );
-        /*
-         * Immagine di sfondo.
-         */
+        
+        server.createContext(
+                "/stylesM.css",
+                creaHandlerRisorsaStatica(
+                        "/stylesM.css",
+                        "/web/stylesM.css",
+                        "text/css; charset=UTF-8"
+                )
+        );
+        
+        server.createContext(
+                "/login.css",
+                creaHandlerRisorsaStatica(
+                        "/login.css",
+                        "/web/login.css",
+                        "text/css; charset=UTF-8"
+                )
+        );
+        
+        //sfondo
         server.createContext(
                 "/racing-bg.svg",
                 creaHandlerRisorsaStatica(
@@ -170,22 +154,49 @@ public final class BitFactoryWebServer {
                 )
         );
 
-        /*
-         * API EVENTI
-         *
-         * eventi.html esegue:
-         *
-         * GET /api/eventi
-         *
-         * L'handler recupera gli eventi dal database
-         * attraverso GestoreEventi.
-         */
+        //api
         server.createContext(
                 "/api/eventi",
                 new EventiApiHttpHandler(
                         gestoreEventi
                 )
         );
+        
+        server.createContext(
+                "/api/macchine",
+                new RuoloHttpHandler(
+                        new MacchineApiHttpHandler(
+                                sessioniController
+                        ),
+                        gestoreSessioniLogin,
+                        Ruolo.SESSIONI
+                )
+        );
+        
+        server.createContext(
+                "/api/magazzino",
+                new RuoloHttpHandler(
+                        new MagazzinoApiHttpHandler(
+                                magazzinoController
+                        ),
+                        gestoreSessioniLogin,
+                        Ruolo.MAGAZZINO
+                )
+        );
+        
+        server.createContext(
+                "/api/pezzi-liberi",
+                new RuoloHttpHandler(
+                        new PezziLiberiApiHttpHandler(
+                                magazzinoController
+                        ),
+                        gestoreSessioniLogin,
+                        Ruolo.MAGAZZINO
+                )
+        );
+        
+        
+        //login e logout
         server.createContext(
                 "/login.html",
                 creaHandlerRisorsaStatica(
@@ -209,59 +220,8 @@ public final class BitFactoryWebServer {
                         gestoreSessioniLogin
                 )
         );
-        /*
-         * API MACCHINE
-         *
-         * Questa parte resta invariata.
-         */
-        server.createContext(
-                "/api/macchine",
-                new RuoloHttpHandler(
-                        new MacchineApiHttpHandler(
-                                sessioniController
-                        ),
-                        gestoreSessioniLogin,
-                        Ruolo.SESSIONI
-                )
-        );
 
-        /*
-         * API MAGAZZINO
-         *
-         * Restituisce il riepilogo delle quantità libere per tipo.
-         */
-        server.createContext(
-                "/api/magazzino",
-                new RuoloHttpHandler(
-                        new MagazzinoApiHttpHandler(
-                                magazzinoController
-                        ),
-                        gestoreSessioniLogin,
-                        Ruolo.MAGAZZINO
-                )
-        );
-
-        /*
-         * API PEZZI LIBERI
-         *
-         * Esempio: GET /api/pezzi-liberi?tipo=MOTORE
-         */
-        server.createContext(
-                "/api/pezzi-liberi",
-                new RuoloHttpHandler(
-                        new PezziLiberiApiHttpHandler(
-                                magazzinoController
-                        ),
-                        gestoreSessioniLogin,
-                        Ruolo.MAGAZZINO
-                )
-        );
-
-        /*
-         * GESTIONE SESSIONI
-         *
-         * Questa parte resta invariata.
-         */
+        //sessioni
         server.createContext(
                 "/sessioni",
                 new RuoloHttpHandler(
@@ -274,9 +234,7 @@ public final class BitFactoryWebServer {
                 )
         );
 
-        /*
-         * GESTIONE MAGAZZINO
-         */
+        //magazzino
         server.createContext(
                 "/magazzino",
                 new RuoloHttpHandler(
@@ -288,34 +246,8 @@ public final class BitFactoryWebServer {
                         Ruolo.MAGAZZINO
                 )
         );
-        
-        server.createContext(
-                "/stylesM.css",
-                creaHandlerRisorsaStatica(
-                        "/stylesM.css",
-                        "/web/stylesM.css",
-                        "text/css; charset=UTF-8"
-                )
-        );
 
-        server.createContext(
-                "/login.css",
-                creaHandlerRisorsaStatica(
-                        "/login.css",
-                        "/web/login.css",
-                        "text/css; charset=UTF-8"
-                )
-        );
-        
-      
-
-        /*
-         * SALVATAGGIO PRENOTAZIONI
-         *
-         * Il form di prenotazione eseguirà:
-         *
-         * POST /prenotazioni
-         */
+        //prenotazioni
         server.createContext(
                 "/prenotazioni",
                 new PrenotazioniHttpHandler(
@@ -327,22 +259,12 @@ public final class BitFactoryWebServer {
         server.setExecutor(threadPool);
     }
 
-    /**
-     * Gestisce la richiesta della home.
-     */
+    //home
     private void gestisciHome(
             HttpExchange exchange) throws IOException {
 
-        String percorso =
-                exchange.getRequestURI().getPath();
+        String percorso = exchange.getRequestURI().getPath();
 
-        /*
-         * Il context "/" intercetta anche percorsi
-         * che non corrispondono ad altri context.
-         *
-         * Accettiamo quindi soltanto il percorso
-         * esattamente uguale a "/".
-         */
         if (!"/".equals(percorso)) {
 
             inviaErrore(
@@ -354,8 +276,7 @@ public final class BitFactoryWebServer {
             return;
         }
 
-        if (!"GET".equalsIgnoreCase(
-                exchange.getRequestMethod())) {
+        if (!"GET".equalsIgnoreCase(exchange.getRequestMethod())) {
 
             exchange.getResponseHeaders().set(
                     "Allow",
@@ -380,22 +301,13 @@ public final class BitFactoryWebServer {
         exchange.close();
     }
 
-    /**
-     * Crea un handler per una risorsa statica,
-     * come HTML, CSS oppure SVG.
-     */
-    private HttpHandler creaHandlerRisorsaStatica(
-            String percorsoHttp,
-            String percorsoRisorsa,
-            String contentType) {
+    private HttpHandler creaHandlerRisorsaStatica(String percorsoHttp, String percorsoRisorsa, String contentType) {
 
         return exchange -> {
 
-            String percorsoRichiesto =
-                    exchange.getRequestURI().getPath();
+            String percorsoRichiesto = exchange.getRequestURI().getPath();
 
-            if (!percorsoHttp.equals(
-                    percorsoRichiesto)) {
+            if (!percorsoHttp.equals(percorsoRichiesto)) {
 
                 inviaErrore(
                         exchange,
@@ -406,8 +318,7 @@ public final class BitFactoryWebServer {
                 return;
             }
 
-            if (!"GET".equalsIgnoreCase(
-                    exchange.getRequestMethod())) {
+            if (!"GET".equalsIgnoreCase(exchange.getRequestMethod())) {
 
                 exchange.getResponseHeaders().set(
                         "Allow",
@@ -431,20 +342,9 @@ public final class BitFactoryWebServer {
         };
     }
 
-    /**
-     * Legge un file presente nelle risorse del progetto
-     * e lo restituisce al browser.
-     */
-    private void inviaRisorsa(
-            HttpExchange exchange,
-            String percorsoRisorsa,
-            String contentType) throws IOException {
+    private void inviaRisorsa(HttpExchange exchange, String percorsoRisorsa, String contentType) throws IOException {
 
-        try (InputStream input =
-                     BitFactoryWebServer.class
-                             .getResourceAsStream(
-                                     percorsoRisorsa
-                             )) {
+        try (InputStream input = BitFactoryWebServer.class.getResourceAsStream(percorsoRisorsa)) {
 
             if (input == null) {
 
@@ -458,19 +358,14 @@ public final class BitFactoryWebServer {
                 return;
             }
 
-            byte[] contenuto =
-                    input.readAllBytes();
+            byte[] contenuto = input.readAllBytes();
 
             exchange.getResponseHeaders().set(
                     "Content-Type",
                     contentType
             );
 
-            /*
-             * Impedisce al browser di mostrare
-             * vecchie versioni delle pagine durante
-             * lo sviluppo.
-             */
+
             exchange.getResponseHeaders().set(
                     "Cache-Control",
                     "no-cache"
@@ -481,26 +376,17 @@ public final class BitFactoryWebServer {
                     contenuto.length
             );
 
-            try (OutputStream output =
-                         exchange.getResponseBody()) {
+            try (OutputStream output = exchange.getResponseBody()) {
 
                 output.write(contenuto);
             }
         }
     }
 
-    /**
-     * Invia una risposta testuale di errore.
-     */
-    private void inviaErrore(
-            HttpExchange exchange,
-            int codice,
-            String messaggio) throws IOException {
 
-        byte[] contenuto =
-                messaggio.getBytes(
-                        StandardCharsets.UTF_8
-                );
+    private void inviaErrore(HttpExchange exchange, int codice, String messaggio) throws IOException {
+
+        byte[] contenuto = messaggio.getBytes(StandardCharsets.UTF_8);
 
         exchange.getResponseHeaders().set(
                 "Content-Type",
@@ -512,41 +398,26 @@ public final class BitFactoryWebServer {
                 contenuto.length
         );
 
-        try (OutputStream output =
-                     exchange.getResponseBody()) {
+        try (OutputStream output = exchange.getResponseBody()) {
 
             output.write(contenuto);
         }
     }
 
-    /**
-     * Avvia il server.
-     */
+    //server
     public void avvia() {
 
         server.start();
 
-        System.out.println(
-                "Server BitFactory avviato su "
-                        + "http://localhost:"
-                        + porta
-        );
+        System.out.println("Server BitFactory avviato su http://localhost:"+ porta);
     }
 
-    /**
-     * Arresta il server e il pool di thread.
-     */
     public void arresta() {
 
         server.stop(0);
         threadPool.shutdown();
-
-        System.out.println(
-                "Server BitFactory arrestato"
-        );
+        System.out.println("Server BitFactory arrestato");
     }
 
-    public int getPorta() {
-        return porta;
-    }
+    public int getPorta() {return porta;}
 }

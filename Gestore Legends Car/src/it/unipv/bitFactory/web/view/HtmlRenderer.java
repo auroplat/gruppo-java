@@ -2,11 +2,9 @@ package it.unipv.bitFactory.web.view;
 
 public final class HtmlRenderer {
 
- 
     public String renderErrore(String messaggio) {
 
-        String messaggioSicuro =
-                escapeHtml(messaggio);
+        String messaggioSicuro = escapeHtml(messaggio);
 
         return """
             <!DOCTYPE html>
@@ -90,11 +88,9 @@ public final class HtmlRenderer {
                 ? "✓"
                 : "!";
 
-        String messaggioSicuro =
-                escapeHtml(messaggio);
+        String messaggioSicuro = escapeHtml(messaggio);
 
-        String eventoSicuro =
-                escapeHtml(nomeEvento);
+        String eventoSicuro = escapeHtml(nomeEvento);
 
         return """
             <!DOCTYPE html>
@@ -196,9 +192,7 @@ public final class HtmlRenderer {
 
     private String escapeHtml(String valore) {
 
-        if (valore == null) {
-            return "";
-        }
+        if (valore == null) {return "";}
 
         return valore
                 .replace("&", "&amp;")

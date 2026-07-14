@@ -16,8 +16,7 @@ import it.unipv.bitFactory.dao.interfacce.DAOException;
 import it.unipv.bitFactory.dao.interfacce.PrenotazioneDAO;
 import it.unipv.bitFactory.model.prenotazioni.Prenotazione;
 
-public final class SqlitePrenotazioneDAO
-        implements PrenotazioneDAO {
+public final class SqlitePrenotazioneDAO implements PrenotazioneDAO {
 
     private final String jdbcUrl;
 

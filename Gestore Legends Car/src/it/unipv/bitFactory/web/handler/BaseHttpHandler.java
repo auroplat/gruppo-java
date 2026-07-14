@@ -22,8 +22,7 @@ public abstract class BaseHttpHandler implements HttpHandler {
     protected Map<String, String> leggiParametriForm(
             HttpExchange exchange) throws IOException {
 
-        String contentType = exchange.getRequestHeaders()
-                .getFirst("Content-Type");
+        String contentType = exchange.getRequestHeaders().getFirst("Content-Type");
 
         if (contentType == null
                 || !contentType.toLowerCase().startsWith(

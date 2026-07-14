@@ -30,38 +30,26 @@ public final class ServerMain {
             
             //sessioni
             LegendsDAO legendsDAO = new SqliteLegendsDAO(percorsoDatabase);
-
             SessioneDAO sessioneDAO = new SqliteSessioneDAO(percorsoDatabase);
-
             GestioneSessioniController sessioniController = new GestioneSessioniController(legendsDAO, sessioneDAO);
 
             //magazzino
             MagazzinoDAO magazzinoDAO = new SqliteMagazzinoDAO(percorsoDatabase, new SoglieMagazzino(2));
-
             MagazzinoService magazzinoService = new MagazzinoService(magazzinoDAO);
-
             GestioneMagazzinoController magazzinoController = new GestioneMagazzinoController(magazzinoService);
 
             //eventi e prenotazioni
             EventoDAO eventoDAO = new SqliteEventoDAO(percorsoDatabase);
-
             ClienteDAO clienteDAO = new SqliteClienteDAO(percorsoDatabase);
-
             PrenotazioneDAO prenotazioneDAO = new SqlitePrenotazioneDAO(percorsoDatabase);
-
             GestoreEventi gestoreEventi = new GestoreEventi(eventoDAO);
-
             SistemaPrenotazioni sistemaPrenotazioni = new SistemaPrenotazioni(clienteDAO, eventoDAO,prenotazioneDAO);
-
             GestionePrenotazioniController prenotazioniController = new GestionePrenotazioniController(sistemaPrenotazioni);
 
             //autenticazione addetti
             AddettoDAO addettoDAO = new SqliteAddettoDAO(percorsoDatabase);
-
             ServizioAutenticazione servizioAutenticazione = new ServizioAutenticazione(addettoDAO);
-
             LoginController loginController = new LoginController(servizioAutenticazione);
-            
             GestoreSessioniLogin gestoreSessioniLogin = new GestoreSessioniLogin();
             
             //parte server

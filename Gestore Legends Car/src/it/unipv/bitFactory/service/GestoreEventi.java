@@ -12,10 +12,7 @@ public final class GestoreEventi {
 
     public GestoreEventi(EventoDAO eventoDAO) {
 
-        this.eventoDAO = Objects.requireNonNull(
-                eventoDAO,
-                "Il DAO degli eventi non può essere null"
-        );
+        this.eventoDAO = Objects.requireNonNull(eventoDAO, "Il DAO degli eventi non può essere null");
     }
 
     public List<Evento> getEventi() {
@@ -31,8 +28,6 @@ public final class GestoreEventi {
             return null;
         }
 
-        return eventoDAO.cercaEvento(
-                nomeEvento.trim()
-        );
+        return eventoDAO.cercaEvento(nomeEvento.trim());
     }
 }

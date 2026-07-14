@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BitFactory | Gestione magazzino</title>
+    <link rel="stylesheet" href="/stylesM.css">
+</head>
+<body>
+    <main class="page-shell warehouse-layout">
+        <section class="warehouse-intro">
+            <span class="eyebrow">Gestione magazzino</span>
+            <h1>Controllo pezzi e macchine.</h1>
+            <p>
+                Da questa schermata puoi controllare le quantità disponibili,
+                creare una nuova Legends e registrare il cambio di un pezzo su una macchina.
+                I dati vengono letti dal database quando la pagina viene caricata.
+            </p>
+
+            <div class="quick-stats" aria-label="Riepilogo magazzino">
+                <article class="mini-stat">
+                    <strong id="statTipi">—</strong>
+                    <span>Tipi pezzo</span>
+                </article>
+                <article class="mini-stat">
+                    <strong id="statPezzi">—</strong>
+                    <span>Pezzi liberi</span>
+                </article>
+                <article class="mini-stat">
+                    <strong id="statMacchine">—</strong>
+                    <span>Macchine</span>
+                </article>
+            </div>
+
+            <div class="selected-event info-card">
+                <span>Regola consigliata</span>
+                <strong>Una Legends richiede una ricetta di pezzi.</strong>
+                <p>
+                    Motore, scocca, volante, ruote e freni devono essere disponibili
+                    prima di creare la macchina nel database.
+                </p>
+            </div>
+        </section>
+
+        <section class="warehouse-main" aria-label="Pannello gestione magazzino">
+            <section class="warehouse-card stock-card">
+                <div class="panel-heading compact">
+                    <div>
+                        <h2>Quantità disponibili</h2>
+                        <p>Rettangoli riepilogativi per tipo pezzo.</p>
+                    </div>
+                    <button class="ghost-button" type="button" id="reloadButton">Ricarica pagina</button>
+                </div>
+
+                <div id="stockGrid" class="stock-grid" aria-live="polite">
+                    <div class="empty-state">Caricamento quantità dal database...</div>
+                </div>
+            </section>
+
+            <section class="warehouse-card">
+                <div class="panel-heading compact">
+                    <div>
+                        <h2>Operazioni</h2>
+                        <p>Scegli l'azione da eseguire sul magazzino.</p>
+                    </div>
+                </div>
+
+                <div class="tabs" role="tablist" aria-label="Operazioni magazzino">
+                    <button class="tab-button active" type="button" data-tab="addPieces">Aggiungi pezzi</button>
+                    <button class="tab-button" type="button" data-tab="createCar">Crea macchina</button>
+                    <button class="tab-button" type="button" data-tab="replacePart">Cambio pezzo</button>
+                </div>
+
+                <form class="operation-form active" id="addPieces" action="/magazzino" method="post">
+                    <input type="hidden" name="operazione" value="aggiungiPezzi">
+                    <div class="form-grid">
+                        <div class="field">
+                            <label for="tipoAggiunta">Tipo pezzo</label>
+                            <select id="tipoAggiunta" name="tipoPezzo" required>
+                                <option value="">Seleziona tipo</option>
+                                <option value="SCOCCA">Scocca</option>
+                                <option value="MOTORE">Motore</option>
+                                <option value="RUOTA">Ruota</option>
+                                <option value="FRENO">Freno</option>
+                                <option value="VOLANTE">Volante</option>
+                            </select>
+                        </div>
+
+                        <div class="field">
+                            <label for="quantitaAggiunta">Quantità</label>
+                            <input id="quantitaAggiunta" name="quantita" type="number" min="1" step="1" placeholder="Es. 4" required>
+                        </div>
+
+                        <div class="field">
+                            <label for="kmMaxAggiunta">Km massimi</label>
+                            <input id="kmMaxAggiunta" name="kmMax" type="number" min="0" step="0.1" placeholder="Es. 20000" required>
+                        </div>
+
+                        <div class="field">
+                            <label for="tempoMaxAggiunta">Tempo massimo</label>
+                            <input id="tempoMaxAggiunta" name="tempoMax" type="number" min="0" step="1" placeholder="Es. 600" required>
+                        </div>
+                    </div>
+                    <button class="primary-button" type="submit">Aggiungi al magazzino</button>
+                    <p class="form-note">Inserisce nuovi pezzi liberi nel database, quindi non ancora montati su una macchina.</p>
+                </form>
+
+                <form class="operation-form" id="createCar" action="/magazzino" method="post">
+                    <input type="hidden" name="operazione" value="creaMacchina">
+                    <div class="form-grid single">
+                        <div class="field full">
+                            <label for="idNuovaMacchina">Numero nuova macchina</label>
+                            <input id="idNuovaMacchina" name="idMacchina" type="text" inputmode="numeric" placeholder="Es. 27" required>
+                        </div>
+                    </div>
+                    <button class="primary-button" type="submit">Crea Legends</button>
+                    <p class="form-note">La creazione deve scalare automaticamente i pezzi richiesti dalla ricetta della Legends.</p>
+                </form>
+
+                <form class="operation-form" id="replacePart" action="/magazzino" method="post">
+                    <input type="hidden" name="operazione" value="cambiaPezzo">
+                    <div class="form-grid">
+                        <div class="field">
+                            <label for="macchinaCambio">Numero macchina</label>
+                            <select id="macchinaCambio" name="idMacchina" required>
+                                <option value="">Caricamento macchine...</option>
+                            </select>
+                        </div>
+
+                        <div class="field">
+                            <label for="tipoCambio">Tipo pezzo da cambiare</label>
+                            <select id="tipoCambio" name="tipoPezzo" required>
+                                <option value="">Seleziona tipo</option>
+                                <option value="SCOCCA">Scocca</option>
+                                <option value="MOTORE">Motore</option>
+                                <option value="RUOTA">Ruota</option>
+                                <option value="FRENO">Freno</option>
+                                <option value="VOLANTE">Volante</option>
+                            </select>
+                        </div>
+
+                        <div class="field full">
+                            <label for="pezzoCambio">Pezzo libero da montare</label>
+                            <select id="pezzoCambio" name="idPezzo" required disabled>
+                                <option value="">Prima scegli un tipo pezzo</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="primary-button" type="submit">Registra cambio pezzo</button>
+                    <p class="form-note">Il pezzo scelto viene associato alla macchina selezionata. Il vecchio pezzo va gestito dal DAO secondo la logica del progetto.</p>
+                </form>
+
+                <div id="operationMessage" class="confirmation" role="status" aria-live="polite"></div>
+            </section>
+        </section>
+    </main>
+
+    <script>
+        const DEMO_STOCK = [
+            { tipoPezzo: 'MOTORE', quantita: 3, statoDisponibilita: 'DISPONIBILE' },
+            { tipoPezzo: 'RUOTA', quantita: 12, statoDisponibilita: 'DISPONIBILE' },
+            { tipoPezzo: 'FRENO', quantita: 7, statoDisponibilita: 'DISPONIBILE' },
+            { tipoPezzo: 'SCOCCA', quantita: 1, statoDisponibilita: 'SCARSO' },
+            { tipoPezzo: 'VOLANTE', quantita: 0, statoDisponibilita: 'NON_DISPONIBILE' }
+        ];
+
+        const DEMO_MACHINES = ['27', '54', '88'];
+        const DEMO_PIECES = {
+            MOTORE: [{ idPezzo: 'PZ-MOT-001' }, { idPezzo: 'PZ-MOT-002' }],
+            RUOTA: [{ idPezzo: 'PZ-RUO-001' }, { idPezzo: 'PZ-RUO-002' }, { idPezzo: 'PZ-RUO-003' }],
+            FRENO: [{ idPezzo: 'PZ-FRE-001' }],
+            SCOCCA: [{ idPezzo: 'PZ-SCO-001' }],
+            VOLANTE: [{ idPezzo: 'PZ-VOL-001' }]
+        };
+
+        const stockGrid = document.getElementById('stockGrid');
+        const statTipi = document.getElementById('statTipi');
+        const statPezzi = document.getElementById('statPezzi');
+        const statMacchine = document.getElementById('statMacchine');
+        const macchinaCambio = document.getElementById('macchinaCambio');
+        const tipoCambio = document.getElementById('tipoCambio');
+        const pezzoCambio = document.getElementById('pezzoCambio');
+        const operationMessage = document.getElementById('operationMessage');
+
+        const previewLocale = location.protocol === 'file:';
+
+        document.getElementById('reloadButton').addEventListener('click', () => location.reload());
+
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.addEventListener('click', () => {
+                document.querySelectorAll('.tab-button').forEach(tab => tab.classList.remove('active'));
+                document.querySelectorAll('.operation-form').forEach(form => form.classList.remove('active'));
+
+                button.classList.add('active');
+                document.getElementById(button.dataset.tab).classList.add('active');
+                operationMessage.classList.remove('visible');
+            });
+        });
+
+        document.querySelectorAll('.operation-form').forEach(form => {
+            form.addEventListener('submit', async event => {
+                event.preventDefault();
+                await inviaForm(form);
+            });
+        });
+
+        tipoCambio.addEventListener('change', () => caricaPezziLiberi(tipoCambio.value));
+
+        inizializzaPagina();
+
+        async function inizializzaPagina() {
+            await Promise.all([
+                caricaQuantitaMagazzino(),
+                caricaMacchine()
+            ]);
+        }
+
+        async function caricaQuantitaMagazzino() {
+            try {
+                const dati = previewLocale
+                    ? DEMO_STOCK
+                    : await fetchJson('/api/magazzino');
+
+                renderStock(normalizzaStock(dati));
+            } catch (error) {
+                stockGrid.innerHTML = `
+                    <div class="empty-state error">
+                        Non riesco a leggere il magazzino. Controlla l'endpoint GET /api/magazzino.
+                    </div>`;
+                statTipi.textContent = '—';
+                statPezzi.textContent = '—';
+            }
+        }
+
+        async function caricaMacchine() {
+            try {
+                const dati = previewLocale
+                    ? DEMO_MACHINES
+                    : await fetchJson('/api/macchine');
+
+                const macchine = dati.map(leggiIdMacchina).filter(Boolean);
+                statMacchine.textContent = macchine.length;
+                renderMacchine(macchine);
+            } catch (error) {
+                statMacchine.textContent = '—';
+                macchinaCambio.innerHTML = '<option value="">Errore caricamento macchine</option>';
+            }
+        }
+
+        async function caricaPezziLiberi(tipo) {
+            pezzoCambio.disabled = true;
+
+            if (!tipo) {
+                pezzoCambio.innerHTML = '<option value="">Prima scegli un tipo pezzo</option>';
+                return;
+            }
+
+            pezzoCambio.innerHTML = '<option value="">Caricamento pezzi...</option>';
+
+            try {
+                const dati = previewLocale
+                    ? (DEMO_PIECES[tipo] || [])
+                    : await fetchJson(`/api/pezzi-liberi?tipo=${encodeURIComponent(tipo)}`);
+
+                const pezzi = dati.map(leggiIdPezzo).filter(Boolean);
+
+                if (pezzi.length === 0) {
+                    pezzoCambio.innerHTML = '<option value="">Nessun pezzo libero disponibile</option>';
+                    return;
+                }
+
+                pezzoCambio.innerHTML = '<option value="">Seleziona pezzo libero</option>' +
+                    pezzi.map(id => `<option value="${escapeHtml(id)}">${escapeHtml(id)}</option>`).join('');
+                pezzoCambio.disabled = false;
+            } catch (error) {
+                pezzoCambio.innerHTML = '<option value="">Errore caricamento pezzi</option>';
+            }
+        }
+
+        async function inviaForm(form) {
+            operationMessage.className = 'confirmation visible';
+
+            if (previewLocale) {
+                operationMessage.textContent = 'Anteprima locale: il form è pronto. Nel server Java invierà i dati a POST /magazzino.';
+                return;
+            }
+
+            try {
+                const body = new URLSearchParams(new FormData(form));
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+                    body
+                });
+
+                if (!response.ok) {
+                    const testo = await response.text();
+                    throw new Error(testo || 'Operazione non riuscita');
+                }
+
+                operationMessage.textContent = 'Operazione completata correttamente.';
+                form.reset();
+                await inizializzaPagina();
+                pezzoCambio.innerHTML = '<option value="">Prima scegli un tipo pezzo</option>';
+                pezzoCambio.disabled = true;
+            } catch (error) {
+                operationMessage.classList.add('error');
+                operationMessage.textContent = 'Errore: controlla che POST /magazzino gestisca questa operazione.';
+            }
+        }
+
+        function renderStock(stock) {
+            if (stock.length === 0) {
+                stockGrid.innerHTML = '<div class="empty-state">Nessun pezzo disponibile in magazzino.</div>';
+                statTipi.textContent = '0';
+                statPezzi.textContent = '0';
+                return;
+            }
+
+            const totale = stock.reduce((sum, voce) => sum + voce.quantita, 0);
+            statTipi.textContent = stock.length;
+            statPezzi.textContent = totale;
+
+            stockGrid.innerHTML = stock.map(voce => {
+                const stato = voce.statoDisponibilita || calcolaStato(voce.quantita);
+                const classe = classeStato(stato, voce.quantita);
+                return `
+                    <article class="stock-tile ${classe}">
+                        <div>
+                            <span>Tipo pezzo</span>
+                            <strong>${escapeHtml(voce.tipoPezzo)}</strong>
+                        </div>
+                        <div class="stock-qty">
+                            <span>Quantità</span>
+                            <strong>${voce.quantita}</strong>
+                        </div>
+                        <small>${escapeHtml(formattaStato(stato))}</small>
+                    </article>`;
+            }).join('');
+        }
+
+        function renderMacchine(macchine) {
+            if (macchine.length === 0) {
+                macchinaCambio.innerHTML = '<option value="">Nessuna macchina presente</option>';
+                return;
+            }
+
+            macchinaCambio.innerHTML = '<option value="">Seleziona macchina</option>' +
+                macchine.map(id => `<option value="${escapeHtml(id)}">${escapeHtml(id)}</option>`).join('');
+        }
+
+        function normalizzaStock(dati) {
+            return dati.map(voce => ({
+                tipoPezzo: String(voce.tipoPezzo || voce.tipo || voce.nome || '').toUpperCase(),
+                quantita: Number(voce.quantita ?? voce.disponibili ?? voce.count ?? 0),
+                statoDisponibilita: voce.statoDisponibilita || voce.stato || ''
+            })).filter(voce => voce.tipoPezzo);
+        }
+
+        function leggiIdMacchina(voce) {
+            if (typeof voce === 'string') return voce;
+            return voce.id || voce.idMacchina || voce.numero || '';
+        }
+
+        function leggiIdPezzo(voce) {
+            if (typeof voce === 'string') return voce;
+            return voce.idPezzo || voce.id || '';
+        }
+
+        async function fetchJson(url) {
+            const response = await fetch(url, { headers: { 'Accept': 'application/json' } });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            return response.json();
+        }
+
+        function calcolaStato(quantita) {
+            if (quantita <= 0) return 'NON_DISPONIBILE';
+            if (quantita <= 2) return 'SCARSO';
+            return 'DISPONIBILE';
+        }
+
+        function classeStato(stato, quantita) {
+            const valore = String(stato).toLowerCase();
+            if (valore.includes('non') || valore.includes('zero') || quantita <= 0) return 'danger';
+            if (valore.includes('scar') || valore.includes('basso') || quantita <= 2) return 'warning';
+            return 'ok';
+        }
+
+        function formattaStato(stato) {
+            return String(stato || '').replaceAll('_', ' ').toLowerCase();
+        }
+
+        function escapeHtml(value) {
+            return String(value).replace(/[&<>"]/g, char => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'
+            }[char]));
+        }
+    </script>
+</body>
+</html>

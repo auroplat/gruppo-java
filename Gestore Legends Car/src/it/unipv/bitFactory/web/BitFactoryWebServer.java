@@ -17,7 +17,9 @@ import it.unipv.bitFactory.controller.GestionePrenotazioniController;
 import it.unipv.bitFactory.controller.GestioneSessioniController;
 import it.unipv.bitFactory.service.GestoreEventi;
 import it.unipv.bitFactory.web.handler.EventiApiHttpHandler;
+import it.unipv.bitFactory.web.handler.MagazzinoApiHttpHandler;
 import it.unipv.bitFactory.web.handler.MagazzinoHttpHandler;
+import it.unipv.bitFactory.web.handler.PezziLiberiApiHttpHandler;
 import it.unipv.bitFactory.web.handler.MacchineApiHttpHandler;
 import it.unipv.bitFactory.web.handler.PrenotazioniHttpHandler;
 import it.unipv.bitFactory.web.handler.SessioniHttpHandler;
@@ -188,6 +190,30 @@ public final class BitFactoryWebServer {
         );
 
         /*
+         * API MAGAZZINO
+         *
+         * Restituisce il riepilogo delle quantità libere per tipo.
+         */
+        server.createContext(
+                "/api/magazzino",
+                new MagazzinoApiHttpHandler(
+                        magazzinoController
+                )
+        );
+
+        /*
+         * API PEZZI LIBERI
+         *
+         * Esempio: GET /api/pezzi-liberi?tipo=MOTORE
+         */
+        server.createContext(
+                "/api/pezzi-liberi",
+                new PezziLiberiApiHttpHandler(
+                        magazzinoController
+                )
+        );
+
+        /*
          * GESTIONE SESSIONI
          *
          * Questa parte resta invariata.
@@ -208,6 +234,15 @@ public final class BitFactoryWebServer {
                 new MagazzinoHttpHandler(
                         magazzinoController,
                         renderer
+                )
+        );
+        
+        server.createContext(
+                "/stylesM.css",
+                creaHandlerRisorsaStatica(
+                        "/stylesM.css",
+                        "/web/stylesM.css",
+                        "text/css; charset=UTF-8"
                 )
         );
 

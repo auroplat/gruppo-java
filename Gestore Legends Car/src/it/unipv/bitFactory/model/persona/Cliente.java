@@ -59,9 +59,7 @@ public final class Cliente {
 
     public String getTelefono() {return telefono;}
 
-    public int getEta() {
-        return Period.between(dataNascita, LocalDate.now()).getYears();
-    }
+    public int getEta() {return Period.between(dataNascita, LocalDate.now()).getYears();}
 
     @Override
     public boolean equals(Object object) {

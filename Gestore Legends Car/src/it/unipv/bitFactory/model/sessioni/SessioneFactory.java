@@ -4,8 +4,7 @@ import java.util.Objects;
 
 public final class SessioneFactory {
 
-    private SessioneFactory() {
-    }
+    private SessioneFactory() {}
 
     public static Sessione crea(
             TipoSessione tipo,

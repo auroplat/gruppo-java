@@ -37,21 +37,13 @@ public class VoceMagazzino {
         this.statoDisponibilita = statoDisponibilita;
     }
 
-    public String getIdPezzo() {
-        return idPezzo;
-    }
+    public String getIdPezzo() {return idPezzo;}
 
-    public TipoPezzo getTipoPezzo() {
-        return tipoPezzo;
-    }
+    public TipoPezzo getTipoPezzo() {return tipoPezzo;}
 
-    public int getQuantita() {
-        return quantita;
-    }
+    public int getQuantita() {return quantita;}
 
-    public StatoDisponibilita getStatoDisponibilita() {
-        return statoDisponibilita;
-    }
+    public StatoDisponibilita getStatoDisponibilita() {return statoDisponibilita;}
 
     @Override
     public String toString() {

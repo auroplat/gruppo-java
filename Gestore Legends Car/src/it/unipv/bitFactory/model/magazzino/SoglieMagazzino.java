@@ -13,18 +13,13 @@ public class SoglieMagazzino {
     }
 
     public StatoDisponibilita calcolaStato(int quantita) {
-        if (quantita <= 0) {
-            return StatoDisponibilita.ESAURITO;
-        }
+    	
+        if (quantita <= 0) {return StatoDisponibilita.ESAURITO;}
 
-        if (quantita <= sogliaPocaDisponibilita) {
-            return StatoDisponibilita.POCA_DISPONIBILITA;
-        }
+        if (quantita <= sogliaPocaDisponibilita) {return StatoDisponibilita.POCA_DISPONIBILITA;}
 
         return StatoDisponibilita.DISPONIBILE;
     }
 
-    public int getSogliaPocaDisponibilita() {
-        return sogliaPocaDisponibilita;
-    }
+    public int getSogliaPocaDisponibilita() {return sogliaPocaDisponibilita;}
 }

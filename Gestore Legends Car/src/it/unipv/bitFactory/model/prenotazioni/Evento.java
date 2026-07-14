@@ -15,29 +15,15 @@ public class Evento {
         this.postiDisponibili = postiDisponibili;
     }
 
-    public String getNomeEvento() {
-        return nomeEvento;
-    }
+    public String getNomeEvento() {return nomeEvento;}
 
-    public String getDataEvento() {
-        return dataEvento;
-    }
+    public String getDataEvento() {return dataEvento;}
 
-    public int getPostiDisponibili() {
-        return postiDisponibili;
-    }
+    public int getPostiDisponibili() {return postiDisponibili;}
 
-    public void diminuisciPosti() {
+    public void diminuisciPosti() {if (postiDisponibili > 0) {postiDisponibili--;}}
 
-        if (postiDisponibili > 0) {
-            postiDisponibili--;
-        }
-    }
-
-    public void aumentaPosti() {
-
-        postiDisponibili++;
-    }
+    public void aumentaPosti() {postiDisponibili++;}
 
     @Override
     public String toString() {

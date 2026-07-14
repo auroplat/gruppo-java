@@ -8,14 +8,10 @@ public abstract class Sessione {
 	
 	public Sessione(String luogo, double kmPercorsi, int tempoPassato ) {
 		 
-        if (luogo == null || luogo.isBlank()) {
-            throw new IllegalArgumentException("Il luogo non può essere vuoto");
-        }
+        if (luogo == null || luogo.isBlank()) {throw new IllegalArgumentException("Il luogo non può essere vuoto");}
 		
 		
-		if(kmPercorsi < 0 || tempoPassato < 0) {
-			throw new IllegalArgumentException("Km e tempo non possono essere negativi");
-		}
+		if(kmPercorsi < 0 || tempoPassato < 0) {throw new IllegalArgumentException("Km e tempo non possono essere negativi");}
 		
 		this.luogo = luogo;
 		this.kmPercorsi = kmPercorsi;

@@ -45,18 +45,14 @@ public final class BitFactoryWebServer {
         if (sessioniController == null || magazzinoController == null || prenotazioniController == null
             || gestoreEventi == null || renderer == null) {
 
-            throw new IllegalArgumentException("Controller, gestore eventi e renderer "+ "non possono essere null");
+            throw new IllegalArgumentException("Controller, gestore eventi e renderer non possono essere null");
         }
 
         this.porta = porta;
 
-        server = HttpServer.create(
-                new InetSocketAddress(porta),
-                0
-        );
+        server = HttpServer.create(new InetSocketAddress(porta), 0);
 
-        threadPool =
-                Executors.newFixedThreadPool(numeroThread);
+        threadPool = Executors.newFixedThreadPool(numeroThread);
 
         server.createContext(
                 "/",

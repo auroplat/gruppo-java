@@ -46,9 +46,7 @@ public class Legends extends Macchina {
     }
 
     public Pezzo getPezzo(TipoPezzo tipo) {
-        if (tipo == null) {
-            return null;
-        }
+        if (tipo == null) {return null;}
         return pezzi.values().stream()
                 .filter(pezzo -> pezzo.getTipo() == tipo)
                 .findFirst()
@@ -56,33 +54,20 @@ public class Legends extends Macchina {
     }
 
     public List<Pezzo> getPezzi(TipoPezzo tipo) {
-        if (tipo == null) {
-            return List.of();
-        }
+        if (tipo == null) {return List.of();}
+        
         List<Pezzo> risultato = new ArrayList<>();
+        
         for (Pezzo pezzo : pezzi.values()) {
-            if (pezzo.getTipo() == tipo) {
-                risultato.add(pezzo);
-            }
+            if (pezzo.getTipo() == tipo) {risultato.add(pezzo);}
         }
         return Collections.unmodifiableList(risultato);
     }
 
-    public Collection<Pezzo> getTuttiPezzi() {
-        return Collections.unmodifiableCollection(pezzi.values());
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public String getIdVeicolo() {
-        return id;
-    }
-
-    public TipoVeicolo getTipoVeicolo() {
-        return TipoVeicolo.LEGENDS;
-    }
+    public Collection<Pezzo> getTuttiPezzi() {return Collections.unmodifiableCollection(pezzi.values());}
+    public String getId() {return id;}
+    public String getIdVeicolo() {return id;}
+    public TipoVeicolo getTipoVeicolo() {return TipoVeicolo.LEGENDS;}
 
     @Override
     public void applicaSessione(Sessione sessione) {

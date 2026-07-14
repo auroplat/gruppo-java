@@ -16,7 +16,6 @@ public enum TipoSessione {
         String normalizzato = valore.trim().toUpperCase(Locale.ROOT);
 
         return Arrays.stream(values()).filter(tipo ->tipo.name().equals(normalizzato))
-                     .findFirst()
-                     .orElseThrow(() -> new IllegalArgumentException("Tipo di sessione non valido: " + valore));
+                     .findFirst().orElseThrow(() -> new IllegalArgumentException("Tipo di sessione non valido: " + valore));
     }
 }

@@ -16,9 +16,7 @@ public abstract class Addetto extends Persona {
     }
 
     public String getUsername() {return username;}
-
     public String getPassword() {return password;}
-
     public Ruolo getRuolo() {return ruolo;}
 
     @Override

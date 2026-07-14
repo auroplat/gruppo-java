@@ -13,7 +13,6 @@ public final class SessioneFactory {
 
         return switch (tipo) {
             case TEST -> new Test(luogo, kmPercorsi, tempoPassato, testoObbligatorio(descrizione,"descrizione"));
-
             case GARA -> new Gara(luogo, kmPercorsi, tempoPassato, interoPositivoObbligatorio(posizione,"posizione"));
         };
     }
@@ -21,7 +20,6 @@ public final class SessioneFactory {
     private static String testoObbligatorio(String valore, String nome) {
 
         if (valore == null || valore.isBlank()) {throw new IllegalArgumentException("Parametro obbligatorio mancante: " + nome);}
-
         return valore.trim();
     }
 

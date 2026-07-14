@@ -16,11 +16,8 @@ public abstract class Persona {
     }
 
     public String getNome() {return nome;}
-
     public String getCognome() {return cognome;}
-
     public String getTelefono() {return telefono;}
-
     public String getEmail() {return email;}
 
     @Override

@@ -6,37 +6,20 @@ public class Evento {
     private String dataEvento;
     private int postiDisponibili;
 
-    public Evento(String nomeEvento,
-                  String dataEvento,
-                  int postiDisponibili) {
-
+    public Evento(String nomeEvento, String dataEvento, int postiDisponibili) {
+    	
         this.nomeEvento = nomeEvento;
         this.dataEvento = dataEvento;
         this.postiDisponibili = postiDisponibili;
     }
 
-    public String getNomeEvento() {
-        return nomeEvento;
-    }
-
-    public String getDataEvento() {
-        return dataEvento;
-    }
-
-    public int getPostiDisponibili() {
-        return postiDisponibili;
-    }
+    public String getNomeEvento() {return nomeEvento;}
+    public String getDataEvento() {return dataEvento;}
+    public int getPostiDisponibili() {return postiDisponibili;}
+    public void aumentaPosti() {postiDisponibili++;}
 
     public void diminuisciPosti() {
-
-        if (postiDisponibili > 0) {
-            postiDisponibili--;
-        }
-    }
-
-    public void aumentaPosti() {
-
-        postiDisponibili++;
+    	if (postiDisponibili > 0) {postiDisponibili--;}
     }
 
     @Override

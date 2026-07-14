@@ -50,24 +50,17 @@ public final class Cliente {
     }
 
     public String getNome() {return nome;}
-
     public String getCognome() {return cognome;}
-
     public LocalDate getDataNascita() {return dataNascita;}
-
     public String getEmail() {return email;}
-
     public String getTelefono() {return telefono;}
-
     public int getEta() {return Period.between(dataNascita, LocalDate.now()).getYears();
     }
 
     @Override
     public boolean equals(Object object) {
         if (this == object) {return true;}
-
         if (!(object instanceof Cliente altroCliente)) {return false;}
-
         return email.equals(altroCliente.email);
     }
 

@@ -18,7 +18,6 @@ public class Gara extends Sessione {
 
 	@Override
 	public TipoSessione getTipoSessione() {return TipoSessione.GARA;}
-
 	public int getPosizioneFinale() {return posizione;}
 
 }

@@ -8,33 +8,22 @@ public final class Prenotazione {
     private final String emailCliente;
     private final String telefonoCliente;
 
-    public Prenotazione(
-            String nomeEvento,
-            String emailCliente,
-            String telefonoCliente) {
+    public Prenotazione(String nomeEvento, String emailCliente, String telefonoCliente) {
 
         if (nomeEvento == null || nomeEvento.isBlank()) {
-            throw new IllegalArgumentException(
-                    "Il nome dell'evento non può essere vuoto"
-            );
+            throw new IllegalArgumentException("Il nome dell'evento non può essere vuoto");
         }
 
         if (emailCliente == null || emailCliente.isBlank()) {
-            throw new IllegalArgumentException(
-                    "L'email del cliente non può essere vuota"
-            );
+            throw new IllegalArgumentException("L'email del cliente non può essere vuota");
         }
 
         if (!emailCliente.contains("@")) {
-            throw new IllegalArgumentException(
-                    "L'email del cliente non è valida"
-            );
+            throw new IllegalArgumentException("L'email del cliente non è valida");
         }
 
         if (telefonoCliente == null || telefonoCliente.isBlank()) {
-            throw new IllegalArgumentException(
-                    "Il telefono del cliente non può essere vuoto"
-            );
+            throw new IllegalArgumentException("Il telefono del cliente non può essere vuoto");
         }
 
         this.nomeEvento = nomeEvento.trim();
@@ -42,36 +31,21 @@ public final class Prenotazione {
         this.telefonoCliente = telefonoCliente.trim();
     }
 
-    public String getNomeEvento() {
-        return nomeEvento;
-    }
-
-    public String getEmailCliente() {
-        return emailCliente;
-    }
-
-    public String getTelefonoCliente() {
-        return telefonoCliente;
-    }
+    public String getNomeEvento() {return nomeEvento;}
+    public String getEmailCliente() {return emailCliente;}
+    public String getTelefonoCliente() {return telefonoCliente;}
 
     @Override
     public boolean equals(Object object) {
-        if (this == object) {
-            return true;
-        }
+        if (this == object) { return true;}
 
-        if (!(object instanceof Prenotazione altra)) {
-            return false;
-        }
+        if (!(object instanceof Prenotazione altra)) {return false;}
 
-        return nomeEvento.equals(altra.nomeEvento)
-                && emailCliente.equals(altra.emailCliente);
+        return nomeEvento.equals(altra.nomeEvento) && emailCliente.equals(altra.emailCliente);
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(nomeEvento, emailCliente);
-    }
+    public int hashCode() {return Objects.hash(nomeEvento, emailCliente);}
 
     @Override
     public String toString() {

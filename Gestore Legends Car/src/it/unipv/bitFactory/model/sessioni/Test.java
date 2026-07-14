@@ -16,6 +16,5 @@ public class Test extends Sessione {
 
     @Override
     public TipoSessione getTipoSessione() {return TipoSessione.TEST;}
-
     public String getDescrizione() {return descrizione;}
 }

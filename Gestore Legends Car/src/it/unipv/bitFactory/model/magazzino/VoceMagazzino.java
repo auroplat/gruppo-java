@@ -34,11 +34,8 @@ public class VoceMagazzino {
     }
 
     public String getIdPezzo() {return idPezzo;}
-
     public TipoPezzo getTipoPezzo() {return tipoPezzo;}
-
     public int getQuantita() {return quantita;}
-
     public StatoDisponibilita getStatoDisponibilita() {return statoDisponibilita;}
 
     @Override

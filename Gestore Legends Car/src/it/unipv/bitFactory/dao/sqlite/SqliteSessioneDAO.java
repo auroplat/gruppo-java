@@ -90,7 +90,7 @@ public final class SqliteSessioneDAO implements SessioneDAO {
             statement.executeUpdate();
 
         } catch (SQLException e) {
-            throw new DAOException("Errore durante il salvataggio della sessione " + "della macchina " + macchina, e);
+            throw new DAOException("Errore durante il salvataggio della sessione della macchina " + macchina, e);
         }
     }
 

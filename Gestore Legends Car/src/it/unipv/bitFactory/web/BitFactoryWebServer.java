@@ -186,7 +186,8 @@ public final class BitFactoryWebServer {
                                 sessioniController
                         ),
                         gestoreSessioniLogin,
-                        Ruolo.SESSIONI
+                        Ruolo.SESSIONI,
+                        Ruolo.MAGAZZINO
                 )
         );
         

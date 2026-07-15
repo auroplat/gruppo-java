@@ -1,6 +1,7 @@
 package it.unipv.bitFactory.web.handler;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -9,47 +10,46 @@ import it.unipv.bitFactory.model.persona.Ruolo;
 import it.unipv.bitFactory.service.GestoreSessioniLogin;
 import it.unipv.bitFactory.web.ControlloAccesso;
 
-/**
- * Decoratore degli handler HTTP.
- *
- * Controlla che la richiesta appartenga a un addetto autenticato
- * con il ruolo richiesto e, solo in caso positivo, delega la
- * richiesta all'handler originale.
- */
 public final class RuoloHttpHandler implements HttpHandler {
 
     private final HttpHandler handlerDelegato;
     private final GestoreSessioniLogin gestoreSessioniLogin;
-    private final Ruolo ruoloRichiesto;
+    private final Ruolo[] ruoliConsentiti;
 
     public RuoloHttpHandler(
             HttpHandler handlerDelegato,
             GestoreSessioniLogin gestoreSessioniLogin,
-            Ruolo ruoloRichiesto) {
+            Ruolo... ruoliConsentiti) {
 
         if (handlerDelegato == null
                 || gestoreSessioniLogin == null
-                || ruoloRichiesto == null) {
+                || ruoliConsentiti == null
+                || ruoliConsentiti.length == 0
+                || Arrays.stream(ruoliConsentiti)
+                        .anyMatch(ruolo -> ruolo == null)) {
 
             throw new IllegalArgumentException(
-                    "Handler, gestore sessioni e ruolo "
-                            + "non possono essere null"
+                    "Handler, gestore sessioni e ruoli non possono essere nulli o vuoti"
             );
         }
 
         this.handlerDelegato = handlerDelegato;
         this.gestoreSessioniLogin = gestoreSessioniLogin;
-        this.ruoloRichiesto = ruoloRichiesto;
+
+        this.ruoliConsentiti = Arrays.copyOf(
+                ruoliConsentiti,
+                ruoliConsentiti.length
+        );
     }
 
     @Override
     public void handle(HttpExchange exchange)
             throws IOException {
 
-        if (!ControlloAccesso.consentiRuolo(
+        if (!ControlloAccesso.consentiUnoDeiRuoli(
                 exchange,
                 gestoreSessioniLogin,
-                ruoloRichiesto
+                ruoliConsentiti
         )) {
             return;
         }

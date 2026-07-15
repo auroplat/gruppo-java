@@ -368,7 +368,7 @@ public final class SqliteLegendsDAO implements LegendsDAO {
 
         try (Statement statement = connection.createStatement()) {
             statement.execute("PRAGMA foreign_keys = ON");
-            statement.execute("PRAGMA busy_timeout = 5000");
+            statement.execute("PRAGMA busy_timeout = 15000");
         } catch (SQLException e) {
             connection.close();
             throw e;

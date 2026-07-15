@@ -1,0 +1,315 @@
+Casi di test
+1. Scopo
+I casi di test hanno lo scopo di verificare che le principali funzionalità del sistema BitFactory siano conformi ai requisiti definiti.
+Ogni caso di test specifica:
+•	la funzionalità verificata;
+•	le condizioni iniziali;
+•	i dati utilizzati;
+•	le operazioni eseguite;
+•	il risultato atteso;
+•	il risultato ottenuto;
+•	l’esito del test.
+I test riguardano le principali aree del sistema:
+•	autenticazione e gestione delle sessioni di login;
+•	gestione del magazzino;
+•	gestione delle sessioni di guida;
+•	gestione degli eventi;
+•	gestione delle prenotazioni.
+________________________________________
+2. Test di autenticazione
+CT-01 – Accesso con credenziali corrette
+Funzionalità: autenticazione di un addetto.
+Precondizioni:
+L’addetto è registrato nel sistema ed è associato a un ruolo.
+Dati di ingresso:
+Credenziali corrette di un addetto.
+Procedura:
+1.	L’addetto apre la pagina di login.
+2.	Inserisce le proprie credenziali.
+3.	Conferma l’accesso.
+Risultato atteso:
+Il sistema riconosce l’addetto, crea una sessione di login e mostra la pagina relativa alle funzionalità consentite dal suo ruolo.
+Risultato ottenuto:
+Il sistema riconosce correttamente l’addetto, avviando la sessione prevista con redirect alla pagina di competenza.
+Esito:
+Superato
+________________________________________
+CT-02 – Accesso con credenziali errate
+Funzionalità: controllo delle credenziali.
+Precondizioni:
+Nessuna sessione di login attiva.
+Dati di ingresso:
+Credenziali non valide.
+Procedura:
+1.	L’utente apre la pagina di login.
+2.	Inserisce credenziali errate.
+3.	Conferma l’accesso.
+Risultato atteso:
+Il sistema rifiuta l’accesso, non crea una sessione e mostra un messaggio di errore.
+Risultato ottenuto:
+Il sistema rifiuta l’accesso come previsto e scrive nell’interfaccia una notifica di incorrettezza delle credenziali inserite, con conseguente non avvio della sessione.
+Esito:
+Superato 
+________________________________________
+CT-03 – Accesso a una funzione non autorizzata
+Funzionalità: controllo dei permessi.
+Precondizioni:
+Un utente (addetto o cliente) ha effettuato l’accesso.
+Procedura:
+1.	L’addetto effettua il login/ cliente accede alla sezione clienti.
+2.	Prova ad accedere a una funzionalità riservata a un ruolo differente.
+Risultato atteso:
+Il sistema impedisce l’accesso alla funzionalità non autorizzata.
+Risultato ottenuto:
+Il sistema impedisce l’accesso ad aree riservate, se non sono inserite le credenziali proprietarie, impedendo l’accesso illecito tramite modifica dell’URL.
+Esito:
+Superato
+________________________________________
+CT-04 – Disconnessione dell’addetto
+Funzionalità: logout.
+Precondizioni:
+L’addetto ha effettuato correttamente l’accesso.
+Procedura:
+1.	L’addetto seleziona il comando di uscita.
+2.	Il sistema termina la sessione.
+Risultato atteso:
+La sessione viene eliminata e l’addetto viene riportato alla pagina di login.
+Risultato ottenuto:
+Il sistema cancella correttamente la sessione, impedendo accessi illeciti.
+Esito:
+Superato
+________________________________________
+3. Test di gestione del magazzino
+CT-05 – Visualizzazione dei pezzi disponibili
+Funzionalità: consultazione del magazzino.
+Precondizioni:
+Nel database sono presenti dei pezzi.
+Procedura:
+1.	Il magazziniere accede alla sezione del magazzino.
+2.	Richiede la visualizzazione dei pezzi.
+Risultato atteso:
+Il sistema mostra correttamente i pezzi presenti nel database e le relative informazioni.
+Risultato ottenuto:
+I pezzi sono mostrati correttamente dal sistema, accompagnati dalle relative informazioni tipiche di ciascun pezzo.
+Esito:
+Superato 
+________________________________________
+CT-06 – Inserimento di un nuovo pezzo
+Funzionalità: aggiunta di un pezzo al magazzino.
+Precondizioni:
+Il magazziniere ha effettuato l’accesso.
+Dati di ingresso:
+Informazioni valide relative al nuovo pezzo.
+Procedura:
+1.	Il magazziniere seleziona la funzione di inserimento.
+2.	Inserisce i dati richiesti.
+3.	Conferma l’operazione.
+Risultato atteso:
+Il pezzo viene salvato nel database e compare nell’elenco del magazzino.
+Risultato ottenuto:
+Il nuovo pezzo è stato registrato correttamente nel database ed è risultato visibile nell’elenco del magazzino.
+Esito:
+Superato 
+________________________________________
+CT-07 – Creazione di una macchina con pezzi disponibili
+Funzionalità: creazione di una macchina Legends.
+Precondizioni:
+Nel magazzino sono presenti tutti i pezzi necessari alla creazione della macchina.
+Dati di ingresso:
+Identificativo della nuova macchina e pezzi richiesti.
+Procedura:
+1.	Il magazziniere avvia la creazione di una nuova macchina.
+2.	Il sistema controlla la disponibilità dei pezzi.
+3.	Il magazziniere conferma l’operazione.
+Risultato atteso:
+La macchina viene creata, salvata nel database e associata ai pezzi utilizzati.
+
+Risultato ottenuto:
+La macchina viene creata correttamente quando il numero di pezzi presenti nel magazzino è limitato. Tuttavia, quando i pezzi disponibili sono molto numerosi, l’interfaccia non riesce a completare la creazione della macchina.
+Esito:
+Parzialmente superato.
+________________________________________
+CT-08 – Creazione di una macchina senza pezzi sufficienti
+Funzionalità: controllo della disponibilità dei pezzi.
+Precondizioni:
+Nel magazzino manca almeno uno dei pezzi necessari.
+Procedura:
+1.	Il magazziniere prova a creare una nuova macchina.
+2.	Il sistema verifica i pezzi presenti.
+Risultato atteso:
+La macchina non viene creata e il sistema mostra un messaggio che segnala la mancanza dei pezzi necessari.
+Risultato ottenuto:
+Il sistema ha impedito la creazione della macchina e ha mostrato correttamente un messaggio relativo alla mancanza dei pezzi necessari.
+Esito:
+Superato .
+________________________________________
+CT-09 – Visualizzazione delle macchine
+Funzionalità: consultazione delle macchine presenti.
+Precondizioni:
+Nel database è presente almeno una macchina.
+Procedura:
+1.	L’addetto accede alla sezione delle macchine.
+2.	Richiede l’elenco delle macchine disponibili.
+Risultato atteso:
+Il sistema carica e mostra correttamente le macchine presenti nel database.
+Risultato ottenuto:
+Le macchine presenti nel database sono state caricate e visualizzate correttamente dal sistema.
+Esito:
+Superato. 
+________________________________________
+4. Test di gestione delle sessioni di guida
+CT-10 – Creazione di una sessione
+Funzionalità: inserimento di una nuova sessione di guida.
+Precondizioni:
+Il tecnico delle sessioni ha effettuato l’accesso e nel sistema è presente almeno una macchina disponibile.
+Dati di ingresso:
+Dati validi della sessione e identificativo della macchina.
+Procedura:
+1.	Il tecnico seleziona la funzione di creazione della sessione.
+2.	Inserisce i dati richiesti.
+3.	Seleziona una macchina disponibile.
+4.	Conferma l’operazione.
+Risultato atteso:
+La sessione viene creata e salvata nel database.
+Risultato ottenuto:
+La nuova sessione di guida è stata creata correttamente e registrata nel database con la macchina selezionata.
+Esito:
+Superato.
+________________________________________
+CT-11 – Creazione di una sessione con dati mancanti
+Funzionalità: validazione dei dati della sessione.
+Precondizioni:
+Il tecnico delle sessioni ha effettuato l’accesso.
+Dati di ingresso:
+Uno o più dati obbligatori mancanti o non validi.
+Procedura:
+1.	Il tecnico avvia la creazione di una sessione.
+2.	Lascia incompleto almeno un campo obbligatorio.
+3.	Conferma l’operazione.
+Risultato atteso:
+La sessione non viene creata e il sistema mostra un messaggio di errore.
+Risultato ottenuto:
+La sessione non viene salvata su database mostrando i rispettivi messaggi d’errore.
+Esito:
+Superato 
+________________________________________
+5. Test di gestione degli eventi
+CT-12 – Creazione di un evento
+Funzionalità: inserimento di un nuovo evento.
+Precondizioni:
+L’organizzatore degli eventi ha effettuato l’accesso.
+Dati di ingresso:
+Dati validi relativi all’evento.
+Procedura:
+1.	L’organizzatore seleziona la funzione di creazione dell’evento.
+2.	Inserisce i dati richiesti.
+3.	Conferma l’operazione.
+Risultato atteso:
+L’evento viene salvato nel database e compare nell’elenco degli eventi.
+Risultato ottenuto:
+L’evento appare correttamente nell’elenco presente nell’interfaccia grafica e viene salvato su database.
+Esito:
+Superato.
+________________________________________
+CT-13 – Creazione di un evento con dati non validi
+Funzionalità: validazione dei dati dell’evento.
+Precondizioni:
+L’organizzatore ha effettuato l’accesso.
+Dati di ingresso:
+Dati mancanti o non validi.
+Procedura:
+1.	L’organizzatore prova a creare un evento.
+2.	Inserisce dati incompleti o non validi.
+3.	Conferma l’operazione.
+Risultato atteso:
+L’evento non viene creato e il sistema mostra un messaggio di errore.
+Risultato ottenuto:
+L’evento non viene creato e non viene salvato su database e vengono mostrati i vari errori.
+Esito:
+Superato.
+________________________________________
+CT-14 – Visualizzazione degli eventi
+Funzionalità: consultazione degli eventi.
+Precondizioni:
+Nel database è presente almeno un evento.
+Procedura:
+1.	L’utente apre la pagina degli eventi.
+2.	Il sistema carica gli eventi presenti.
+Risultato atteso:
+Gli eventi vengono mostrati correttamente con le relative informazioni.
+Risultato ottenuto:
+Vengono mostrati tutti gli eventi disponibili con tutti i dati aggiornati.
+Esito:
+Superato.
+________________________________________
+6. Test di gestione delle prenotazioni
+CT-15 – Prenotazione corretta a un evento
+Funzionalità: registrazione di una prenotazione.
+Precondizioni:
+L’evento esiste e dispone di posti liberi.
+Dati di ingresso:
+Dati validi del cliente e indicazione dell’evento.
+Procedura:
+1.	Il cliente seleziona un evento.
+2.	Inserisce i propri dati.
+3.	Conferma la prenotazione.
+Risultato atteso:
+La prenotazione viene registrata nel database e associata all’evento selezionato.
+Risultato ottenuto:
+Il cliente effettua la prenotazione all’evento desiderato e vengono salvati sul database i dati del cliente.
+Esito:
+Superato.
+________________________________________
+CT-16 – Prenotazione a un evento pieno
+Funzionalità: controllo della capienza dell’evento.
+Precondizioni:
+L’evento ha già raggiunto il numero massimo di partecipanti.
+Procedura:
+1.	Il cliente seleziona l’evento.
+2.	Inserisce i propri dati.
+3.	Conferma la prenotazione.
+Risultato atteso:
+La prenotazione viene rifiutata e il sistema comunica che non sono disponibili altri posti.
+Risultato ottenuto:
+Non vi è la possibilità di prenotarsi, la prenotazione del cliente non viene effettuata.
+Esito:
+Superato.
+________________________________________
+CT-17 – Prenotazione con dati incompleti
+Funzionalità: validazione dei dati del cliente.
+Precondizioni:
+L’evento dispone di posti liberi.
+Dati di ingresso:
+Uno o più dati obbligatori mancanti.
+Procedura:
+1.	Il cliente seleziona un evento.
+2.	Compila solo parzialmente il modulo.
+3.	Conferma la prenotazione.
+Risultato atteso:
+La prenotazione non viene registrata e il sistema segnala i dati mancanti o non validi.
+Risultato ottenuto:
+La prenotazione non viene effettuata, vengono mostrati i vari errori.
+Esito:
+Superato.
+________________________________________
+CT-18 – Annullamento di una prenotazione
+Funzionalità: cancellazione di una prenotazione.
+Precondizioni:
+La prenotazione è presente nel database.
+Dati di ingresso:
+Informazioni utilizzate dal sistema per identificare la prenotazione.
+Procedura:
+1.	Il cliente accede alla funzione di annullamento.
+2.	Inserisce i dati richiesti.
+3.	Conferma la cancellazione.
+Risultato atteso:
+La prenotazione viene eliminata dal database e il posto torna disponibile.
+Risultato ottenuto:
+Il cliente annulla la prenotazione, aumentando la disponibilità di posti.
+Esito:
+Superato.
+________________________________________
+7. Criterio di superamento
+Un caso di test è considerato superato quando il risultato ottenuto coincide con il risultato atteso.
+Nel caso in cui il risultato ottenuto sia differente, il test viene considerato non superato e l’anomalia deve essere registrata e corretta.
+La verifica complessiva del sistema può essere considerata soddisfacente quando tutte le funzionalità principali sono state testate e i casi di test più importanti hanno avuto esito positivo.

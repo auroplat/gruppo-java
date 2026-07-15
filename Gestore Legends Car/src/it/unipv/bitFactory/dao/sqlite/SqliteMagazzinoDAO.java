@@ -23,10 +23,6 @@ import it.unipv.bitFactory.model.magazzino.VoceMagazzino;
 import it.unipv.bitFactory.model.pezzi.Pezzo;
 import it.unipv.bitFactory.model.pezzi.TipoPezzo;
 
-/**
- * Implementazione SQLite del DAO dedicato ai soli pezzi di magazzino.
- * Non crea macchine e non coordina la sostituzione dei componenti.
- */
 public final class SqliteMagazzinoDAO implements MagazzinoDAO {
 
     private final String jdbcUrl;
@@ -396,7 +392,6 @@ public final class SqliteMagazzinoDAO implements MagazzinoDAO {
         try {
             connection.rollback();
         } catch (SQLException ignored) {
-            // Manteniamo l'eccezione originale.
         }
     }
 

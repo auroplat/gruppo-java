@@ -4,15 +4,13 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.util.Objects;
 
-public final class Cliente {
+public final class Cliente extends Persona{
 
-    private final String nome;
-    private final String cognome;
     private final LocalDate dataNascita;
-    private final String email;
-    private final String telefono;
 
-    public Cliente(String nome, String cognome, LocalDate dataNascita, String email, String telefono) {
+    public Cliente(String nome, String cognome, String telefono, String email, LocalDate dataNascita) {
+    	
+    	super(nome, cognome, telefono, email);
 
         if (nome == null || nome.isBlank()) {
             throw new IllegalArgumentException("Il nome non può essere vuoto");
@@ -42,39 +40,39 @@ public final class Cliente {
             throw new IllegalArgumentException("Il telefono non può essere vuoto");
         }
 
-        this.nome = nome.trim();
-        this.cognome = cognome.trim();
         this.dataNascita = dataNascita;
-        this.email = email.trim().toLowerCase();
-        this.telefono = telefono.trim();
+
     }
 
-    public String getNome() {return nome;}
-    public String getCognome() {return cognome;}
     public LocalDate getDataNascita() {return dataNascita;}
-    public String getEmail() {return email;}
-    public String getTelefono() {return telefono;}
-    public int getEta() {return Period.between(dataNascita, LocalDate.now()).getYears();
-    }
+    public int getEta() {return Period.between(dataNascita, LocalDate.now()).getYears();}
 
     @Override
     public boolean equals(Object object) {
-        if (this == object) {return true;}
-        if (!(object instanceof Cliente altroCliente)) {return false;}
-        return email.equals(altroCliente.email);
+        if (this == object) {
+            return true;
+        }
+
+        if (!(object instanceof Cliente altroCliente)) {
+            return false;
+        }
+
+        return Objects.equals(getEmail(), altroCliente.getEmail());
     }
 
     @Override
-    public int hashCode() {return Objects.hash(email);}
+    public int hashCode() {
+        return Objects.hash(getEmail());
+    }
 
     @Override
     public String toString() {
         return "Cliente{" +
-                "nome='" + nome + '\'' +
-                ", cognome='" + cognome + '\'' +
+                "nome='" + getNome() + '\'' +
+                ", cognome='" + getCognome() + '\'' +
                 ", dataNascita=" + dataNascita +
-                ", email='" + email + '\'' +
-                ", telefono='" + telefono + '\'' +
+                ", email='" + getEmail() + '\'' +
+                ", telefono='" + getTelefono() + '\'' +
                 '}';
     }
 }

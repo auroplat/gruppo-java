@@ -172,9 +172,9 @@ public final class SqliteClienteDAO implements ClienteDAO {
         return new Cliente(
                 result.getString("nome"),
                 result.getString("cognome"),
-                LocalDate.parse(result.getString("data_nascita")),
+                result.getString("telefono"),
                 result.getString("email_cliente"),
-                result.getString("telefono")
+                LocalDate.parse(result.getString("data_nascita"))
         );
     }
 

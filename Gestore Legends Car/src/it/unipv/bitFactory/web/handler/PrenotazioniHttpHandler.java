@@ -19,19 +19,11 @@ public final class PrenotazioniHttpHandler
     private final GestionePrenotazioniController controller;
     private final HtmlRenderer renderer;
 
-    public PrenotazioniHttpHandler(
-            GestionePrenotazioniController controller,
-            HtmlRenderer renderer) {
+    public PrenotazioniHttpHandler(GestionePrenotazioniController controller, HtmlRenderer renderer) {
 
-        this.controller = Objects.requireNonNull(
-                controller,
-                "Il controller delle prenotazioni non può essere null"
-        );
+        this.controller = Objects.requireNonNull(controller,"Il controller delle prenotazioni non può essere null");
 
-        this.renderer = Objects.requireNonNull(
-                renderer,
-                "Il renderer HTML non può essere null"
-        );
+        this.renderer = Objects.requireNonNull(renderer, "Il renderer HTML non può essere null");
     }
 
     @Override
@@ -48,10 +40,7 @@ public final class PrenotazioniHttpHandler
             sendHtml(
                     exchange,
                     405,
-                    renderer.renderErrore(
-                            "Questa pagina accetta soltanto "
-                                    + "richieste POST."
-                    )
+                    renderer.renderErrore("Questa pagina accetta soltanto richieste POST.")
             );
 
             return;
@@ -62,12 +51,6 @@ public final class PrenotazioniHttpHandler
             Map<String, String> parametri =
                     leggiParametriForm(exchange);
 
-            /*
-             * Entrambi i form inviano questo parametro:
-             *
-             * prenota  -> nuova prenotazione
-             * annulla  -> cancellazione prenotazione
-             */
             String operazione =
                     parametroObbligatorio(
                             parametri,
@@ -101,8 +84,7 @@ public final class PrenotazioniHttpHandler
                     exchange,
                     400,
                     renderer.renderErrore(
-                            "La data di nascita inserita "
-                                    + "non è valida."
+                            "La data di nascita inserita non è valida."
                     )
             );
 
@@ -124,8 +106,7 @@ public final class PrenotazioniHttpHandler
                     exchange,
                     500,
                     renderer.renderErrore(
-                            "Si è verificato un errore durante "
-                                    + "la gestione della prenotazione."
+                            "Si è verificato un errore durante la gestione della prenotazione."
                     )
             );
         }
@@ -175,28 +156,17 @@ public final class PrenotazioniHttpHandler
         String patenteValida =
                 parametri.get("patenteValida");
 
-        /*
-         * Una checkbox non selezionata non viene
-         * proprio inviata dal browser.
-         */
         if (!"true".equalsIgnoreCase(patenteValida)) {
 
             throw new IllegalArgumentException(
-                    "Devi dichiarare di possedere "
-                            + "una patente di guida valida."
+                    "Devi dichiarare di possedere una patente di guida valida."
             );
         }
 
-        /*
-         * Il simbolo + viene mostrato separatamente
-         * nell'interfaccia.
-         */
         if (!telefono.matches("[0-9]{6,15}")) {
 
             throw new IllegalArgumentException(
-                    "Il numero di telefono deve contenere "
-                            + "da 6 a 15 cifre, incluso "
-                            + "il prefisso internazionale."
+                    "Il numero di telefono deve contenere da 6 a 15 cifre, incluso il prefisso internazionale."
             );
         }
 
@@ -206,9 +176,9 @@ public final class PrenotazioniHttpHandler
         Cliente cliente = new Cliente(
                 nome,
                 cognome,
-                dataNascita,
+                telefono,
                 email,
-                "+" + telefono
+                dataNascita
         );
 
         String messaggio =
@@ -239,10 +209,6 @@ public final class PrenotazioniHttpHandler
             Map<String, String> parametri)
             throws IOException {
 
-        /*
-         * Per eliminare una prenotazione servono
-         * soltanto nome evento ed email.
-         */
         String nomeEvento =
                 parametroObbligatorio(
                         parametri,
@@ -274,13 +240,7 @@ public final class PrenotazioniHttpHandler
                         "prenotazione annullata"
                 );
 
-        /*
-         * Per ora viene riutilizzata la stessa pagina
-         * grafica dell'esito della prenotazione.
-         *
-         * Il messaggio mostrerà comunque chiaramente
-         * che la prenotazione è stata annullata.
-         */
+
         sendHtml(
                 exchange,
                 successo ? 200 : 404,

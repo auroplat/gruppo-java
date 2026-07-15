@@ -217,7 +217,7 @@ public final class SqliteLegendsDAO implements LegendsDAO {
 
                     if (tipo.isEmpty()) {continue;}
 
-                    Pezzo pezzo = new Pezzo(tipo.get(), result.getDouble("km_max"), result.getInt("tempo_max"));
+                    Pezzo pezzo = new Pezzo(result.getString("id_pezzo"),tipo.get(), result.getDouble("km_max"), result.getInt("tempo_max"));
 
                     pezzo.aggiornaUtilizzo(result.getDouble("km"), result.getInt("tempo_utilizzo"));
 

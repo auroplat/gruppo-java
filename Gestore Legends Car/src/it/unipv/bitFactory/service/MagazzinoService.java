@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import it.unipv.bitFactory.dao.interfacce.GestoreTransazioni;
 import it.unipv.bitFactory.dao.interfacce.LegendsDAO;
 import it.unipv.bitFactory.dao.interfacce.MagazzinoDAO;
 import it.unipv.bitFactory.model.magazzino.StatoDisponibilita;
@@ -15,7 +14,7 @@ import it.unipv.bitFactory.model.pezzi.TipoPezzo;
 import it.unipv.bitFactory.model.veicoli.Legends;
 
 /**
- * Coordina il caso d'uso del magazzino.
+ * Coordina i casi d'uso del magazzino.
  *
  * MagazzinoDAO gestisce i pezzi disponibili.
  * LegendsDAO gestisce le macchine complete.
@@ -24,12 +23,10 @@ public final class MagazzinoService {
 
     private final MagazzinoDAO magazzinoDAO;
     private final LegendsDAO legendsDAO;
-    private final GestoreTransazioni gestoreTransazioni;
 
     public MagazzinoService(
             MagazzinoDAO magazzinoDAO,
-            LegendsDAO legendsDAO,
-            GestoreTransazioni gestoreTransazioni
+            LegendsDAO legendsDAO
     ) {
         this.magazzinoDAO = Objects.requireNonNull(
                 magazzinoDAO,
@@ -38,10 +35,6 @@ public final class MagazzinoService {
         this.legendsDAO = Objects.requireNonNull(
                 legendsDAO,
                 "Il DAO delle Legends non può essere null"
-        );
-        this.gestoreTransazioni = Objects.requireNonNull(
-                gestoreTransazioni,
-                "Il gestore delle transazioni non può essere null"
         );
     }
 
@@ -94,39 +87,40 @@ public final class MagazzinoService {
     public void creaMacchina(String idMacchina) {
         String id = validaIdMacchina(idMacchina);
 
-        gestoreTransazioni.eseguiInTransazione(() -> {
-            if (legendsDAO.trovaPerId(id).isPresent()) {
-                throw new IllegalArgumentException(
-                        "Esiste già una macchina con id: " + id
+        if (legendsDAO.trovaPerId(id).isPresent()) {
+            throw new IllegalArgumentException(
+                    "Esiste già una macchina con id: " + id
+            );
+        }
+
+        Legends legends = new Legends(id);
+
+        for (Map.Entry<TipoPezzo, Integer> voce
+                : ricettaLegends().entrySet()) {
+
+            TipoPezzo tipo = voce.getKey();
+            int quantitaRichiesta = voce.getValue();
+            List<Pezzo> disponibili =
+                    magazzinoDAO.trovaPezziLiberi(tipo);
+
+            if (disponibili.size() < quantitaRichiesta) {
+                throw new IllegalStateException(
+                        "Pezzi insufficienti per " + tipo
+                                + ": richiesti " + quantitaRichiesta
+                                + ", disponibili " + disponibili.size()
                 );
             }
 
-            Legends legends = new Legends(id);
+            disponibili.stream()
+                    .limit(quantitaRichiesta)
+                    .forEach(legends::aggiungiPezzo);
+        }
 
-            for (Map.Entry<TipoPezzo, Integer> voce
-                    : ricettaLegends().entrySet()) {
-
-                TipoPezzo tipo = voce.getKey();
-                int quantitaRichiesta = voce.getValue();
-                List<Pezzo> disponibili =
-                        magazzinoDAO.trovaPezziLiberi(tipo);
-
-                if (disponibili.size() < quantitaRichiesta) {
-                    throw new IllegalStateException(
-                            "Pezzi insufficienti per " + tipo
-                                    + ": richiesti " + quantitaRichiesta
-                                    + ", disponibili " + disponibili.size()
-                    );
-                }
-
-                disponibili.stream()
-                        .limit(quantitaRichiesta)
-                        .forEach(legends::aggiungiPezzo);
-            }
-
-            legendsDAO.salva(legends);
-            return null;
-        });
+        /*
+         * SqliteLegendsDAO assegna alla macchina tutti i pezzi scelti
+         * all'interno della propria transazione locale.
+         */
+        legendsDAO.salva(legends);
     }
 
     public void cambiaPezzo(
@@ -138,40 +132,37 @@ public final class MagazzinoService {
         String idPezzoPulito = validaIdPezzo(idNuovoPezzo);
         validaTipo(tipoPezzo);
 
-        gestoreTransazioni.eseguiInTransazione(() -> {
-            Legends legends = legendsDAO
-                    .trovaPerId(idMacchinaPulito)
-                    .orElseThrow(() -> new IllegalArgumentException(
-                            "Macchina non trovata: " + idMacchinaPulito
-                    ));
+        Legends legends = legendsDAO
+                .trovaPerId(idMacchinaPulito)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Macchina non trovata: " + idMacchinaPulito
+                ));
 
-            Pezzo nuovoPezzo = magazzinoDAO
-                    .trovaPezziLiberi(tipoPezzo)
-                    .stream()
-                    .filter(pezzo -> pezzo.getIdPezzo()
-                            .equals(idPezzoPulito))
-                    .findFirst()
-                    .orElseThrow(() -> new IllegalArgumentException(
-                            "Il pezzo " + idPezzoPulito
-                                    + " non è disponibile oppure non è di tipo "
-                                    + tipoPezzo
-                    ));
+        Pezzo nuovoPezzo = magazzinoDAO
+                .trovaPezziLiberi(tipoPezzo)
+                .stream()
+                .filter(pezzo -> pezzo.getIdPezzo()
+                        .equals(idPezzoPulito))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Il pezzo " + idPezzoPulito
+                                + " non è disponibile oppure non è di tipo "
+                                + tipoPezzo
+                ));
 
-            Pezzo vecchioPezzo = legends.sostituisciPezzo(
-                    tipoPezzo,
-                    nuovoPezzo
-            );
+        Pezzo vecchioPezzo = legends.sostituisciPezzo(
+                tipoPezzo,
+                nuovoPezzo
+        );
 
-            /*
-             * Il DAO delle Legends salva la nuova composizione della macchina.
-             * Il DAO del magazzino elimina il componente usurato.
-             * Entrambe le operazioni appartengono alla stessa transazione.
-             */
-            legendsDAO.salva(legends);
-            magazzinoDAO.scartaPezzo(vecchioPezzo.getIdPezzo());
+        /*
+         * Il salvataggio sincronizza la composizione della macchina:
+         * il nuovo pezzo viene montato e quello vecchio torna libero.
+         */
+        legendsDAO.salva(legends);
 
-            return null;
-        });
+        // Il vecchio componente usurato, ora libero, viene eliminato.
+        magazzinoDAO.scartaPezzo(vecchioPezzo.getIdPezzo());
     }
 
     private Map<TipoPezzo, Integer> ricettaLegends() {

@@ -1,4 +1,3 @@
-
 package it.unipv.bitFactory.web;
 
 import java.nio.file.Path;
@@ -34,8 +33,14 @@ public final class ServerMain {
             GestioneSessioniController sessioniController = new GestioneSessioniController(legendsDAO, sessioneDAO);
 
             //magazzino
-            MagazzinoDAO magazzinoDAO = new SqliteMagazzinoDAO(percorsoDatabase, new SoglieMagazzino(2));
-            MagazzinoService magazzinoService = new MagazzinoService(magazzinoDAO);
+            MagazzinoDAO magazzinoDAO = new SqliteMagazzinoDAO(
+                    percorsoDatabase,
+                    new SoglieMagazzino(2)
+            );
+            MagazzinoService magazzinoService = new MagazzinoService(
+                    magazzinoDAO,
+                    legendsDAO
+            );
             GestioneMagazzinoController magazzinoController = new GestioneMagazzinoController(magazzinoService);
 
             //eventi e prenotazioni

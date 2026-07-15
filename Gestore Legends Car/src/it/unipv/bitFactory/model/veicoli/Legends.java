@@ -18,73 +18,163 @@ public class Legends extends Macchina {
 
     public Legends(String id) {
         if (id == null || id.isBlank()) {
-            throw new IllegalArgumentException("L'id della macchina non può essere vuoto");
+            throw new IllegalArgumentException(
+                    "L'id della macchina non può essere vuoto"
+            );
         }
+
         this.id = id.trim();
         this.pezzi = new LinkedHashMap<>();
     }
 
-    public void montaPezzo(TipoPezzo tipo, double kmMax, int tempoMax) {
+    public void montaPezzo(
+            TipoPezzo tipo,
+            double kmMax,
+            int tempoMax
+    ) {
         aggiungiPezzo(new Pezzo(tipo, kmMax, tempoMax));
     }
 
     public void aggiungiPezzo(Pezzo pezzo) {
         if (pezzo == null) {
-            throw new IllegalArgumentException("Il pezzo non può essere null");
+            throw new IllegalArgumentException(
+                    "Il pezzo non può essere null"
+            );
         }
+
         if (pezzi.containsKey(pezzo.getIdPezzo())) {
-            throw new IllegalArgumentException("Esiste già un pezzo con id: " + pezzo.getIdPezzo());
+            throw new IllegalArgumentException(
+                    "Esiste già un pezzo con id: " + pezzo.getIdPezzo()
+            );
         }
+
         pezzi.put(pezzo.getIdPezzo(), pezzo);
     }
 
+    /**
+     * Aggiorna o inserisce un pezzo già identificato.
+     * È usato soprattutto dai DAO durante la ricostruzione dell'oggetto.
+     */
     public void modificaPezzo(Pezzo pezzo) {
         if (pezzo == null) {
-            throw new IllegalArgumentException("Il pezzo non può essere null");
+            throw new IllegalArgumentException(
+                    "Il pezzo non può essere null"
+            );
         }
+
         pezzi.put(pezzo.getIdPezzo(), pezzo);
+    }
+
+    /**
+     * Sostituisce il primo pezzo montato del tipo richiesto.
+     * Restituisce il pezzo rimosso, che il service potrà scartare.
+     */
+    public Pezzo sostituisciPezzo(
+            TipoPezzo tipo,
+            Pezzo nuovoPezzo
+    ) {
+        if (tipo == null) {
+            throw new IllegalArgumentException(
+                    "Il tipo del pezzo non può essere null"
+            );
+        }
+
+        if (nuovoPezzo == null) {
+            throw new IllegalArgumentException(
+                    "Il nuovo pezzo non può essere null"
+            );
+        }
+
+        if (nuovoPezzo.getTipo() != tipo) {
+            throw new IllegalArgumentException(
+                    "Il nuovo pezzo non è del tipo richiesto: " + tipo
+            );
+        }
+
+        if (pezzi.containsKey(nuovoPezzo.getIdPezzo())) {
+            throw new IllegalArgumentException(
+                    "Il pezzo è già montato sulla macchina: "
+                            + nuovoPezzo.getIdPezzo()
+            );
+        }
+
+        Pezzo vecchioPezzo = getPezzo(tipo);
+
+        if (vecchioPezzo == null) {
+            throw new IllegalStateException(
+                    "La macchina non possiede un pezzo di tipo " + tipo
+            );
+        }
+
+        pezzi.remove(vecchioPezzo.getIdPezzo());
+        pezzi.put(nuovoPezzo.getIdPezzo(), nuovoPezzo);
+
+        return vecchioPezzo;
     }
 
     public Pezzo getPezzo(TipoPezzo tipo) {
-        if (tipo == null) {return null;}
-        return pezzi.values().stream()
+        if (tipo == null) {
+            return null;
+        }
+
+        return pezzi.values()
+                .stream()
                 .filter(pezzo -> pezzo.getTipo() == tipo)
                 .findFirst()
                 .orElse(null);
     }
 
     public List<Pezzo> getPezzi(TipoPezzo tipo) {
-        if (tipo == null) {return List.of();}
-        
-        List<Pezzo> risultato = new ArrayList<>();
-        
-        for (Pezzo pezzo : pezzi.values()) {
-            if (pezzo.getTipo() == tipo) {risultato.add(pezzo);}
+        if (tipo == null) {
+            return List.of();
         }
+
+        List<Pezzo> risultato = new ArrayList<>();
+
+        for (Pezzo pezzo : pezzi.values()) {
+            if (pezzo.getTipo() == tipo) {
+                risultato.add(pezzo);
+            }
+        }
+
         return Collections.unmodifiableList(risultato);
     }
 
-    public Collection<Pezzo> getTuttiPezzi() {return Collections.unmodifiableCollection(pezzi.values());}
-    public String getId() {return id;}
-    public String getIdVeicolo() {return id;}
-    public TipoVeicolo getTipoVeicolo() {return TipoVeicolo.LEGENDS;}
+    public Collection<Pezzo> getTuttiPezzi() {
+        return Collections.unmodifiableCollection(pezzi.values());
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getIdVeicolo() {
+        return id;
+    }
+
+    public TipoVeicolo getTipoVeicolo() {
+        return TipoVeicolo.LEGENDS;
+    }
 
     @Override
     public void applicaSessione(Sessione sessione) {
         validaSessione(sessione);
+
         double km = sessione.getKmPercorsi();
         int tempo = sessione.getTempo();
+
         percorriKm(km);
+
         for (Pezzo pezzo : pezzi.values()) {
             pezzo.aggiornaUtilizzo(km, tempo);
         }
     }
 
-
-
     private void validaSessione(Sessione sessione) {
         if (sessione == null) {
-            throw new IllegalArgumentException("La sessione non può essere null");
+            throw new IllegalArgumentException(
+                    "La sessione non può essere null"
+            );
         }
     }
 

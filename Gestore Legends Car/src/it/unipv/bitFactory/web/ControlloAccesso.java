@@ -7,7 +7,7 @@ import com.sun.net.httpserver.HttpExchange;
 
 import it.unipv.bitFactory.model.persona.Addetto;
 import it.unipv.bitFactory.model.persona.Ruolo;
-import it.unipv.bitFactory.service.GestoreSessioniLogin;
+import it.unipv.bitFactory.service.ServizioSessioniLogin;
 
 public final class ControlloAccesso {
 
@@ -16,7 +16,7 @@ public final class ControlloAccesso {
 
     public static Addetto trovaAddettoAutenticato(
             HttpExchange exchange,
-            GestoreSessioniLogin gestoreSessioniLogin) {
+            ServizioSessioniLogin gestoreSessioniLogin) {
 
         if (exchange == null || gestoreSessioniLogin == null) {
             return null;
@@ -29,7 +29,7 @@ public final class ControlloAccesso {
 
     public static boolean consentiRuolo(
             HttpExchange exchange,
-            GestoreSessioniLogin gestoreSessioniLogin,
+            ServizioSessioniLogin gestoreSessioniLogin,
             Ruolo ruoloRichiesto) throws IOException {
 
         return consentiUnoDeiRuoli(
@@ -41,7 +41,7 @@ public final class ControlloAccesso {
 
     public static boolean consentiUnoDeiRuoli(
             HttpExchange exchange,
-            GestoreSessioniLogin gestoreSessioniLogin,
+            ServizioSessioniLogin gestoreSessioniLogin,
             Ruolo... ruoliConsentiti) throws IOException {
 
         if (exchange == null
@@ -101,7 +101,7 @@ public final class ControlloAccesso {
                         .split("=", 2);
 
                 if (parti.length == 2
-                        && GestoreSessioniLogin.NOME_COOKIE
+                        && ServizioSessioniLogin.NOME_COOKIE
                                 .equals(parti[0])) {
 
                     return parti[1];

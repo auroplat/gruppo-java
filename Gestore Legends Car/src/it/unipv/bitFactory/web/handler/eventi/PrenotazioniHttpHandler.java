@@ -1,4 +1,4 @@
-package it.unipv.bitFactory.web.handler;
+package it.unipv.bitFactory.web.handler.eventi;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -11,6 +11,7 @@ import com.sun.net.httpserver.HttpExchange;
 
 import it.unipv.bitFactory.controller.GestionePrenotazioniController;
 import it.unipv.bitFactory.model.persona.Cliente;
+import it.unipv.bitFactory.web.handler.BaseHttpHandler;
 import it.unipv.bitFactory.web.view.HtmlRenderer;
 
 public final class PrenotazioniHttpHandler

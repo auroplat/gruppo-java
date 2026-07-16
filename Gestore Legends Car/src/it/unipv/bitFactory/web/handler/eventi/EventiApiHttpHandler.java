@@ -1,4 +1,4 @@
-package it.unipv.bitFactory.web.handler;
+package it.unipv.bitFactory.web.handler.eventi;
 
 import java.io.IOException;
 import java.util.List;
@@ -9,6 +9,7 @@ import com.sun.net.httpserver.HttpExchange;
 
 import it.unipv.bitFactory.controller.GestioneEventiController;
 import it.unipv.bitFactory.model.prenotazioni.Evento;
+import it.unipv.bitFactory.web.handler.BaseHttpHandler;
 
 public final class EventiApiHttpHandler
         extends BaseHttpHandler {

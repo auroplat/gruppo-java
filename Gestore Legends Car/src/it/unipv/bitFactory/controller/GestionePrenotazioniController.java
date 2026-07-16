@@ -1,13 +1,13 @@
 package it.unipv.bitFactory.controller;
 
 import it.unipv.bitFactory.model.persona.Cliente;
-import it.unipv.bitFactory.service.SistemaPrenotazioni;
+import it.unipv.bitFactory.service.ServizioPrenotazioni;
 
 public final class GestionePrenotazioniController {
 
-    private final SistemaPrenotazioni sistema;
+    private final ServizioPrenotazioni sistema;
 
-    public GestionePrenotazioniController(SistemaPrenotazioni sistema) {
+    public GestionePrenotazioniController(ServizioPrenotazioni sistema) {
 
         if (sistema == null) {
             throw new IllegalArgumentException("Il sistema prenotazioni non può essere null");

@@ -17,10 +17,6 @@ import it.unipv.bitFactory.model.pezzi.Pezzo;
 import it.unipv.bitFactory.model.pezzi.TipoPezzo;
 import it.unipv.bitFactory.model.veicoli.Legends;
 
-/**
- * DAO SQLite dell'aggregato Legends.
- * Gestisce la macchina e la composizione dei pezzi montati.
- */
 public final class SqliteLegendsDAO implements LegendsDAO {
 
     private final String jdbcUrl;
@@ -273,12 +269,7 @@ public final class SqliteLegendsDAO implements LegendsDAO {
         }
     }
 
-    /**
-     * Rende la composizione persistita uguale a quella dell'oggetto Legends.
-     * Prima libera i pezzi precedentemente montati sulla macchina, poi assegna
-     * quelli presenti nell'oggetto. Tutto avviene nella transazione locale
-     * aperta dal metodo salva().
-     */
+
     private void sincronizzaPezzi(
             Connection connection,
             Legends legends

@@ -8,7 +8,7 @@ import it.unipv.bitFactory.dao.interfacce.SessioneDAO;
 import it.unipv.bitFactory.dao.sqlite.SqliteLegendsDAO;
 import it.unipv.bitFactory.dao.sqlite.SqliteSessioneDAO;
 import it.unipv.bitFactory.external.SessioneEsterna;
-import it.unipv.bitFactory.service.SessioniService;
+import it.unipv.bitFactory.service.ServizioSessioni;
 
 public final class DemoSessioneEsterna {
 
@@ -35,8 +35,8 @@ public final class DemoSessioneEsterna {
                         percorsoDatabase
                 );
 
-        SessioniService sessioniService =
-                new SessioniService(
+        ServizioSessioni sessioniService =
+                new ServizioSessioni(
                         legendsDAO,
                         sessioneDAO
                 );

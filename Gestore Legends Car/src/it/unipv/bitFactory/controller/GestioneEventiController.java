@@ -3,13 +3,13 @@ package it.unipv.bitFactory.controller;
 import java.util.List;
 
 import it.unipv.bitFactory.model.prenotazioni.Evento;
-import it.unipv.bitFactory.service.GestoreEventi;
+import it.unipv.bitFactory.service.ServizioEventi;
 
 public final class GestioneEventiController {
 
-    private final GestoreEventi gestoreEventi;
+    private final ServizioEventi gestoreEventi;
 
-    public GestioneEventiController(GestoreEventi gestoreEventi) {
+    public GestioneEventiController(ServizioEventi gestoreEventi) {
 
         if (gestoreEventi == null) {
             throw new IllegalArgumentException("Il gestore degli eventi non può essere null");

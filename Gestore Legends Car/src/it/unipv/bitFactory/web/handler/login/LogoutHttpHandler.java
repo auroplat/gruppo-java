@@ -1,4 +1,4 @@
-package it.unipv.bitFactory.web.handler;
+package it.unipv.bitFactory.web.handler.login;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -6,15 +6,15 @@ import java.nio.charset.StandardCharsets;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
-import it.unipv.bitFactory.service.GestoreSessioniLogin;
+import it.unipv.bitFactory.service.ServizioSessioniLogin;
 import it.unipv.bitFactory.web.ControlloAccesso;
 
 public final class LogoutHttpHandler implements HttpHandler {
 
-    private final GestoreSessioniLogin gestoreSessioniLogin;
+    private final ServizioSessioniLogin gestoreSessioniLogin;
 
     public LogoutHttpHandler(
-            GestoreSessioniLogin gestoreSessioniLogin) {
+            ServizioSessioniLogin gestoreSessioniLogin) {
 
         if (gestoreSessioniLogin == null) {
             throw new IllegalArgumentException(
@@ -44,7 +44,7 @@ public final class LogoutHttpHandler implements HttpHandler {
 
         exchange.getResponseHeaders().add(
                 "Set-Cookie",
-                GestoreSessioniLogin.NOME_COOKIE
+                ServizioSessioniLogin.NOME_COOKIE
                         + "=; Path=/"
                         + "; Max-Age=0"
                         + "; HttpOnly"

@@ -1,4 +1,4 @@
-package it.unipv.bitFactory.web.handler;
+package it.unipv.bitFactory.web.handler.sessioni;
 
 import java.io.IOException;
 import java.util.Map;
@@ -10,6 +10,7 @@ import it.unipv.bitFactory.controller.GestioneSessioniController;
 import it.unipv.bitFactory.model.sessioni.Sessione;
 import it.unipv.bitFactory.model.sessioni.SessioneFactory;
 import it.unipv.bitFactory.model.sessioni.TipoSessione;
+import it.unipv.bitFactory.web.handler.BaseHttpHandler;
 import it.unipv.bitFactory.web.view.HtmlRenderer;
 
 public final class SessioniHttpHandler
@@ -18,9 +19,7 @@ public final class SessioniHttpHandler
     private final GestioneSessioniController controller;
     private final HtmlRenderer renderer;
 
-    public SessioniHttpHandler(
-            GestioneSessioniController controller,
-            HtmlRenderer renderer) {
+    public SessioniHttpHandler(GestioneSessioniController controller, HtmlRenderer renderer) {
 
         this.controller =
                 Objects.requireNonNull(controller);
@@ -55,8 +54,7 @@ public final class SessioniHttpHandler
         );
     }
 
-    private void mostraSessioni(
-            HttpExchange exchange) throws IOException {
+    private void mostraSessioni(HttpExchange exchange) throws IOException {
 
         sendResource(
                 exchange,
@@ -65,44 +63,20 @@ public final class SessioniHttpHandler
         );
     }
 
-    private void creaSessione(
-            HttpExchange exchange) throws IOException {
+    private void creaSessione(HttpExchange exchange) throws IOException {
 
         try {
-            Map<String, String> form =
-                    leggiParametriForm(exchange);
+            Map<String, String> form = leggiParametriForm(exchange);
 
-            String idMacchina =
-                    parametroObbligatorio(
-                            form,
-                            "macchina"
-                    );
+            String idMacchina =parametroObbligatorio(form, "macchina");
 
-            String tipo =
-                    parametroObbligatorio(
-                            form,
-                            "tipoSessione"
-                    );
+            String tipo = parametroObbligatorio(form, "tipoSessione");
 
-            String luogo =
-                    parametroObbligatorio(
-                            form,
-                            "luogo"
-                    );
+            String luogo = parametroObbligatorio(form, "luogo");
 
-            double kmPercorsi = Double.parseDouble(
-                    parametroObbligatorio(
-                            form,
-                            "kmPercorsi"
-                    ).replace(',', '.')
-            );
+            double kmPercorsi = Double.parseDouble(parametroObbligatorio(form, "kmPercorsi").replace(',', '.'));
 
-            int tempoPassato = Integer.parseInt(
-                    parametroObbligatorio(
-                            form,
-                            "tempoPassato"
-                    )
-            );
+            int tempoPassato = Integer.parseInt(parametroObbligatorio(form, "tempoPassato"));
 
             Sessione sessione =
                     creaOggettoSessione(
@@ -151,8 +125,7 @@ public final class SessioniHttpHandler
             double kmPercorsi,
             int tempoPassato) {
 
-        TipoSessione tipoSessione =
-                TipoSessione.daStringa(tipo);
+        TipoSessione tipoSessione = TipoSessione.daStringa(tipo);
 
         return SessioneFactory.crea(
                 tipoSessione,

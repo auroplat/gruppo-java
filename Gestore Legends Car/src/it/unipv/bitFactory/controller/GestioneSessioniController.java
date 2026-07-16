@@ -5,14 +5,14 @@ import java.util.Objects;
 
 import it.unipv.bitFactory.external.SessioneEsterna;
 import it.unipv.bitFactory.model.sessioni.Sessione;
-import it.unipv.bitFactory.service.SessioniService;
+import it.unipv.bitFactory.service.ServizioSessioni;
 
 public final class GestioneSessioniController {
 
-    private final SessioniService sessioniService;
+    private final ServizioSessioni sessioniService;
 
     public GestioneSessioniController(
-            SessioniService sessioniService
+            ServizioSessioni sessioniService
     ) {
         this.sessioniService = Objects.requireNonNull(
                 sessioniService,

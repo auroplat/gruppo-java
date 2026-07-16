@@ -10,12 +10,12 @@ import it.unipv.bitFactory.external.SessioneEsterna;
 import it.unipv.bitFactory.model.sessioni.Sessione;
 import it.unipv.bitFactory.model.veicoli.Legends;
 
-public final class SessioniService {
+public final class ServizioSessioni {
 
     private final LegendsDAO legendsDAO;
     private final SessioneDAO sessioneDAO;
 
-    public SessioniService(
+    public ServizioSessioni(
             LegendsDAO legendsDAO,
             SessioneDAO sessioneDAO
     ) {

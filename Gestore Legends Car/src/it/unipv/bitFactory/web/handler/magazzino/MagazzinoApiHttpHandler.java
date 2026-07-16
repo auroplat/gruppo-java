@@ -1,4 +1,4 @@
-package it.unipv.bitFactory.web.handler;
+package it.unipv.bitFactory.web.handler.magazzino;
 
 import java.io.IOException;
 import java.util.List;
@@ -9,6 +9,7 @@ import com.sun.net.httpserver.HttpExchange;
 
 import it.unipv.bitFactory.controller.GestioneMagazzinoController;
 import it.unipv.bitFactory.model.magazzino.VoceMagazzino;
+import it.unipv.bitFactory.web.handler.BaseHttpHandler;
 
 public final class MagazzinoApiHttpHandler extends BaseHttpHandler {
 

@@ -1,4 +1,4 @@
-package it.unipv.bitFactory.web.handler;
+package it.unipv.bitFactory.web.handler.login;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -7,18 +7,18 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import it.unipv.bitFactory.model.persona.Ruolo;
-import it.unipv.bitFactory.service.GestoreSessioniLogin;
+import it.unipv.bitFactory.service.ServizioSessioniLogin;
 import it.unipv.bitFactory.web.ControlloAccesso;
 
 public final class RuoloHttpHandler implements HttpHandler {
 
     private final HttpHandler handlerDelegato;
-    private final GestoreSessioniLogin gestoreSessioniLogin;
+    private final ServizioSessioniLogin gestoreSessioniLogin;
     private final Ruolo[] ruoliConsentiti;
 
     public RuoloHttpHandler(
             HttpHandler handlerDelegato,
-            GestoreSessioniLogin gestoreSessioniLogin,
+            ServizioSessioniLogin gestoreSessioniLogin,
             Ruolo... ruoliConsentiti) {
 
         if (handlerDelegato == null

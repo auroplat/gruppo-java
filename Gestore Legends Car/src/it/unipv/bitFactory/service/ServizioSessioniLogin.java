@@ -7,13 +7,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import it.unipv.bitFactory.model.persona.Addetto;
 import it.unipv.bitFactory.model.persona.Ruolo;
 
-public class GestoreSessioniLogin {
+public class ServizioSessioniLogin {
 
     public static final String NOME_COOKIE = "BITFACTORY_SESSION";
 
     private final Map<String, Addetto> sessioni;
 
-    public GestoreSessioniLogin() {
+    public ServizioSessioniLogin() {
         this.sessioni = new ConcurrentHashMap<>();
     }
 

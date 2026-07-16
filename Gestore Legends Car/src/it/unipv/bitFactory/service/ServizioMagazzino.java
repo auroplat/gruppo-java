@@ -13,12 +13,12 @@ import it.unipv.bitFactory.model.pezzi.Pezzo;
 import it.unipv.bitFactory.model.pezzi.TipoPezzo;
 import it.unipv.bitFactory.model.veicoli.Legends;
 
-public final class MagazzinoService {
+public final class ServizioMagazzino {
 
     private final MagazzinoDAO magazzinoDAO;
     private final LegendsDAO legendsDAO;
 
-    public MagazzinoService(
+    public ServizioMagazzino(
             MagazzinoDAO magazzinoDAO,
             LegendsDAO legendsDAO
     ) {

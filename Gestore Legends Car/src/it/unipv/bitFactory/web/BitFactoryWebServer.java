@@ -16,21 +16,21 @@ import it.unipv.bitFactory.controller.GestioneEventiController;
 import it.unipv.bitFactory.controller.GestioneMagazzinoController;
 import it.unipv.bitFactory.controller.GestionePrenotazioniController;
 import it.unipv.bitFactory.controller.GestioneSessioniController;
-import it.unipv.bitFactory.controller.LoginController;
-import it.unipv.bitFactory.service.GestoreSessioniLogin;
-import it.unipv.bitFactory.web.handler.EventiApiHttpHandler;
-import it.unipv.bitFactory.web.handler.LoginHttpHandler;
-import it.unipv.bitFactory.web.handler.MagazzinoApiHttpHandler;
-import it.unipv.bitFactory.web.handler.MagazzinoHttpHandler;
-import it.unipv.bitFactory.web.handler.PezziLiberiApiHttpHandler;
-import it.unipv.bitFactory.web.handler.PezziMontatiApiHttpHandler;
-import it.unipv.bitFactory.web.handler.MacchineApiHttpHandler;
-import it.unipv.bitFactory.web.handler.PrenotazioniHttpHandler;
-import it.unipv.bitFactory.web.handler.SessioniHttpHandler;
+import it.unipv.bitFactory.controller.GestioneLoginController;
+import it.unipv.bitFactory.service.ServizioSessioniLogin;
+import it.unipv.bitFactory.web.handler.eventi.EventiApiHttpHandler;
+import it.unipv.bitFactory.web.handler.eventi.PrenotazioniHttpHandler;
+import it.unipv.bitFactory.web.handler.login.LoginHttpHandler;
+import it.unipv.bitFactory.web.handler.login.LogoutHttpHandler;
+import it.unipv.bitFactory.web.handler.login.RuoloHttpHandler;
+import it.unipv.bitFactory.web.handler.magazzino.MagazzinoApiHttpHandler;
+import it.unipv.bitFactory.web.handler.magazzino.MagazzinoHttpHandler;
+import it.unipv.bitFactory.web.handler.pezzi.PezziLiberiApiHttpHandler;
+import it.unipv.bitFactory.web.handler.pezzi.PezziMontatiApiHttpHandler;
+import it.unipv.bitFactory.web.handler.sessioni.MacchineApiHttpHandler;
+import it.unipv.bitFactory.web.handler.sessioni.SessioniHttpHandler;
 import it.unipv.bitFactory.web.view.HtmlRenderer;
 import it.unipv.bitFactory.model.persona.Ruolo;
-import it.unipv.bitFactory.web.handler.LogoutHttpHandler;
-import it.unipv.bitFactory.web.handler.RuoloHttpHandler;
 
 public final class BitFactoryWebServer {
 
@@ -44,9 +44,9 @@ public final class BitFactoryWebServer {
             GestioneSessioniController sessioniController,
             GestioneMagazzinoController magazzinoController,
             GestionePrenotazioniController prenotazioniController,
-            LoginController loginController,
+            GestioneLoginController loginController,
             GestioneEventiController eventiController,
-            GestoreSessioniLogin gestoreSessioniLogin,
+            ServizioSessioniLogin gestoreSessioniLogin,
             HtmlRenderer renderer) throws IOException {
 
         if (porta < 1 || porta > 65535) {

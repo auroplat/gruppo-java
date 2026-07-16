@@ -1,4 +1,4 @@
-package it.unipv.bitFactory.web.handler;
+package it.unipv.bitFactory.web.handler.sessioni;
 
 import java.io.IOException;
 import java.util.List;
@@ -7,13 +7,13 @@ import java.util.Objects;
 import com.sun.net.httpserver.HttpExchange;
 
 import it.unipv.bitFactory.controller.GestioneSessioniController;
+import it.unipv.bitFactory.web.handler.BaseHttpHandler;
 
 public final class MacchineApiHttpHandler extends BaseHttpHandler {
 
     private final GestioneSessioniController controller;
 
-    public MacchineApiHttpHandler(
-            GestioneSessioniController controller) {
+    public MacchineApiHttpHandler(GestioneSessioniController controller) {
 
         this.controller = Objects.requireNonNull(controller);
     }

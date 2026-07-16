@@ -1,4 +1,4 @@
-package it.unipv.bitFactory.web.handler;
+package it.unipv.bitFactory.web.handler.login;
 
 import java.io.IOException;
 import java.net.URLDecoder;
@@ -9,19 +9,19 @@ import java.util.Map;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
-import it.unipv.bitFactory.controller.LoginController;
+import it.unipv.bitFactory.controller.GestioneLoginController;
 import it.unipv.bitFactory.model.persona.Addetto;
 import it.unipv.bitFactory.model.persona.Ruolo;
-import it.unipv.bitFactory.service.GestoreSessioniLogin;
+import it.unipv.bitFactory.service.ServizioSessioniLogin;
 
 public class LoginHttpHandler implements HttpHandler {
 
-    private final LoginController loginController;
-    private final GestoreSessioniLogin gestoreSessioniLogin;
+    private final GestioneLoginController loginController;
+    private final ServizioSessioniLogin gestoreSessioniLogin;
 
     public LoginHttpHandler(
-            LoginController loginController,
-            GestoreSessioniLogin gestoreSessioniLogin) {
+            GestioneLoginController loginController,
+            ServizioSessioniLogin gestoreSessioniLogin) {
 
         if (loginController == null) {
             throw new IllegalArgumentException(
@@ -99,7 +99,7 @@ public class LoginHttpHandler implements HttpHandler {
             String sessionId) {
 
         String cookie =
-                GestoreSessioniLogin.NOME_COOKIE
+                ServizioSessioniLogin.NOME_COOKIE
                         + "=" + sessionId
                         + "; Path=/"
                         + "; HttpOnly"

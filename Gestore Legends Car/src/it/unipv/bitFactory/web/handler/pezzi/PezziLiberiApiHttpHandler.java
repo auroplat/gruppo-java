@@ -1,4 +1,4 @@
-package it.unipv.bitFactory.web.handler;
+package it.unipv.bitFactory.web.handler.pezzi;
 
 import java.io.IOException;
 import java.net.URLDecoder;
@@ -15,6 +15,7 @@ import com.sun.net.httpserver.HttpExchange;
 import it.unipv.bitFactory.controller.GestioneMagazzinoController;
 import it.unipv.bitFactory.model.pezzi.Pezzo;
 import it.unipv.bitFactory.model.pezzi.TipoPezzo;
+import it.unipv.bitFactory.web.handler.BaseHttpHandler;
 
 public final class PezziLiberiApiHttpHandler extends BaseHttpHandler {
 

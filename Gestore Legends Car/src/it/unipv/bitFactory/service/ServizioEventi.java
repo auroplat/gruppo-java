@@ -8,11 +8,11 @@ import it.unipv.bitFactory.model.prenotazioni.Evento;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 
-public final class GestoreEventi {
+public final class ServizioEventi {
 
     private final EventoDAO eventoDAO;
 
-    public GestoreEventi(EventoDAO eventoDAO) {
+    public ServizioEventi(EventoDAO eventoDAO) {
 
         this.eventoDAO = Objects.requireNonNull(eventoDAO, "Il DAO degli eventi non può essere null");
     }

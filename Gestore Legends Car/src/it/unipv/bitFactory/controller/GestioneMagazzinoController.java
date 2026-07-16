@@ -7,15 +7,15 @@ import it.unipv.bitFactory.model.magazzino.StatoDisponibilita;
 import it.unipv.bitFactory.model.magazzino.VoceMagazzino;
 import it.unipv.bitFactory.model.pezzi.Pezzo;
 import it.unipv.bitFactory.model.pezzi.TipoPezzo;
-import it.unipv.bitFactory.service.MagazzinoService;
+import it.unipv.bitFactory.service.ServizioMagazzino;
 
 
 public final class GestioneMagazzinoController {
 
-    private final MagazzinoService magazzinoService;
+    private final ServizioMagazzino magazzinoService;
 
     public GestioneMagazzinoController(
-            MagazzinoService magazzinoService
+            ServizioMagazzino magazzinoService
     ) {
         this.magazzinoService = Objects.requireNonNull(
                 magazzinoService,

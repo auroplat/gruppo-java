@@ -10,13 +10,13 @@ import it.unipv.bitFactory.model.persona.Cliente;
 import it.unipv.bitFactory.model.prenotazioni.Evento;
 import it.unipv.bitFactory.model.prenotazioni.Prenotazione;
 
-public final class SistemaPrenotazioni {
+public final class ServizioPrenotazioni {
 
     private final ClienteDAO clienteDAO;
     private final EventoDAO eventoDAO;
     private final PrenotazioneDAO prenotazioneDAO;
 
-    public SistemaPrenotazioni(ClienteDAO clienteDAO, EventoDAO eventoDAO, PrenotazioneDAO prenotazioneDAO) {
+    public ServizioPrenotazioni(ClienteDAO clienteDAO, EventoDAO eventoDAO, PrenotazioneDAO prenotazioneDAO) {
 
         this.clienteDAO = Objects.requireNonNull(clienteDAO,"Il DAO dei clienti non può essere null");
 

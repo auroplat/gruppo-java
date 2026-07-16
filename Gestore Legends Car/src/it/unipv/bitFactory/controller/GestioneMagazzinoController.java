@@ -9,10 +9,6 @@ import it.unipv.bitFactory.model.pezzi.Pezzo;
 import it.unipv.bitFactory.model.pezzi.TipoPezzo;
 import it.unipv.bitFactory.service.MagazzinoService;
 
-/**
- * Controller GRASP del sottosistema magazzino.
- * Riceve le operazioni dalla UI e delega al service applicativo.
- */
 public final class GestioneMagazzinoController {
 
     private final MagazzinoService magazzinoService;
@@ -66,11 +62,11 @@ public final class GestioneMagazzinoController {
         );
     }
 
-    public void creaMacchina(String idMacchina) {
+    public synchronized void creaMacchina(String idMacchina) {
         magazzinoService.creaMacchina(idMacchina);
     }
 
-    public void cambiaPezzo(
+    public synchronized void cambiaPezzo(
             String idMacchina,
             TipoPezzo tipoPezzo,
             String idNuovoPezzo

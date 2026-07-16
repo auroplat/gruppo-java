@@ -28,7 +28,7 @@ public class GestioneSessioniController {
         this.sessioneDAO = sessioneDAO;
     }
 
-    public void registraSessione(String idMacchina, Sessione sessione) {
+    public synchronized void registraSessione(String idMacchina, Sessione sessione) {
 
         if (idMacchina == null || idMacchina.isBlank()) {
             throw new IllegalArgumentException("L'id della macchina non può essere vuoto");

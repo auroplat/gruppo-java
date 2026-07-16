@@ -25,7 +25,7 @@ public final class SistemaPrenotazioni {
         this.prenotazioneDAO = Objects.requireNonNull(prenotazioneDAO,"Il DAO delle prenotazioni non può essere null");
     }
 
-    public String effettuaPrenotazione(Cliente cliente, String nomeEvento) {
+    public synchronized String effettuaPrenotazione(Cliente cliente, String nomeEvento) {
 
         if (cliente == null) {return "Cliente non valido.";}
 
@@ -74,7 +74,7 @@ public final class SistemaPrenotazioni {
         return "Prenotazione completata con successo.";
     }
 
-    public String annullaPrenotazione(String emailCliente, String nomeEvento) {
+    public synchronized String annullaPrenotazione(String emailCliente, String nomeEvento) {
 
         String eventoRichiesto = normalizzaNomeEvento(nomeEvento);
         String email = normalizzaEmail(emailCliente);

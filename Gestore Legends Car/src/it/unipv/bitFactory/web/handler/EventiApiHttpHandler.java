@@ -7,26 +7,26 @@ import java.util.Map;
 
 import com.sun.net.httpserver.HttpExchange;
 
+import it.unipv.bitFactory.controller.GestioneEventiController;
 import it.unipv.bitFactory.model.prenotazioni.Evento;
-import it.unipv.bitFactory.service.GestoreEventi;
 
 public final class EventiApiHttpHandler
         extends BaseHttpHandler {
 
-    private final GestoreEventi gestoreEventi;
+    private final GestioneEventiController eventiController;
     private final boolean accettaCreazione;
 
-    public EventiApiHttpHandler(GestoreEventi gestoreEventi) {
-        this(gestoreEventi, false);
+    public EventiApiHttpHandler(GestioneEventiController eventiController) {
+        this(eventiController, false);
     }
 
     public EventiApiHttpHandler(
-            GestoreEventi gestoreEventi,
+            GestioneEventiController eventiController,
             boolean accettaCreazione) {
 
-        this.gestoreEventi = Objects.requireNonNull(
-                gestoreEventi,
-                "Il gestore degli eventi non può essere null"
+        this.eventiController = Objects.requireNonNull(
+                eventiController,
+                "Il controller degli eventi non può essere null"
         );
 
         this.accettaCreazione = accettaCreazione;
@@ -65,7 +65,7 @@ public final class EventiApiHttpHandler
     private void gestisciLettura(HttpExchange exchange) throws IOException {
 
         try {
-            List<Evento> eventi = gestoreEventi.getEventi();
+            List<Evento> eventi = eventiController.elencaEventi();
 
             String json = convertiEventiInJson(eventi);
 
@@ -120,7 +120,7 @@ public final class EventiApiHttpHandler
                     parametroObbligatorio(parametri, "postiDisponibili")
             );
 
-            String messaggio = gestoreEventi.creaEvento(
+            String messaggio = eventiController.creaEvento(
                     nomeEvento,
                     dataEvento,
                     postiDisponibili

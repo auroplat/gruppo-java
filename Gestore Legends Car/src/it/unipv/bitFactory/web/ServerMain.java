@@ -48,6 +48,7 @@ public final class ServerMain {
             ClienteDAO clienteDAO = new SqliteClienteDAO(percorsoDatabase);
             PrenotazioneDAO prenotazioneDAO = new SqlitePrenotazioneDAO(percorsoDatabase);
             GestoreEventi gestoreEventi = new GestoreEventi(eventoDAO);
+            GestioneEventiController eventiController = new GestioneEventiController(gestoreEventi);
             SistemaPrenotazioni sistemaPrenotazioni = new SistemaPrenotazioni(clienteDAO, eventoDAO,prenotazioneDAO);
             GestionePrenotazioniController prenotazioniController = new GestionePrenotazioniController(sistemaPrenotazioni);
 
@@ -68,7 +69,7 @@ public final class ServerMain {
                             magazzinoController,
                             prenotazioniController,
                             loginController,
-                            gestoreEventi,
+                            eventiController,
                             gestoreSessioniLogin,
                             renderer
                     );

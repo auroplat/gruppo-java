@@ -12,11 +12,11 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
+import it.unipv.bitFactory.controller.GestioneEventiController;
 import it.unipv.bitFactory.controller.GestioneMagazzinoController;
 import it.unipv.bitFactory.controller.GestionePrenotazioniController;
 import it.unipv.bitFactory.controller.GestioneSessioniController;
 import it.unipv.bitFactory.controller.LoginController;
-import it.unipv.bitFactory.service.GestoreEventi;
 import it.unipv.bitFactory.service.GestoreSessioniLogin;
 import it.unipv.bitFactory.web.handler.EventiApiHttpHandler;
 import it.unipv.bitFactory.web.handler.LoginHttpHandler;
@@ -45,7 +45,7 @@ public final class BitFactoryWebServer {
             GestioneMagazzinoController magazzinoController,
             GestionePrenotazioniController prenotazioniController,
             LoginController loginController,
-            GestoreEventi gestoreEventi,
+            GestioneEventiController eventiController,
             GestoreSessioniLogin gestoreSessioniLogin,
             HtmlRenderer renderer) throws IOException {
 
@@ -61,7 +61,7 @@ public final class BitFactoryWebServer {
                 || magazzinoController == null
                 || prenotazioniController == null
                 || loginController == null
-                || gestoreEventi == null
+                || eventiController == null
                 || gestoreSessioniLogin == null
                 || renderer == null) {
 
@@ -124,7 +124,7 @@ public final class BitFactoryWebServer {
         server.createContext(
                 "/eventi",
                 new EventiApiHttpHandler(
-                        gestoreEventi,
+                        eventiController,
                         false
                 )
         );
@@ -227,7 +227,7 @@ public final class BitFactoryWebServer {
                 "/creazione-eventi",
                 new RuoloHttpHandler(
                         new EventiApiHttpHandler(
-                                gestoreEventi,
+                                eventiController,
                                 true
                         ),
                         gestoreSessioniLogin,

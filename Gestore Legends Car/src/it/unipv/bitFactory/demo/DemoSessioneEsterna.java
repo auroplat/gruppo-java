@@ -8,6 +8,7 @@ import it.unipv.bitFactory.dao.interfacce.SessioneDAO;
 import it.unipv.bitFactory.dao.sqlite.SqliteLegendsDAO;
 import it.unipv.bitFactory.dao.sqlite.SqliteSessioneDAO;
 import it.unipv.bitFactory.external.SessioneEsterna;
+import it.unipv.bitFactory.service.SessioniService;
 
 public final class DemoSessioneEsterna {
 
@@ -34,10 +35,15 @@ public final class DemoSessioneEsterna {
                         percorsoDatabase
                 );
 
-        GestioneSessioniController controller =
-                new GestioneSessioniController(
+        SessioniService sessioniService =
+                new SessioniService(
                         legendsDAO,
                         sessioneDAO
+                );
+
+        GestioneSessioniController controller =
+                new GestioneSessioniController(
+                        sessioniService
                 );
 
         SessioneEsterna sessioneEsterna =

@@ -30,7 +30,12 @@ public final class ServerMain {
             //sessioni
             LegendsDAO legendsDAO = new SqliteLegendsDAO(percorsoDatabase);
             SessioneDAO sessioneDAO = new SqliteSessioneDAO(percorsoDatabase);
-            GestioneSessioniController sessioniController = new GestioneSessioniController(legendsDAO, sessioneDAO);
+            SessioniService sessioniService = new SessioniService(
+                    legendsDAO,
+                    sessioneDAO
+            );
+            GestioneSessioniController sessioniController =
+                    new GestioneSessioniController(sessioniService);
 
             //magazzino
             MagazzinoDAO magazzinoDAO = new SqliteMagazzinoDAO(

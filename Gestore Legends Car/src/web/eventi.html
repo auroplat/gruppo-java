@@ -18,11 +18,6 @@
         <section class="hero-copy" aria-labelledby="page-title">
             <span class="eyebrow">Gestione eventi</span>
             <h1 id="page-title">Eventi sempre aggiornati.</h1>
-            <p>
-                L'elenco viene caricato dal database quando apri la pagina.
-                Se aggiungi o elimini un evento dal database, ricarica la pagina
-                per vedere la lista aggiornata.
-            </p>
 
             <div class="hero-stats" aria-label="Dati principali sugli eventi">
                 <div class="stat">
@@ -48,7 +43,6 @@
                         Caricamento eventi dal database…
                     </p>
                 </div>
-                <span class="source-badge">Database</span>
             </div>
 
             <div class="events-list" id="events-list" aria-live="polite">
@@ -191,7 +185,6 @@
             eventCount.textContent = String(orderedEvents.length).padStart(2, "0");
             seatCount.textContent = String(totalSeats);
             nextEvent.textContent = formatLongDate(orderedEvents[0].dataEvento);
-            eventsStatus.textContent = `${orderedEvents.length} ${orderedEvents.length === 1 ? "evento caricato" : "eventi caricati"}. Per aggiornare l'elenco, ricarica la pagina.`;
 
             for (const evento of orderedEvents) {
                 const date = formatShortDate(evento.dataEvento);

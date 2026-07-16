@@ -21,11 +21,6 @@
         <section class="warehouse-intro">
             <span class="eyebrow">Gestione magazzino</span>
             <h1>Controllo pezzi e macchine.</h1>
-            <p>
-                Da questa schermata puoi controllare le quantità disponibili,
-                creare una nuova Legends e registrare il cambio di un pezzo su una macchina.
-                I dati vengono letti dal database quando la pagina viene caricata.
-            </p>
 
             <div class="quick-stats" aria-label="Riepilogo magazzino">
                 <article class="mini-stat">
@@ -40,15 +35,6 @@
                     <strong id="statMacchine">—</strong>
                     <span>Macchine</span>
                 </article>
-            </div>
-
-            <div class="selected-event info-card">
-                <span>Regola consigliata</span>
-                <strong>Una Legends richiede una ricetta di pezzi.</strong>
-                <p>
-                    Motore, scocca, volante, ruote e freni devono essere disponibili
-                    prima di creare la macchina nel database.
-                </p>
             </div>
         </section>
 
@@ -112,7 +98,6 @@
                         </div>
                     </div>
                     <button class="primary-button" type="submit">Aggiungi al magazzino</button>
-                    <p class="form-note">Inserisce nuovi pezzi liberi nel database, quindi non ancora montati su una macchina.</p>
                 </form>
 
                 <form class="operation-form" id="createCar" action="/magazzino" method="post">

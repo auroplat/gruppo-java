@@ -150,14 +150,21 @@
                         </div>
 
                         <div class="field full">
-                            <label for="pezzoCambio">Pezzo libero da montare</label>
-                            <select id="pezzoCambio" name="idPezzo" required disabled>
-                                <option value="">Prima scegli un tipo pezzo</option>
+                            <label for="pezzoVecchioCambio">Pezzo montato da rimuovere</label>
+                            <select id="pezzoVecchioCambio" name="idVecchioPezzo" required disabled>
+                                <option value="">Scegli prima macchina e tipo</option>
+                            </select>
+                        </div>
+
+                        <div class="field full">
+                            <label for="pezzoCambio">Nuovo pezzo libero da montare</label>
+                            <select id="pezzoCambio" name="idNuovoPezzo" required disabled>
+                                <option value="">Scegli prima un tipo pezzo</option>
                             </select>
                         </div>
                     </div>
                     <button class="primary-button" type="submit">Registra cambio pezzo</button>
-                    <p class="form-note">Il pezzo scelto viene associato alla macchina selezionata. Il vecchio pezzo va gestito dal DAO secondo la logica del progetto.</p>
+                    <p class="form-note">Scegli il componente montato da rimuovere e il nuovo pezzo libero dello stesso tipo.</p>
                 </form>
 
                 <div id="operationMessage" class="confirmation" role="status" aria-live="polite"></div>
@@ -183,12 +190,25 @@
             VOLANTE: [{ idPezzo: 'PZ-VOL-001' }]
         };
 
+        const DEMO_MOUNTED = {
+            '27': {
+                MOTORE: [{ idPezzo: 'PZ-MOT-M27', kmAttuali: 8200, kmMax: 10000 }],
+                RUOTA: [
+                    { idPezzo: 'PZ-RUO-M27-1', kmAttuali: 950, kmMax: 1000 },
+                    { idPezzo: 'PZ-RUO-M27-2', kmAttuali: 950, kmMax: 1000 },
+                    { idPezzo: 'PZ-RUO-M27-3', kmAttuali: 950, kmMax: 1000 },
+                    { idPezzo: 'PZ-RUO-M27-4', kmAttuali: 950, kmMax: 1000 }
+                ]
+            }
+        };
+
         const stockGrid = document.getElementById('stockGrid');
         const statTipi = document.getElementById('statTipi');
         const statPezzi = document.getElementById('statPezzi');
         const statMacchine = document.getElementById('statMacchine');
         const macchinaCambio = document.getElementById('macchinaCambio');
         const tipoCambio = document.getElementById('tipoCambio');
+        const pezzoVecchioCambio = document.getElementById('pezzoVecchioCambio');
         const pezzoCambio = document.getElementById('pezzoCambio');
         const operationMessage = document.getElementById('operationMessage');
 
@@ -214,7 +234,8 @@
             });
         });
 
-        tipoCambio.addEventListener('change', () => caricaPezziLiberi(tipoCambio.value));
+        macchinaCambio.addEventListener('change', aggiornaSelezioniCambio);
+        tipoCambio.addEventListener('change', aggiornaSelezioniCambio);
 
         inizializzaPagina();
 
@@ -254,6 +275,62 @@
             } catch (error) {
                 statMacchine.textContent = '—';
                 macchinaCambio.innerHTML = '<option value="">Errore caricamento macchine</option>';
+            }
+        }
+
+        async function aggiornaSelezioniCambio() {
+            const idMacchina = macchinaCambio.value;
+            const tipo = tipoCambio.value;
+
+            await Promise.all([
+                caricaPezziMontati(idMacchina, tipo),
+                caricaPezziLiberi(tipo)
+            ]);
+        }
+
+        async function caricaPezziMontati(idMacchina, tipo) {
+            pezzoVecchioCambio.disabled = true;
+
+            if (!idMacchina || !tipo) {
+                pezzoVecchioCambio.innerHTML =
+                    '<option value="">Scegli prima macchina e tipo</option>';
+                return;
+            }
+
+            pezzoVecchioCambio.innerHTML =
+                '<option value="">Caricamento pezzi montati...</option>';
+
+            try {
+                const dati = previewLocale
+                    ? (((DEMO_MOUNTED[idMacchina] || {})[tipo]) || [])
+                    : await fetchJson(
+                        `/api/pezzi-montati?idMacchina=${encodeURIComponent(idMacchina)}`
+                        + `&tipo=${encodeURIComponent(tipo)}`
+                    );
+
+                if (dati.length === 0) {
+                    pezzoVecchioCambio.innerHTML =
+                        '<option value="">Nessun pezzo montato di questo tipo</option>';
+                    return;
+                }
+
+                pezzoVecchioCambio.innerHTML =
+                    '<option value="">Seleziona il pezzo da rimuovere</option>'
+                    + dati.map(pezzo => {
+                        const id = leggiIdPezzo(pezzo);
+                        const kmAttuali = Number(pezzo.kmAttuali ?? 0);
+                        const kmMax = Number(pezzo.kmMax ?? 0);
+                        const utilizzo = `${kmAttuali} / ${kmMax} km`;
+
+                        return `<option value="${escapeHtml(id)}">`
+                            + `${escapeHtml(id)} — ${escapeHtml(utilizzo)}`
+                            + '</option>';
+                    }).join('');
+
+                pezzoVecchioCambio.disabled = false;
+            } catch (error) {
+                pezzoVecchioCambio.innerHTML =
+                    '<option value="">Errore caricamento pezzi montati</option>';
             }
         }
 
@@ -311,6 +388,8 @@
                 operationMessage.textContent = 'Operazione completata correttamente.';
                 form.reset();
                 await inizializzaPagina();
+                pezzoVecchioCambio.innerHTML = '<option value="">Scegli prima macchina e tipo</option>';
+                pezzoVecchioCambio.disabled = true;
                 pezzoCambio.innerHTML = '<option value="">Prima scegli un tipo pezzo</option>';
                 pezzoCambio.disabled = true;
             } catch (error) {

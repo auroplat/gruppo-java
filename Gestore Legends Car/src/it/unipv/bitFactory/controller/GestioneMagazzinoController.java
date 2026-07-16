@@ -9,6 +9,7 @@ import it.unipv.bitFactory.model.pezzi.Pezzo;
 import it.unipv.bitFactory.model.pezzi.TipoPezzo;
 import it.unipv.bitFactory.service.MagazzinoService;
 
+
 public final class GestioneMagazzinoController {
 
     private final MagazzinoService magazzinoService;
@@ -48,6 +49,16 @@ public final class GestioneMagazzinoController {
         return magazzinoService.trovaPezziLiberi(tipoPezzo);
     }
 
+    public List<Pezzo> trovaPezziMontati(
+            String idMacchina,
+            TipoPezzo tipoPezzo
+    ) {
+        return magazzinoService.trovaPezziMontati(
+                idMacchina,
+                tipoPezzo
+        );
+    }
+
     public void aggiungiPezzi(
             TipoPezzo tipoPezzo,
             int quantita,
@@ -62,18 +73,18 @@ public final class GestioneMagazzinoController {
         );
     }
 
-    public synchronized void creaMacchina(String idMacchina) {
+    public void creaMacchina(String idMacchina) {
         magazzinoService.creaMacchina(idMacchina);
     }
 
-    public synchronized void cambiaPezzo(
+    public void cambiaPezzo(
             String idMacchina,
-            TipoPezzo tipoPezzo,
+            String idVecchioPezzo,
             String idNuovoPezzo
     ) {
         magazzinoService.cambiaPezzo(
                 idMacchina,
-                tipoPezzo,
+                idVecchioPezzo,
                 idNuovoPezzo
         );
     }

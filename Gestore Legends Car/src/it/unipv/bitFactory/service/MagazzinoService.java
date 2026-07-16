@@ -13,12 +13,6 @@ import it.unipv.bitFactory.model.pezzi.Pezzo;
 import it.unipv.bitFactory.model.pezzi.TipoPezzo;
 import it.unipv.bitFactory.model.veicoli.Legends;
 
-/**
- * Coordina i casi d'uso del magazzino.
- *
- * MagazzinoDAO gestisce i pezzi disponibili.
- * LegendsDAO gestisce le macchine complete.
- */
 public final class MagazzinoService {
 
     private final MagazzinoDAO magazzinoDAO;
@@ -67,7 +61,24 @@ public final class MagazzinoService {
     }
 
     public List<Pezzo> trovaPezziLiberi(TipoPezzo tipoPezzo) {
+        validaTipo(tipoPezzo);
         return magazzinoDAO.trovaPezziLiberi(tipoPezzo);
+    }
+
+    public List<Pezzo> trovaPezziMontati(
+            String idMacchina,
+            TipoPezzo tipoPezzo
+    ) {
+        String id = validaIdMacchina(idMacchina);
+        validaTipo(tipoPezzo);
+
+        Legends legends = legendsDAO
+                .trovaPerId(id)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Macchina non trovata: " + id
+                ));
+
+        return legends.getPezzi(tipoPezzo);
     }
 
     public void aggiungiPezzi(
@@ -116,21 +127,25 @@ public final class MagazzinoService {
                     .forEach(legends::aggiungiPezzo);
         }
 
-        /*
-         * SqliteLegendsDAO assegna alla macchina tutti i pezzi scelti
-         * all'interno della propria transazione locale.
-         */
+
         legendsDAO.salva(legends);
     }
 
-    public void cambiaPezzo(
+
+    public synchronized void cambiaPezzo(
             String idMacchina,
-            TipoPezzo tipoPezzo,
+            String idVecchioPezzo,
             String idNuovoPezzo
     ) {
         String idMacchinaPulito = validaIdMacchina(idMacchina);
-        String idPezzoPulito = validaIdPezzo(idNuovoPezzo);
-        validaTipo(tipoPezzo);
+        String idVecchioPulito = validaIdPezzo(idVecchioPezzo);
+        String idNuovoPulito = validaIdPezzo(idNuovoPezzo);
+
+        if (idVecchioPulito.equals(idNuovoPulito)) {
+            throw new IllegalArgumentException(
+                    "Il nuovo pezzo deve essere diverso da quello vecchio"
+            );
+        }
 
         Legends legends = legendsDAO
                 .trovaPerId(idMacchinaPulito)
@@ -138,31 +153,39 @@ public final class MagazzinoService {
                         "Macchina non trovata: " + idMacchinaPulito
                 ));
 
+        Pezzo vecchioPezzo = legends.getPezzoPerId(idVecchioPulito);
+
+        if (vecchioPezzo == null) {
+            throw new IllegalArgumentException(
+                    "Il pezzo " + idVecchioPulito
+                            + " non è montato sulla macchina "
+                            + idMacchinaPulito
+            );
+        }
+
+        TipoPezzo tipoPezzo = vecchioPezzo.getTipo();
+
         Pezzo nuovoPezzo = magazzinoDAO
                 .trovaPezziLiberi(tipoPezzo)
                 .stream()
                 .filter(pezzo -> pezzo.getIdPezzo()
-                        .equals(idPezzoPulito))
+                        .equals(idNuovoPulito))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException(
-                        "Il pezzo " + idPezzoPulito
-                                + " non è disponibile oppure non è di tipo "
+                        "Il pezzo " + idNuovoPulito
+                                + " non è libero oppure non è di tipo "
                                 + tipoPezzo
                 ));
 
-        Pezzo vecchioPezzo = legends.sostituisciPezzo(
-                tipoPezzo,
+        Pezzo pezzoRimosso = legends.sostituisciPezzo(
+                idVecchioPulito,
                 nuovoPezzo
         );
 
-        /*
-         * Il salvataggio sincronizza la composizione della macchina:
-         * il nuovo pezzo viene montato e quello vecchio torna libero.
-         */
         legendsDAO.salva(legends);
 
-        // Il vecchio componente usurato, ora libero, viene eliminato.
-        magazzinoDAO.scartaPezzo(vecchioPezzo.getIdPezzo());
+   
+        magazzinoDAO.scartaPezzo(pezzoRimosso.getIdPezzo());
     }
 
     private Map<TipoPezzo, Integer> ricettaLegends() {

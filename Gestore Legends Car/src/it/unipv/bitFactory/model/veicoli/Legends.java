@@ -51,10 +51,6 @@ public class Legends extends Macchina {
         pezzi.put(pezzo.getIdPezzo(), pezzo);
     }
 
-    /**
-     * Aggiorna o inserisce un pezzo già identificato.
-     * È usato soprattutto dai DAO durante la ricostruzione dell'oggetto.
-     */
     public void modificaPezzo(Pezzo pezzo) {
         if (pezzo == null) {
             throw new IllegalArgumentException(
@@ -65,17 +61,14 @@ public class Legends extends Macchina {
         pezzi.put(pezzo.getIdPezzo(), pezzo);
     }
 
-    /**
-     * Sostituisce il primo pezzo montato del tipo richiesto.
-     * Restituisce il pezzo rimosso, che il service potrà scartare.
-     */
+
     public Pezzo sostituisciPezzo(
-            TipoPezzo tipo,
+            String idVecchioPezzo,
             Pezzo nuovoPezzo
     ) {
-        if (tipo == null) {
+        if (idVecchioPezzo == null || idVecchioPezzo.isBlank()) {
             throw new IllegalArgumentException(
-                    "Il tipo del pezzo non può essere null"
+                    "L'id del pezzo da sostituire non può essere vuoto"
             );
         }
 
@@ -85,31 +78,42 @@ public class Legends extends Macchina {
             );
         }
 
-        if (nuovoPezzo.getTipo() != tipo) {
+        String idVecchio = idVecchioPezzo.trim();
+        Pezzo vecchioPezzo = pezzi.get(idVecchio);
+
+        if (vecchioPezzo == null) {
             throw new IllegalArgumentException(
-                    "Il nuovo pezzo non è del tipo richiesto: " + tipo
+                    "Il pezzo " + idVecchio
+                            + " non è montato sulla macchina " + id
+            );
+        }
+
+        if (vecchioPezzo.getTipo() != nuovoPezzo.getTipo()) {
+            throw new IllegalArgumentException(
+                    "Il nuovo pezzo deve essere dello stesso tipo "
+                            + "del pezzo sostituito"
             );
         }
 
         if (pezzi.containsKey(nuovoPezzo.getIdPezzo())) {
             throw new IllegalArgumentException(
-                    "Il pezzo è già montato sulla macchina: "
+                    "Il nuovo pezzo è già montato sulla macchina: "
                             + nuovoPezzo.getIdPezzo()
             );
         }
 
-        Pezzo vecchioPezzo = getPezzo(tipo);
-
-        if (vecchioPezzo == null) {
-            throw new IllegalStateException(
-                    "La macchina non possiede un pezzo di tipo " + tipo
-            );
-        }
-
-        pezzi.remove(vecchioPezzo.getIdPezzo());
+        pezzi.remove(idVecchio);
         pezzi.put(nuovoPezzo.getIdPezzo(), nuovoPezzo);
 
         return vecchioPezzo;
+    }
+
+    public Pezzo getPezzoPerId(String idPezzo) {
+        if (idPezzo == null || idPezzo.isBlank()) {
+            return null;
+        }
+
+        return pezzi.get(idPezzo.trim());
     }
 
     public Pezzo getPezzo(TipoPezzo tipo) {

@@ -23,6 +23,7 @@ import it.unipv.bitFactory.web.handler.LoginHttpHandler;
 import it.unipv.bitFactory.web.handler.MagazzinoApiHttpHandler;
 import it.unipv.bitFactory.web.handler.MagazzinoHttpHandler;
 import it.unipv.bitFactory.web.handler.PezziLiberiApiHttpHandler;
+import it.unipv.bitFactory.web.handler.PezziMontatiApiHttpHandler;
 import it.unipv.bitFactory.web.handler.MacchineApiHttpHandler;
 import it.unipv.bitFactory.web.handler.PrenotazioniHttpHandler;
 import it.unipv.bitFactory.web.handler.SessioniHttpHandler;
@@ -206,6 +207,16 @@ public final class BitFactoryWebServer {
                 "/api/pezzi-liberi",
                 new RuoloHttpHandler(
                         new PezziLiberiApiHttpHandler(
+                                magazzinoController
+                        ),
+                        gestoreSessioniLogin,
+                        Ruolo.MAGAZZINO
+                )
+        );
+        server.createContext(
+                "/api/pezzi-montati",
+                new RuoloHttpHandler(
+                        new PezziMontatiApiHttpHandler(
                                 magazzinoController
                         ),
                         gestoreSessioniLogin,

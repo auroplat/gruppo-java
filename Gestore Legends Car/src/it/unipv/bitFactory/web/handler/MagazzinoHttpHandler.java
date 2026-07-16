@@ -123,25 +123,28 @@ public final class MagazzinoHttpHandler extends BaseHttpHandler {
         return "Macchina " + idMacchina + " creata correttamente";
     }
 
-    private String cambiaPezzo(Map<String, String> parametri) {
-        String idMacchina = parametroObbligatorio(
+    private String cambiaPezzo( Map<String, String> parametri) {
+        String idMacchina = parametroObbligatorio(parametri,"idMacchina");
+
+        String idVecchioPezzo = parametroObbligatorio(
                 parametri,
-                "idMacchina"
+                "idVecchioPezzo"
         );
-        TipoPezzo tipo = leggiTipo(parametri, "tipoPezzo");
-        String idPezzo = parametroObbligatorio(
+
+        String idNuovoPezzo = parametroObbligatorio(
                 parametri,
-                "idPezzo"
+                "idNuovoPezzo"
         );
 
         controller.cambiaPezzo(
                 idMacchina,
-                tipo,
-                idPezzo
+                idVecchioPezzo,
+                idNuovoPezzo
         );
 
-        return "Pezzo " + idPezzo
-                + " montato sulla macchina " + idMacchina;
+        return "Pezzo " + idVecchioPezzo
+                + " sostituito con " + idNuovoPezzo
+                + " sulla macchina " + idMacchina;
     }
 
     private TipoPezzo leggiTipo(

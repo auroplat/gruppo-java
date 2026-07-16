@@ -6,6 +6,8 @@ import it.unipv.bitFactory.dao.interfacce.LegendsDAO;
 import it.unipv.bitFactory.dao.interfacce.SessioneDAO;
 import it.unipv.bitFactory.model.sessioni.Sessione;
 import it.unipv.bitFactory.model.veicoli.Legends;
+import it.unipv.bitFactory.adapter.SessioneEsternaAdapter;
+import it.unipv.bitFactory.external.SessioneEsterna;
 
 public class GestioneSessioniController {
 
@@ -46,5 +48,20 @@ public class GestioneSessioniController {
 
     public List<String> elencaIdMacchine() {
         return legendsDAO.trovaTutte().stream().map(Legends::getId).toList();
+    }
+    
+    public void registraSessioneEsterna(
+            String idMacchina,
+            SessioneEsterna sessioneEsterna
+    ) {
+        Sessione sessioneAdattata =
+                new SessioneEsternaAdapter(
+                        sessioneEsterna
+                );
+
+        registraSessione(
+                idMacchina,
+                sessioneAdattata
+        );
     }
 }

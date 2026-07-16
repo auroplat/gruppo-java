@@ -8,12 +8,12 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
+import java.util.Optional;
+import java.util.OptionalInt;
 
 import it.unipv.bitFactory.dao.interfacce.DAOException;
 import it.unipv.bitFactory.dao.interfacce.SessioneDAO;
-import it.unipv.bitFactory.model.sessioni.Gara;
 import it.unipv.bitFactory.model.sessioni.Sessione;
-import it.unipv.bitFactory.model.sessioni.Test;
 
 public final class SqliteSessioneDAO implements SessioneDAO {
 
@@ -70,27 +70,47 @@ public final class SqliteSessioneDAO implements SessioneDAO {
              PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, macchina);
-            statement.setString(2,sessione.getTipoSessione().name());
+            statement.setString(2, sessione.getTipoSessione().name());
             statement.setString(3, sessione.getLuogo());
             statement.setDouble(4, sessione.getKmPercorsi());
             statement.setInt(5, sessione.getTempo());
 
-            if (sessione instanceof Test test) {
-                statement.setString(6,test.getDescrizione());
-            } else {
-                statement.setNull(6,Types.VARCHAR);
-            }
-
-            if (sessione instanceof Gara gara) {
-                statement.setInt(7,gara.getPosizioneFinale());
-            } else {
-                statement.setNull(7,Types.INTEGER);
-            }
+            impostaStringaOpzionale(statement, 6, sessione.getDescrizioneOpzionale());
+            impostaInteroOpzionale(statement, 7, sessione.getPosizioneFinaleOpzionale());
 
             statement.executeUpdate();
 
         } catch (SQLException e) {
-            throw new DAOException("Errore durante il salvataggio della sessione della macchina " + macchina, e);
+            throw new DAOException(
+                    "Errore durante il salvataggio della sessione della macchina " + macchina,
+                    e
+            );
+        }
+    }
+
+    private static void impostaStringaOpzionale(
+            PreparedStatement statement,
+            int indice,
+            Optional<String> valore
+    ) throws SQLException {
+
+        if (valore.isPresent()) {
+            statement.setString(indice, valore.get());
+        } else {
+            statement.setNull(indice, Types.VARCHAR);
+        }
+    }
+
+    private static void impostaInteroOpzionale(
+            PreparedStatement statement,
+            int indice,
+            OptionalInt valore
+    ) throws SQLException {
+
+        if (valore.isPresent()) {
+            statement.setInt(indice, valore.getAsInt());
+        } else {
+            statement.setNull(indice, Types.INTEGER);
         }
     }
 
@@ -108,9 +128,7 @@ public final class SqliteSessioneDAO implements SessioneDAO {
     private String validaIdMacchina(String idMacchina) {
 
         if (idMacchina == null || idMacchina.isBlank()) {
-            throw new IllegalArgumentException(
-                    "L'id della macchina non può essere vuoto"
-            );
+            throw new IllegalArgumentException("L'id della macchina non può essere vuoto");
         }
 
         return idMacchina.trim();

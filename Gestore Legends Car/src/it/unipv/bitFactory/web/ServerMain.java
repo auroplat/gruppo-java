@@ -43,8 +43,7 @@ public final class ServerMain {
             GestioneSessioniController sessioniController = new GestioneSessioniController(dao);
             GestioneMagazzinoController magazzinoController = new GestioneMagazzinoController();
             GestionePrenotazioniController prenotazioniController = new GestionePrenotazioniController();
-            HtmlRenderer renderer =new HtmlRenderer();
-
+            HtmlRenderer renderer = new HtmlRenderer();
             
             
             //creo dispatcher

@@ -11,9 +11,13 @@ public class GestioneSessioniController {
 
     private final LegendsDAO legendsDAO;
 
-    public GestioneSessioniController(LegendsDAO legendsDAO) {
+    public GestioneSessioniController(
+            LegendsDAO legendsDAO) {
+
         if (legendsDAO == null) {
-            throw new IllegalArgumentException("Il DAO non può essere null");
+            throw new IllegalArgumentException(
+                    "Il DAO non può essere null"
+            );
         }
 
         this.legendsDAO = legendsDAO;
@@ -29,10 +33,14 @@ public class GestioneSessioniController {
             );
         }
 
-        Legends legends = legendsDAO.trovaPerId(idMacchina)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Macchina non trovata: " + idMacchina
-                ));
+        Legends legends =
+                legendsDAO.trovaPerId(idMacchina)
+                        .orElseThrow(
+                                () -> new IllegalArgumentException(
+                                        "Macchina non trovata: "
+                                                + idMacchina
+                                )
+                        );
 
         legends.applicaSessione(sessione);
         legendsDAO.salva(legends);
@@ -43,10 +51,14 @@ public class GestioneSessioniController {
             Sessione sessione,
             List<TipoPezzo> pezziDaAggiornare) {
 
-        Legends legends = legendsDAO.trovaPerId(idMacchina)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Macchina non trovata: " + idMacchina
-                ));
+        Legends legends =
+                legendsDAO.trovaPerId(idMacchina)
+                        .orElseThrow(
+                                () -> new IllegalArgumentException(
+                                        "Macchina non trovata: "
+                                                + idMacchina
+                                )
+                        );
 
         legends.applicaSessioneSelettiva(
                 sessione,
@@ -56,9 +68,6 @@ public class GestioneSessioniController {
         legendsDAO.salva(legends);
     }
 
-    /**
-     * Dati minimi richiesti dall'endpoint /api/macchine.
-     */
     public List<String> elencaIdMacchine() {
         return legendsDAO.trovaTutte()
                 .stream()

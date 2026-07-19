@@ -72,14 +72,7 @@ public final class ServerMain {
 
             Dispatcher dispatcherFinale = dispatcherSessioni;
 
-            Runtime.getRuntime().addShutdownHook(
-                    new Thread(
-                            () -> arrestaApplicazione(
-                                    serverFinale,
-                                    dispatcherFinale
-                            ),
-                            "bitfactory-shutdown"
-                    )
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> arrestaApplicazione( serverFinale, dispatcherFinale),"bitfactory-shutdown")
             );
 
             server.avvia();
@@ -90,11 +83,6 @@ public final class ServerMain {
 
             e.printStackTrace();
             
-            
-            
-            
-
-
             if (dispatcherSessioni != null) {dispatcherSessioni.arrestaThread();}
 
             if (server != null) {server.arresta();}
@@ -138,78 +126,51 @@ public final class ServerMain {
      * - dispatcher in attesa del semaforo;
      * - worker in attesa del lock database.
      */
-    private static void avviaMonitor(
-            Dispatcher dispatcher) {
+    private static void avviaMonitor(Dispatcher dispatcher) {
 
-        Thread monitor = new Thread(
-                () -> {
+        Thread monitor = new Thread(() -> {
 
                     String statoPrecedente = null;
 
                     try {
                         while (!Thread.currentThread().isInterrupted()) {
 
-                            int richiesteInCoda =
-                                    dispatcher.getNumeroRichiesteInCoda();
+                            int richiesteInCoda = dispatcher.getNumeroRichiesteInCoda();
 
-                            int workerAttivi =
-                                    dispatcher.getNumeroWorkerAttivi();
+                            int workerAttivi = dispatcher.getNumeroWorkerAttivi();
 
-                            int permessiDisponibili =
-                                    dispatcher
-                                            .getNumeroPermessiWorkerDisponibili();
+                            int permessiDisponibili =dispatcher.getNumeroPermessiWorkerDisponibili();
 
-                            int dispatcherInAttesa =
-                                    dispatcher
-                                            .getNumeroDispatcherInAttesaDelSemaforo();
-
-                            int workerInAttesaLock =
-                                    dispatcher
-                                            .getNumeroWorkerInAttesaDelLockDatabase();
+                            int workerInAttesaLock = dispatcher.getNumeroWorkerInAttesaDelLockDatabase();
 
                             String statoAttuale = String.format(
                                     "[MONITOR] coda=%d; "
                                             + "worker attivi=%d; "
                                             + "permessi worker=%d; "
-                                            + "dispatcher in attesa semaforo=%d; "
                                             + "worker in attesa lock DB=%d",
                                     richiesteInCoda,
                                     workerAttivi,
                                     permessiDisponibili,
-                                    dispatcherInAttesa,
                                     workerInAttesaLock
                             );
 
-                            /*
-                             * Stampa soltanto se lo stato è diverso
-                             * da quello rilevato precedentemente.
-                             */
+                            //quando cambia lo stato printo
                             if (!statoAttuale.equals(statoPrecedente)) {
                                 System.out.println(statoAttuale);
                                 statoPrecedente = statoAttuale;
                             }
 
-                            /*
-                             * Termina il monitor quando tutto il lavoro
-                             * è stato completato.
-                             */
-                            if (richiesteInCoda == 0
-                                    && workerAttivi == 0
-                                    && permessiDisponibili == 3) {
+                            //termina il monitor quando non ho piu risorse
+                            if (richiesteInCoda == 0 && workerAttivi == 0 && permessiDisponibili == 3) {
 
-                                System.out.println(
-                                        "[MONITOR] elaborazione completata"
-                                );
-
+                                System.out.println("[MONITOR] elaborazione completata");
                                 break;
                             }
 
                             Thread.sleep(200L);
                         }
 
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                    }
+                    } catch (InterruptedException e) {Thread.currentThread().interrupt();}
                 },
                 "monitor-concorrenza"
         );
@@ -218,30 +179,19 @@ public final class ServerMain {
         monitor.start();
     }
 
-    /**
-     * Arresta server e dispatcher.
-     */
-    private static void arrestaApplicazione(
-            BitFactoryWebServer server,
-            Dispatcher dispatcher) {
+    //termino server e dispatcher
+    private static void arrestaApplicazione(BitFactoryWebServer server, Dispatcher dispatcher) {
 
-        System.out.println(
-                "Arresto dell'applicazione..."
-        );
+        System.out.println("Arresto dell'applicazione...");
 
         server.arresta();
 
         dispatcher.arrestaThread();
 
-        attendiTerminazioneDispatcher(
-                dispatcher
-        );
+        attendiTerminazioneDispatcher(dispatcher);
     }
 
-    /**
-     * Attende per un massimo di cinque secondi
-     * la terminazione del dispatcher.
-     */
+    //aspetto 5  secondi poi termino il dispatcher forzatamente
     private static void attendiTerminazioneDispatcher(
             Thread dispatcher) {
 
@@ -251,18 +201,14 @@ public final class ServerMain {
 
             if (dispatcher.isAlive()) {
 
-                System.out.println(
-                        "Il dispatcher non è ancora terminato; "
-                                + "invio interrupt."
-                );
+                System.out.println("Il dispatcher non è ancora terminato; invio interrupt.");
 
                 dispatcher.interrupt();
             }
 
         } catch (InterruptedException e) {
 
-            Thread.currentThread()
-                    .interrupt();
+            Thread.currentThread().interrupt();
         }
     }
 }

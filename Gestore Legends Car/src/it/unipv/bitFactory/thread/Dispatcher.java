@@ -162,7 +162,7 @@ public final class Dispatcher extends Thread {
         	
                     try {
                         worker.run();
-
+                        
                     } finally {
                         workerAttivi.remove(Thread.currentThread());
 

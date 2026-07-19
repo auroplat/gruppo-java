@@ -11,7 +11,7 @@ import it.unipv.bitFactory.dao.sqlite.SqliteLegendsDAO;
 import it.unipv.bitFactory.model.sessioni.Gara;
 import it.unipv.bitFactory.model.sessioni.Sessione;
 import it.unipv.bitFactory.model.sessioni.Test;
-import it.unipv.bitFactory.thread.UsuraPezziThread;
+import it.unipv.bitFactory.thread.Dispatcher;
 import it.unipv.bitFactory.web.view.HtmlRenderer;
 
 public final class ServerMain {
@@ -45,7 +45,7 @@ public final class ServerMain {
 
     public static void main(String[] args) {
 
-        UsuraPezziThread dispatcherSessioni = null;
+        Dispatcher dispatcherSessioni = null;
         BitFactoryWebServer server = null;
 
         try {
@@ -108,7 +108,7 @@ public final class ServerMain {
              * - lock e Condition per la coda.
              */
             dispatcherSessioni =
-                    new UsuraPezziThread(
+                    new Dispatcher(
                             sessioniController
                     );
 
@@ -164,7 +164,7 @@ public final class ServerMain {
             BitFactoryWebServer serverFinale =
                     server;
 
-            UsuraPezziThread dispatcherFinale =
+            Dispatcher dispatcherFinale =
                     dispatcherSessioni;
 
             Runtime.getRuntime().addShutdownHook(
@@ -215,7 +215,7 @@ public final class ServerMain {
      * dell'avvio del dispatcher.
      */
     private static void caricaRichiesteDiTest(
-            UsuraPezziThread dispatcher) {
+            Dispatcher dispatcher) {
 
         System.out.printf(
                 "%n=== TEST CODA: inserimento di %d richieste ===%n",
@@ -293,7 +293,7 @@ public final class ServerMain {
      * - worker in attesa del lock database.
      */
     private static void avviaMonitor(
-            UsuraPezziThread dispatcher) {
+            Dispatcher dispatcher) {
 
         Thread monitor = new Thread(
                 () -> {
@@ -377,7 +377,7 @@ public final class ServerMain {
      */
     private static void arrestaApplicazione(
             BitFactoryWebServer server,
-            UsuraPezziThread dispatcher) {
+            Dispatcher dispatcher) {
 
         System.out.println(
                 "Arresto dell'applicazione..."

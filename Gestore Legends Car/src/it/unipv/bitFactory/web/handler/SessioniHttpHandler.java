@@ -10,16 +10,16 @@ import com.sun.net.httpserver.HttpExchange;
 import it.unipv.bitFactory.model.sessioni.Gara;
 import it.unipv.bitFactory.model.sessioni.Sessione;
 import it.unipv.bitFactory.model.sessioni.Test;
-import it.unipv.bitFactory.thread.UsuraPezziThread;
+import it.unipv.bitFactory.thread.Dispatcher;
 import it.unipv.bitFactory.web.view.HtmlRenderer;
 
 public final class SessioniHttpHandler extends BaseHttpHandler {
 
-    private final UsuraPezziThread usuraPezziThread;
+    private final Dispatcher usuraPezziThread;
     private final HtmlRenderer renderer;
 
     public SessioniHttpHandler(
-            UsuraPezziThread usuraPezziThread,
+            Dispatcher usuraPezziThread,
             HtmlRenderer renderer) {
 
         this.usuraPezziThread = Objects.requireNonNull(usuraPezziThread);

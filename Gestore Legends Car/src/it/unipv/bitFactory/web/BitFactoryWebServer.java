@@ -15,7 +15,7 @@ import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
 import it.unipv.bitFactory.controller.*;
-import it.unipv.bitFactory.thread.UsuraPezziThread;
+import it.unipv.bitFactory.thread.Dispatcher;
 import it.unipv.bitFactory.web.handler.*;
 import it.unipv.bitFactory.web.view.HtmlRenderer;
 
@@ -31,7 +31,7 @@ public final class BitFactoryWebServer {
             GestioneSessioniController sessioniController,
             GestioneMagazzinoController magazzinoController,
             GestionePrenotazioniController prenotazioniController,
-            UsuraPezziThread usuraPezziThread,
+            Dispatcher usuraPezziThread,
             HtmlRenderer renderer) throws IOException {
 
         if (porta < 1 || porta > 65535) {

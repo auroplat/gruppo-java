@@ -13,7 +13,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import it.unipv.bitFactory.controller.GestioneSessioniController;
 import it.unipv.bitFactory.model.sessioni.Sessione;
 
-public final class UsuraPezziThread extends Thread {
+public final class Dispatcher extends Thread {
 
     private static final int NUMERO_MASSIMO_WORKER = 3;
     private static final long TEMPO_SIMULAZIONE_MS = 5_000L;
@@ -59,7 +59,7 @@ public final class UsuraPezziThread extends Thread {
 
     private volatile boolean attivo = true;
 
-    public UsuraPezziThread(
+    public Dispatcher(
             GestioneSessioniController controller) {
 
         super("thread-dispatcher-sessioni");

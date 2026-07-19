@@ -16,29 +16,15 @@ public final class SessioneWorker implements Runnable {
 
     private final long tempoSimulazioneMs;
 
-    public SessioneWorker(
-            String idMacchina,
-            Sessione sessione,
-            GestioneSessioniController controller,
-            ReentrantLock lockDatabase,
-            long tempoSimulazioneMs) {
+    public SessioneWorker(String idMacchina,Sessione sessione,GestioneSessioniController controller,
+            ReentrantLock lockDatabase, long tempoSimulazioneMs) {
 
-        if (idMacchina == null || idMacchina.isBlank()) {
-            throw new IllegalArgumentException("L'ID della macchina non può essere vuoto");
-        }
-
-        if (tempoSimulazioneMs < 0) {
-            throw new IllegalArgumentException("Il tempo non può essere negativo");
-        }
-
+        if (idMacchina == null || idMacchina.isBlank()) {throw new IllegalArgumentException("L'ID della macchina non può essere vuoto");}
+        if (tempoSimulazioneMs < 0) { throw new IllegalArgumentException("Il tempo non può essere negativo");}
         this.idMacchina = idMacchina;
-
         this.sessione = Objects.requireNonNull(sessione,"La sessione non può essere null");
-
         this.controller = Objects.requireNonNull(controller,"Il controller non può essere null");
-
         this.lockDatabase = Objects.requireNonNull(lockDatabase,"Il lock del database non può essere null");
-
         this.tempoSimulazioneMs = tempoSimulazioneMs;
     }
 

@@ -6,7 +6,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import it.unipv.bitFactory.controller.GestioneSessioniController;
 import it.unipv.bitFactory.model.sessioni.Sessione;
 
-public final class SessioneWorker implements Runnable {
+public final class SessioneThread implements Runnable {
 
     private final String idMacchina;
     private final Sessione sessione;
@@ -16,7 +16,7 @@ public final class SessioneWorker implements Runnable {
 
     private final long tempoSimulazioneMs;
 
-    public SessioneWorker(String idMacchina,Sessione sessione,GestioneSessioniController controller,
+    public SessioneThread(String idMacchina,Sessione sessione,GestioneSessioniController controller,
             ReentrantLock lockDatabase, long tempoSimulazioneMs) {
 
         if (idMacchina == null || idMacchina.isBlank()) {throw new IllegalArgumentException("L'ID della macchina non può essere vuoto");}

@@ -156,7 +156,7 @@ public final class Dispatcher extends Thread {
 
         String nomeWorker = "thread-sessione-" + numero;
 
-        SessioneWorker worker = new SessioneWorker(richiesta.idMacchina(), richiesta.sessione(), controller, lockDatabase, TEMPO_SIMULAZIONE_MS);
+        SessioneThread worker = new SessioneThread(richiesta.idMacchina(), richiesta.sessione(), controller, lockDatabase, TEMPO_SIMULAZIONE_MS);
 
         Thread threadWorker = new Thread(() -> {
         	

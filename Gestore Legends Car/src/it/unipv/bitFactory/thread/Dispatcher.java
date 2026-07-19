@@ -20,97 +20,53 @@ public final class Dispatcher extends Thread {
 
     private final GestioneSessioniController controller;
 
-    /*
-     * Coda FIFO delle richieste.
-     */
-    private final Deque<RichiestaSessione> coda =
-            new ArrayDeque<>();
 
-    /*
-     * Questo lock protegge soltanto la struttura dati coda.
-     */
-    private final ReentrantLock lockCoda =
-            new ReentrantLock(true);
+    //Coda FIFO delle richieste.
 
-    private final Condition richiestaDisponibile =
-            lockCoda.newCondition();
+    private final Deque<RichiestaSessione> coda = new ArrayDeque<>();
+    
+    private final ReentrantLock lockCoda = new ReentrantLock(true);
 
-    /*
-     * Limita a tre il numero massimo di worker attivi.
-     */
-    private final Semaphore semaforoWorker =
-            new Semaphore(NUMERO_MASSIMO_WORKER, true);
+    private final Condition richiestaDisponibile = lockCoda.newCondition();
 
-    /*
-     * Protegge la sezione critica sul database.
-     *
-     * Il parametro true rende il lock fair:
-     * i worker vengono serviti tendenzialmente
-     * nell'ordine in cui si sono messi in attesa.
-     */
-    private final ReentrantLock lockDatabase =
-            new ReentrantLock(true);
+    private final Semaphore semaforoWorker = new Semaphore(NUMERO_MASSIMO_WORKER, true);
 
-    private final Set<Thread> workerAttivi =
-            ConcurrentHashMap.newKeySet();
 
-    private final AtomicInteger progressivoWorker =
-            new AtomicInteger();
+     //Il parametro true rende il lock fair:
+    private final ReentrantLock lockDatabase = new ReentrantLock(true);
+
+    private final Set<Thread> workerAttivi = ConcurrentHashMap.newKeySet();
+
+    private final AtomicInteger progressivoWorker =  new AtomicInteger();
 
     private volatile boolean attivo = true;
 
-    public Dispatcher(
-            GestioneSessioniController controller) {
+    public Dispatcher(GestioneSessioniController controller) {
 
         super("thread-dispatcher-sessioni");
 
-        this.controller = Objects.requireNonNull(
-                controller,
-                "Il controller non può essere null"
-        );
+        this.controller = Objects.requireNonNull(controller,"Il controller non può essere null");
     }
 
-    /*
-     * Metodo produttore chiamato dai thread HTTP.
-     */
-    public void inviaAggiornamento(
-            String idMacchina,
-            Sessione sessione) {
+    public void inviaAggiornamento(String idMacchina, Sessione sessione) {
 
         if (idMacchina == null || idMacchina.isBlank()) {
-            throw new IllegalArgumentException(
-                    "L'ID della macchina non può essere vuoto"
-            );
+            throw new IllegalArgumentException("L'ID della macchina non può essere vuoto");
         }
 
-        Objects.requireNonNull(
-                sessione,
-                "La sessione non può essere null"
-        );
+        Objects.requireNonNull(sessione,"La sessione non può essere null");
 
         lockCoda.lock();
 
         try {
             if (!attivo) {
-                throw new IllegalStateException(
-                        "Il dispatcher è stato arrestato"
-                );
+                throw new IllegalStateException("Il dispatcher è stato arrestato");
             }
 
-            coda.addLast(
-                    new RichiestaSessione(
-                            idMacchina,
-                            sessione
-                    )
+            coda.addLast(new RichiestaSessione(idMacchina, sessione)
             );
 
-            System.out.printf(
-                    "[%s] richiesta accodata per %s; "
-                            + "richieste in coda: %d%n",
-                    Thread.currentThread().getName(),
-                    idMacchina,
-                    coda.size()
-            );
+            System.out.printf("[%s] richiesta accodata per %s; richieste in coda: %d%n", Thread.currentThread().getName(), idMacchina, coda.size());
 
             richiestaDisponibile.signal();
 
@@ -119,9 +75,9 @@ public final class Dispatcher extends Thread {
         }
     }
 
-    /*
-     * Attende che sia presente almeno una richiesta.
-     */
+    
+     //Attende che sia presente almeno una richiesta.
+     
     private boolean attendiPresenzaRichiesta()
             throws InterruptedException {
 
@@ -139,9 +95,7 @@ public final class Dispatcher extends Thread {
         }
     }
 
-    /*
-     * Estrae la richiesta più vecchia dalla coda.
-     */
+    //Estrae la richiesta più vecchia dalla coda.
     private RichiestaSessione estraiRichiesta() {
 
         lockCoda.lock();
@@ -160,44 +114,28 @@ public final class Dispatcher extends Thread {
         try {
             while (attivo) {
 
-                /*
-                 * Prima controlla che esista una richiesta.
-                 */
+            	//controllo chi siano richiesta
                 if (!attendiPresenzaRichiesta()) {
                     break;
                 }
-
-                /*
-                 * Il dispatcher può creare al massimo tre worker.
-                 *
-                 * Quando i tre permessi sono occupati,
-                 * si blocca qui e le altre richieste
-                 * rimangono nella coda.
-                 */
+                
+                //provo a prendere il semaforo
                 semaforoWorker.acquire();
 
                 boolean permessoTrasferito = false;
 
                 try {
-                    if (!attivo) {
-                        break;
-                    }
+                    if (!attivo) {break;}
 
-                    RichiestaSessione richiesta =
-                            estraiRichiesta();
+                    RichiestaSessione richiesta = estraiRichiesta();
 
-                    if (richiesta == null) {
-                        continue;
-                    }
+                    if (richiesta == null) {continue;}
 
                     avviaWorker(richiesta);
                     permessoTrasferito = true;
 
                 } finally {
-                    /*
-                     * Se il worker non è stato avviato,
-                     * restituisce il permesso.
-                     */
+                	
                     if (!permessoTrasferito) {
                         semaforoWorker.release();
                     }
@@ -208,53 +146,30 @@ public final class Dispatcher extends Thread {
             Thread.currentThread().interrupt();
 
         } finally {
-            System.out.printf(
-                    "[%s] dispatcher terminato%n",
-                    getName()
-            );
+            System.out.printf("[%s] dispatcher terminato%n", getName());
         }
     }
 
-    private void avviaWorker(
-            RichiestaSessione richiesta) {
+    private void avviaWorker(RichiestaSessione richiesta) {
 
-        int numero =
-                progressivoWorker.incrementAndGet();
+        int numero = progressivoWorker.incrementAndGet();
 
-        String nomeWorker =
-                "thread-sessione-" + numero;
+        String nomeWorker = "thread-sessione-" + numero;
 
-        SessioneWorker worker =
-                new SessioneWorker(
-                        richiesta.idMacchina(),
-                        richiesta.sessione(),
-                        controller,
-                        lockDatabase,
-                        TEMPO_SIMULAZIONE_MS
-                );
+        SessioneWorker worker = new SessioneWorker(richiesta.idMacchina(), richiesta.sessione(), controller, lockDatabase, TEMPO_SIMULAZIONE_MS);
 
-        Thread threadWorker = new Thread(
-                () -> {
+        Thread threadWorker = new Thread(() -> {
+        	
                     try {
                         worker.run();
 
                     } finally {
-                        workerAttivi.remove(
-                                Thread.currentThread()
-                        );
+                        workerAttivi.remove(Thread.currentThread());
 
-                        /*
-                         * Il worker termina e restituisce
-                         * il permesso al dispatcher.
-                         */
+                        //quando il thread termina lascia semaforo
                         semaforoWorker.release();
 
-                        System.out.printf(
-                                "[%s] permesso worker rilasciato; "
-                                        + "permessi disponibili: %d%n",
-                                Thread.currentThread().getName(),
-                                semaforoWorker.availablePermits()
-                        );
+                        System.out.printf("[%s] permesso worker rilasciato; permessi disponibili: %d%n", Thread.currentThread().getName(),semaforoWorker.availablePermits());
                     }
                 },
                 nomeWorker
@@ -319,8 +234,5 @@ public final class Dispatcher extends Thread {
         return lockDatabase.getQueueLength();
     }
 
-    private record RichiestaSessione(
-            String idMacchina,
-            Sessione sessione) {
-    }
+    private record RichiestaSessione(String idMacchina, Sessione sessione) {}
 }

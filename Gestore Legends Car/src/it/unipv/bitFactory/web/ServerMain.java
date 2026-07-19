@@ -16,32 +16,17 @@ import it.unipv.bitFactory.web.view.HtmlRenderer;
 
 public final class ServerMain {
 
-    /*
-     * true:
-     * inserisce automaticamente sei richieste prima di avviare
-     * il dispatcher, così puoi vedere il funzionamento di:
-     *
-     * - coda delle richieste;
-     * - semaforo con tre permessi;
-     * - tre worker contemporanei;
-     * - lock fair per l'accesso al database.
-     *
-     * false:
-     * avvio normale del server web.
-     */
     private static final boolean TEST_RIEMPIMENTO_CODA = true;
 
     private static final int NUMERO_RICHIESTE_TEST = 6;
 
-    private static final String ID_MACCHINA_TEST =
-            "MAC002";
+    private static final String ID_MACCHINA_TEST = "MAC002";
 
     private static final int PORTA_SERVER = 8082;
 
     private static final int NUMERO_THREAD_HTTP = 8;
 
-    private ServerMain() {
-    }
+    private ServerMain() {}
 
     public static void main(String[] args) {
 
@@ -50,122 +35,42 @@ public final class ServerMain {
 
         try {
 
-            /*
-             * Individuazione del database.
-             */
-            Path databasePath = Path.of(
-                    "data",
-                    "database_bfactory.db"
-            ).toAbsolutePath().normalize();
+            Path databasePath = Path.of("data","database_bfactory.db").toAbsolutePath().normalize();
+            System.out.println( "Database utilizzato: "+ databasePath);
+            System.out.println("Database esistente: "+ Files.isRegularFile(databasePath));
+            if (!Files.isRegularFile(databasePath)) {throw new IllegalStateException("Database non trovato: " + databasePath);}
+            LegendsDAO dao = new SqliteLegendsDAO(databasePath.toString());
+            GestioneSessioniController sessioniController = new GestioneSessioniController(dao);
+            GestioneMagazzinoController magazzinoController = new GestioneMagazzinoController();
+            GestionePrenotazioniController prenotazioniController = new GestionePrenotazioniController();
+            HtmlRenderer renderer =new HtmlRenderer();
 
-            System.out.println(
-                    "Database utilizzato: "
-                            + databasePath
-            );
+            
+            
+            //creo dispatcher
+            dispatcherSessioni = new Dispatcher(sessioniController);
 
-            System.out.println(
-                    "Database esistente: "
-                            + Files.isRegularFile(databasePath)
-            );
-
-            if (!Files.isRegularFile(databasePath)) {
-                throw new IllegalStateException(
-                        "Database non trovato: "
-                                + databasePath
-                );
-            }
-
-            /*
-             * DAO.
-             */
-            LegendsDAO dao =
-                    new SqliteLegendsDAO(
-                            databasePath.toString()
-                    );
-
-            /*
-             * Controller.
-             */
-            GestioneSessioniController sessioniController =
-                    new GestioneSessioniController(dao);
-
-            GestioneMagazzinoController magazzinoController =
-                    new GestioneMagazzinoController();
-
-            GestionePrenotazioniController prenotazioniController =
-                    new GestionePrenotazioniController();
-
-            HtmlRenderer renderer =
-                    new HtmlRenderer();
-
-            /*
-             * Creazione del dispatcher.
-             *
-             * Al suo interno sono presenti:
-             *
-             * - Semaphore(3) per limitare i worker;
-             * - ReentrantLock(true) per il database;
-             * - lock e Condition per la coda.
-             */
-            dispatcherSessioni =
-                    new Dispatcher(
-                            sessioniController
-                    );
-
-            /*
-             * Nel test le richieste vengono accodate prima
-             * dell'avvio del dispatcher.
-             *
-             * In questo modo la coda arriva sicuramente a 6.
-             */
+            //test per riempire la code
             if (TEST_RIEMPIMENTO_CODA) {
                 caricaRichiesteDiTest(
                         dispatcherSessioni
                 );
             }
 
-            /*
-             * Avvio del dispatcher.
-             *
-             * Ora potrà estrarre al massimo tre richieste,
-             * perché il semaforo possiede tre permessi.
-             */
+            //avvio dispatcher
             dispatcherSessioni.start();
 
-            /*
-             * Monitor didattico dello stato concorrente.
-             */
+            //monitor
             if (TEST_RIEMPIMENTO_CODA) {
-                avviaMonitor(
-                        dispatcherSessioni
-                );
+                avviaMonitor(dispatcherSessioni);
             }
 
-            /*
-             * Creazione del server HTTP.
-             *
-             * Lo stesso dispatcher viene passato agli handler,
-             * così tutte le richieste HTTP usano la medesima coda.
-             */
-            server = new BitFactoryWebServer(
-                    PORTA_SERVER,
-                    NUMERO_THREAD_HTTP,
-                    sessioniController,
-                    magazzinoController,
-                    prenotazioniController,
-                    dispatcherSessioni,
-                    renderer
-            );
+            
 
-            /*
-             * Copie finali necessarie per la lambda
-             * dello shutdown hook.
-             */
-            BitFactoryWebServer serverFinale =
-                    server;
+            server = new BitFactoryWebServer(PORTA_SERVER,NUMERO_THREAD_HTTP,sessioniController, magazzinoController, prenotazioniController,dispatcherSessioni,renderer);
+            BitFactoryWebServer serverFinale = server;
 
-            Dispatcher dispatcherFinale =
-                    dispatcherSessioni;
+            Dispatcher dispatcherFinale = dispatcherSessioni;
 
             Runtime.getRuntime().addShutdownHook(
                     new Thread(
@@ -177,110 +82,51 @@ public final class ServerMain {
                     )
             );
 
-            /*
-             * Avvio del server HTTP.
-             */
             server.avvia();
 
         } catch (Exception e) {
 
-            System.err.println(
-                    "Errore durante l'avvio "
-                            + "dell'applicazione: "
-                            + e.getMessage()
-            );
+            System.err.println( "Errore durante l'avvio dell'applicazione: "+ e.getMessage() );
 
             e.printStackTrace();
+            
+            
+            
+            
 
-            /*
-             * Se il dispatcher era già stato creato,
-             * viene arrestato.
-             */
-            if (dispatcherSessioni != null) {
-                dispatcherSessioni.arrestaThread();
-            }
 
-            /*
-             * Se il server era già stato creato,
-             * viene arrestato.
-             */
-            if (server != null) {
-                server.arresta();
-            }
+            if (dispatcherSessioni != null) {dispatcherSessioni.arrestaThread();}
+
+            if (server != null) {server.arresta();}
         }
     }
 
-    /**
-     * Inserisce sei richieste nella coda prima
-     * dell'avvio del dispatcher.
-     */
-    private static void caricaRichiesteDiTest(
-            Dispatcher dispatcher) {
+    
+    
+    
+    //inserisco le richiste prima di iniziare
+    private static void caricaRichiesteDiTest(Dispatcher dispatcher) {
 
-        System.out.printf(
-                "%n=== TEST CODA: inserimento di %d richieste ===%n",
-                NUMERO_RICHIESTE_TEST
-        );
+        System.out.printf("%n=== TEST CODA: inserimento di %d richieste ===%n", NUMERO_RICHIESTE_TEST);
 
-        for (int indice = 1;
-             indice <= NUMERO_RICHIESTE_TEST;
-             indice++) {
+        for (int indice = 1; indice <= NUMERO_RICHIESTE_TEST; indice++) {
 
-            Sessione sessione =
-                    creaSessioneDiTest(indice);
+            Sessione sessione = creaSessioneDiTest(indice);
 
-            dispatcher.inviaAggiornamento(
-                    ID_MACCHINA_TEST,
-                    sessione
-            );
+            dispatcher.inviaAggiornamento(ID_MACCHINA_TEST,sessione);
 
-            System.out.printf(
-                    "[main-test] richiesta %d inserita; "
-                            + "dimensione coda: %d%n",
-                    indice,
-                    dispatcher
-                            .getNumeroRichiesteInCoda()
-            );
+            System.out.printf("[main-test] richiesta %d inserita; dimensione coda: %d%n", indice, dispatcher.getNumeroRichiesteInCoda());
         }
 
-        System.out.printf(
-                "=== CODA CARICATA: %d richieste; "
-                        + "ora avvio il dispatcher ===%n%n",
-                dispatcher.getNumeroRichiesteInCoda()
-        );
+        System.out.printf("=== CODA CARICATA: %d richieste; ora avvio il dispatcher ===%n%n", dispatcher.getNumeroRichiesteInCoda());
     }
 
-    /**
-     * Crea alternativamente oggetti Test e Gara.
-     */
-    private static Sessione creaSessioneDiTest(
-            int indice) {
-
-        String luogo =
-                "Pista automatica " + indice;
-
-        double kmPercorsi =
-                10.0 + indice;
-
-        int tempoPassato =
-                60 + indice;
-
-        if (indice % 2 == 0) {
-
-            return new Gara(
-                    luogo,
-                    kmPercorsi,
-                    tempoPassato,
-                    indice
-            );
-        }
-
-        return new Test(
-                luogo,
-                kmPercorsi,
-                tempoPassato,
-                "Sessione automatica " + indice
-        );
+    //crea sessioni
+    private static Sessione creaSessioneDiTest(int indice) {
+        String luogo = "Pista automatica ";
+        double kmPercorsi = 10.0;
+        int tempoPassato = 60;
+        return new Gara(luogo,kmPercorsi,tempoPassato,indice);
     }
 
     /**

@@ -17,28 +17,52 @@ import it.unipv.bitFactory.web.view.HtmlRenderer;
 public final class ServerMain {
 
     /*
-     * Impostare true soltanto per provare il riempimento della coda.
-     * Le sessioni di prova vengono realmente salvate sul database.
+     * true:
+     * inserisce automaticamente sei richieste prima di avviare
+     * il dispatcher, così puoi vedere il funzionamento di:
+     *
+     * - coda delle richieste;
+     * - semaforo con tre permessi;
+     * - tre worker contemporanei;
+     * - lock fair per l'accesso al database.
+     *
+     * false:
+     * avvio normale del server web.
      */
-    private static final boolean TEST_RIEMPIMENTO_CODA = false;
+    private static final boolean TEST_RIEMPIMENTO_CODA = true;
+
     private static final int NUMERO_RICHIESTE_TEST = 6;
-    private static final String ID_MACCHINA_TEST = "MAC002";
+
+    private static final String ID_MACCHINA_TEST =
+            "MAC002";
+
+    private static final int PORTA_SERVER = 8082;
+
+    private static final int NUMERO_THREAD_HTTP = 8;
 
     private ServerMain() {
     }
 
     public static void main(String[] args) {
-        UsuraPezziThread usuraPezziThread = null;
+
+        UsuraPezziThread dispatcherSessioni = null;
+        BitFactoryWebServer server = null;
 
         try {
+
+            /*
+             * Individuazione del database.
+             */
             Path databasePath = Path.of(
                     "data",
                     "database_bfactory.db"
             ).toAbsolutePath().normalize();
 
             System.out.println(
-                    "Database utilizzato: " + databasePath
+                    "Database utilizzato: "
+                            + databasePath
             );
+
             System.out.println(
                     "Database esistente: "
                             + Files.isRegularFile(databasePath)
@@ -46,14 +70,22 @@ public final class ServerMain {
 
             if (!Files.isRegularFile(databasePath)) {
                 throw new IllegalStateException(
-                        "Database non trovato: " + databasePath
+                        "Database non trovato: "
+                                + databasePath
                 );
             }
 
-            LegendsDAO dao = new SqliteLegendsDAO(
-                    databasePath.toString()
-            );
+            /*
+             * DAO.
+             */
+            LegendsDAO dao =
+                    new SqliteLegendsDAO(
+                            databasePath.toString()
+                    );
 
+            /*
+             * Controller.
+             */
             GestioneSessioniController sessioniController =
                     new GestioneSessioniController(dao);
 
@@ -63,65 +95,125 @@ public final class ServerMain {
             GestionePrenotazioniController prenotazioniController =
                     new GestionePrenotazioniController();
 
-            HtmlRenderer renderer = new HtmlRenderer();
-
-            usuraPezziThread =
-                    new UsuraPezziThread(sessioniController);
+            HtmlRenderer renderer =
+                    new HtmlRenderer();
 
             /*
-             * Per mostrare sicuramente il riempimento, le richieste
-             * vengono accodate prima dell'avvio del dispatcher.
+             * Creazione del dispatcher.
+             *
+             * Al suo interno sono presenti:
+             *
+             * - Semaphore(3) per limitare i worker;
+             * - ReentrantLock(true) per il database;
+             * - lock e Condition per la coda.
              */
-            if (TEST_RIEMPIMENTO_CODA) {
-                caricaRichiesteDiTest(usuraPezziThread);
-            }
-
-            usuraPezziThread.start();
-
-            if (TEST_RIEMPIMENTO_CODA) {
-                avviaMonitorCoda(usuraPezziThread);
-            }
-
-            BitFactoryWebServer server =
-                    new BitFactoryWebServer(
-                            8082,
-                            8,
-                            sessioniController,
-                            magazzinoController,
-                            prenotazioniController,
-                            usuraPezziThread,
-                            renderer
+            dispatcherSessioni =
+                    new UsuraPezziThread(
+                            sessioniController
                     );
 
-            UsuraPezziThread usuraFinale =
-                    usuraPezziThread;
+            /*
+             * Nel test le richieste vengono accodate prima
+             * dell'avvio del dispatcher.
+             *
+             * In questo modo la coda arriva sicuramente a 6.
+             */
+            if (TEST_RIEMPIMENTO_CODA) {
+                caricaRichiesteDiTest(
+                        dispatcherSessioni
+                );
+            }
+
+            /*
+             * Avvio del dispatcher.
+             *
+             * Ora potrà estrarre al massimo tre richieste,
+             * perché il semaforo possiede tre permessi.
+             */
+            dispatcherSessioni.start();
+
+            /*
+             * Monitor didattico dello stato concorrente.
+             */
+            if (TEST_RIEMPIMENTO_CODA) {
+                avviaMonitor(
+                        dispatcherSessioni
+                );
+            }
+
+            /*
+             * Creazione del server HTTP.
+             *
+             * Lo stesso dispatcher viene passato agli handler,
+             * così tutte le richieste HTTP usano la medesima coda.
+             */
+            server = new BitFactoryWebServer(
+                    PORTA_SERVER,
+                    NUMERO_THREAD_HTTP,
+                    sessioniController,
+                    magazzinoController,
+                    prenotazioniController,
+                    dispatcherSessioni,
+                    renderer
+            );
+
+            /*
+             * Copie finali necessarie per la lambda
+             * dello shutdown hook.
+             */
+            BitFactoryWebServer serverFinale =
+                    server;
+
+            UsuraPezziThread dispatcherFinale =
+                    dispatcherSessioni;
 
             Runtime.getRuntime().addShutdownHook(
                     new Thread(
-                            () -> arrestaTutto(
-                                    server,
-                                    usuraFinale
+                            () -> arrestaApplicazione(
+                                    serverFinale,
+                                    dispatcherFinale
                             ),
                             "bitfactory-shutdown"
                     )
             );
 
+            /*
+             * Avvio del server HTTP.
+             */
             server.avvia();
 
         } catch (Exception e) {
-            if (usuraPezziThread != null) {
-                usuraPezziThread.arrestaThread();
-            }
 
             System.err.println(
-                    "Errore durante l'avvio del server: "
+                    "Errore durante l'avvio "
+                            + "dell'applicazione: "
                             + e.getMessage()
             );
 
             e.printStackTrace();
+
+            /*
+             * Se il dispatcher era già stato creato,
+             * viene arrestato.
+             */
+            if (dispatcherSessioni != null) {
+                dispatcherSessioni.arrestaThread();
+            }
+
+            /*
+             * Se il server era già stato creato,
+             * viene arrestato.
+             */
+            if (server != null) {
+                server.arresta();
+            }
         }
     }
 
+    /**
+     * Inserisce sei richieste nella coda prima
+     * dell'avvio del dispatcher.
+     */
     private static void caricaRichiesteDiTest(
             UsuraPezziThread dispatcher) {
 
@@ -134,16 +226,20 @@ public final class ServerMain {
              indice <= NUMERO_RICHIESTE_TEST;
              indice++) {
 
+            Sessione sessione =
+                    creaSessioneDiTest(indice);
+
             dispatcher.inviaAggiornamento(
                     ID_MACCHINA_TEST,
-                    creaSessioneDiTest(indice)
+                    sessione
             );
 
             System.out.printf(
                     "[main-test] richiesta %d inserita; "
                             + "dimensione coda: %d%n",
                     indice,
-                    dispatcher.getNumeroRichiesteInCoda()
+                    dispatcher
+                            .getNumeroRichiesteInCoda()
             );
         }
 
@@ -154,12 +250,23 @@ public final class ServerMain {
         );
     }
 
-    private static Sessione creaSessioneDiTest(int indice) {
-        String luogo = "Pista automatica " + indice;
-        double kmPercorsi = 10.0 + indice;
-        int tempoPassato = 60 + indice;
+    /**
+     * Crea alternativamente oggetti Test e Gara.
+     */
+    private static Sessione creaSessioneDiTest(
+            int indice) {
+
+        String luogo =
+                "Pista automatica " + indice;
+
+        double kmPercorsi =
+                10.0 + indice;
+
+        int tempoPassato =
+                60 + indice;
 
         if (indice % 2 == 0) {
+
             return new Gara(
                     luogo,
                     kmPercorsi,
@@ -176,61 +283,140 @@ public final class ServerMain {
         );
     }
 
-    private static void avviaMonitorCoda(
+    /**
+     * Stampa periodicamente lo stato:
+     *
+     * - richieste ancora nella coda;
+     * - worker attivi;
+     * - permessi disponibili;
+     * - dispatcher in attesa del semaforo;
+     * - worker in attesa del lock database.
+     */
+    private static void avviaMonitor(
             UsuraPezziThread dispatcher) {
 
         Thread monitor = new Thread(
                 () -> {
+
+                    String statoPrecedente = null;
+
                     try {
-                        for (int i = 0; i < 40; i++) {
-                            System.out.printf(
+                        while (!Thread.currentThread().isInterrupted()) {
+
+                            int richiesteInCoda =
+                                    dispatcher.getNumeroRichiesteInCoda();
+
+                            int workerAttivi =
+                                    dispatcher.getNumeroWorkerAttivi();
+
+                            int permessiDisponibili =
+                                    dispatcher
+                                            .getNumeroPermessiWorkerDisponibili();
+
+                            int dispatcherInAttesa =
+                                    dispatcher
+                                            .getNumeroDispatcherInAttesaDelSemaforo();
+
+                            int workerInAttesaLock =
+                                    dispatcher
+                                            .getNumeroWorkerInAttesaDelLockDatabase();
+
+                            String statoAttuale = String.format(
                                     "[MONITOR] coda=%d; "
                                             + "worker attivi=%d; "
-                                            + "permessi creazione=%d; "
-                                            + "thread in attesa semaforo=%d%n",
-                                    dispatcher
-                                            .getNumeroRichiesteInCoda(),
-                                    dispatcher
-                                            .getNumeroWorkerAttivi(),
-                                    dispatcher
-                                            .getNumeroPermessiCreazioneDisponibili(),
-                                    dispatcher
-                                            .getNumeroThreadInAttesaDelSemaforo()
+                                            + "permessi worker=%d; "
+                                            + "dispatcher in attesa semaforo=%d; "
+                                            + "worker in attesa lock DB=%d",
+                                    richiesteInCoda,
+                                    workerAttivi,
+                                    permessiDisponibili,
+                                    dispatcherInAttesa,
+                                    workerInAttesaLock
                             );
 
-                            Thread.sleep(1_000L);
+                            /*
+                             * Stampa soltanto se lo stato è diverso
+                             * da quello rilevato precedentemente.
+                             */
+                            if (!statoAttuale.equals(statoPrecedente)) {
+                                System.out.println(statoAttuale);
+                                statoPrecedente = statoAttuale;
+                            }
+
+                            /*
+                             * Termina il monitor quando tutto il lavoro
+                             * è stato completato.
+                             */
+                            if (richiesteInCoda == 0
+                                    && workerAttivi == 0
+                                    && permessiDisponibili == 3) {
+
+                                System.out.println(
+                                        "[MONITOR] elaborazione completata"
+                                );
+
+                                break;
+                            }
+
+                            Thread.sleep(200L);
                         }
 
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
                     }
                 },
-                "monitor-coda"
+                "monitor-concorrenza"
         );
 
         monitor.setDaemon(true);
         monitor.start();
     }
 
-    private static void arrestaTutto(
+    /**
+     * Arresta server e dispatcher.
+     */
+    private static void arrestaApplicazione(
             BitFactoryWebServer server,
-            UsuraPezziThread usuraPezziThread) {
+            UsuraPezziThread dispatcher) {
+
+        System.out.println(
+                "Arresto dell'applicazione..."
+        );
 
         server.arresta();
-        usuraPezziThread.arrestaThread();
-        attendiTerminazione(usuraPezziThread);
+
+        dispatcher.arrestaThread();
+
+        attendiTerminazioneDispatcher(
+                dispatcher
+        );
     }
 
-    private static void attendiTerminazione(Thread thread) {
-        try {
-            thread.join(5_000L);
+    /**
+     * Attende per un massimo di cinque secondi
+     * la terminazione del dispatcher.
+     */
+    private static void attendiTerminazioneDispatcher(
+            Thread dispatcher) {
 
-            if (thread.isAlive()) {
-                thread.interrupt();
+        try {
+
+            dispatcher.join(5_000L);
+
+            if (dispatcher.isAlive()) {
+
+                System.out.println(
+                        "Il dispatcher non è ancora terminato; "
+                                + "invio interrupt."
+                );
+
+                dispatcher.interrupt();
             }
 
         } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
+
+            Thread.currentThread()
+                    .interrupt();
         }
     }
 }
